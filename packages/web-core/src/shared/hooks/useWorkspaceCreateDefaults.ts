@@ -1,0 +1,72 @@
+import { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import type { ExecutorConfig, RepoWithTargetBranch } from 'shared/types';
+import { workspacesApi } from '@/shared/lib/api';
+import { useExecutionProcesses } from '@/shared/hooks/useExecutionProcesses';
+import { getLatestConfigFromProcesses } from '@/shared/lib/executor';
+import { readLastUsedAgent } from '@/shared/lib/lastUsedAgent';
+
+interface UseWorkspaceCreateDefaultsOptions {
+  sourceWorkspaceId: string | null;
+  enabled: boolean;
+}
+
+interface WorkspaceCreateDefaultsData {
+  repos: RepoWithTargetBranch[];
+  sourceSessionId: string | undefined;
+  sourceSessionExecutor: ExecutorConfig['executor'] | null;
+}
+
+interface UseWorkspaceCreateDefaultsResult {
+  preferredRepos: RepoWithTargetBranch[];
+  preferredExecutorConfig: ExecutorConfig | null;
+  hasResolvedPreferredRepos: boolean;
+}
+
+export function useWorkspaceCreateDefaults({
+  sourceWorkspaceId,
+  enabled,
+}: UseWorkspaceCreateDefaultsOptions): UseWorkspaceCreateDefaultsResult {
+  const queryEnabled = enabled && !!sourceWorkspaceId;
+
+  const { data, status } = useQuery<WorkspaceCreateDefaultsData>({
+    queryKey: ['workspaceCreateDefaults', sourceWorkspaceId],
+    enabled: queryEnabled,
+    staleTime: 0,
+    refetchOnMount: 'always',
+    queryFn: async () => {
+      const [repos, workspaceWithSession] = await Promise.all([
+        workspacesApi.getRepos(sourceWorkspaceId!),
+        workspacesApi.getWithSession(sourceWorkspaceId!),
+      ]);
+
+      const result = {
+        repos,
+        sourceSessionId: workspaceWithSession.session?.id ?? undefined,
+        sourceSessionExecutor:
+          (workspaceWithSession.session
+            ?.executor as ExecutorConfig['executor']) ?? null,
+      };
+      return result;
+    },
+  });
+
+  const { executionProcesses } = useExecutionProcesses(data?.sourceSessionId);
+
+  const preferredExecutorConfig = useMemo(() => {
+    const fromProcesses = getLatestConfigFromProcesses(executionProcesses);
+    if (fromProcesses) return fromProcesses;
+    if (data?.sourceSessionExecutor) {
+      return { executor: data.sourceSessionExecutor };
+    }
+    const remembered = readLastUsedAgent();
+    if (remembered) return { executor: remembered };
+    return null;
+  }, [executionProcesses, data?.sourceSessionExecutor]);
+
+  return {
+    preferredRepos: data?.repos ?? [],
+    preferredExecutorConfig,
+    hasResolvedPreferredRepos: !queryEnabled || status !== 'pending',
+  };
+}

@@ -1,0 +1,935 @@
+{
+  "editorNames": {
+    "custom": "사용자 지정"
+  },
+  "folderPicker": {
+    "defaultTitle": "폴더 선택",
+    "defaultDescription": "프로젝트 폴더를 선택하세요",
+    "legend": "폴더 이름을 클릭하여 탐색 • 작업 버튼을 사용하여 선택",
+    "manualPathLabel": "경로 직접 입력:",
+    "go": "이동",
+    "searchLabel": "현재 디렉토리 검색:",
+    "filterPlaceholder": "폴더와 파일 필터링...",
+    "selectCurrent": "현재 선택",
+    "gitRepo": "git 저장소",
+    "selectPath": "경로 선택"
+  },
+  "branchSelector": {
+    "badges": {
+      "current": "현재",
+      "remote": "원격"
+    },
+    "currentDisabled": "현재 브랜치는 선택할 수 없습니다",
+    "empty": "브랜치를 찾을 수 없습니다",
+    "placeholder": "브랜치 선택",
+    "searchPlaceholder": "브랜치 검색..."
+  },
+  "buttons": {
+    "cancel": "취소",
+    "close": "닫기",
+    "connect": "연결",
+    "continue": "계속",
+    "create": "생성",
+    "delete": "삭제",
+    "disconnect": "연결 해제",
+    "discard": "취소",
+    "edit": "편집",
+    "manage": "관리",
+    "replay": "다시 재생",
+    "reset": "초기화",
+    "save": "저장",
+    "send": "보내기",
+    "addItem": "항목 추가",
+    "reply": "답장",
+    "retry": "Retry",
+    "add": "추가"
+  },
+  "form": {
+    "notSpecified": "지정되지 않음",
+    "selectOption": "옵션 선택..."
+  },
+  "conversation": {
+    "deniedByUser": "{{toolName}} 사용자에 의해 거부됨",
+    "output": "출력",
+    "plan": "계획",
+    "tool": "도구",
+    "thinking": "생각 중",
+    "toolSummary": {
+      "read": "{{path}} 읽기",
+      "searched": "\"{{query}}\" 검색",
+      "fetched": "{{url}} 가져오기",
+      "ranCommand": "명령 실행",
+      "createdTask": "작업 생성: {{description}}",
+      "todoOperation": "{{operation}} 할 일"
+    },
+    "aggregated": {
+      "label": {
+        "read": "읽기",
+        "search": "검색",
+        "fetched": "가져옴",
+        "edit": "편집",
+        "fetch": "가져오기"
+      },
+      "unit": {
+        "file_one": "파일 {{count}}개",
+        "file_other": "파일 {{count}}개",
+        "command_one": "명령 {{count}}개",
+        "command_other": "명령 {{count}}개",
+        "url_one": "URL {{count}}개",
+        "url_other": "URL {{count}}개"
+      }
+    },
+    "subagent": {
+      "defaultType": "서브에이전트"
+    },
+    "loadingEarlierMessages": "이전 메시지 불러오는 중",
+    "emptyTitle": "대화를 시작하려면 메시지를 보내세요.",
+    "emptyDescription": "새 턴이 시작되면 세션 대화가 여기에 표시됩니다.",
+    "toolName": {
+      "Skill": "스킬"
+    }
+  },
+  "changesPanel": {
+    "notGitRepo": "Git 저장소가 아닙니다 — diff를 사용할 수 없습니다"
+  },
+  "language": {
+    "browserDefault": "브라우저 기본값"
+  },
+  "states": {
+    "loading": "로딩 중..."
+  },
+  "orgSwitcher": {
+    "organizations": "조직",
+    "orgSettings": "조직 설정"
+  },
+  "ok": "확인",
+  "error": "오류",
+  "signIn": "로그인",
+  "signOut": "로그아웃",
+  "oauth": {
+    "title": "Vibe Kanban 로그인",
+    "description": "로그인하여 조직에 참여하고 팀과 작업을 공유하세요",
+    "continueWithGitHub": "GitHub로 계속",
+    "continueWithGoogle": "Google로 계속",
+    "waitingTitle": "인증 완료",
+    "waitingDescription": "인증을 위한 팝업 창이 열렸습니다",
+    "waitingForAuth": "인증 대기 중...",
+    "popupInstructions": "팝업 창이 열리지 않는 경우 팝업 차단 설정을 확인해주세요.",
+    "back": "뒤로",
+    "successTitle": "인증 성공!",
+    "welcomeBack": "환영합니다, {{name}}",
+    "errorTitle": "인증 실패",
+    "errorDescription": "계정 인증 중 문제가 발생했습니다",
+    "tryAgain": "다시 시도"
+  },
+  "toolbar": {
+    "sortBy": "정렬 기준",
+    "groupBy": "그룹화 기준"
+  },
+  "sorting": {
+    "ascending": "오름차순",
+    "descending": "내림차순"
+  },
+  "grouping": {
+    "date": "날짜",
+    "assignee": "담당자",
+    "label": "라벨"
+  },
+  "workspaces": {
+    "title": "세션",
+    "searchPlaceholder": "검색...",
+    "active": "활성",
+    "archived": "보관됨",
+    "loading": "로딩 중...",
+    "notFound": "세션을 찾을 수 없음",
+    "selectToStart": "세션을 선택하여 시작",
+    "draft": "초안",
+    "viewArchive": "보관함 보기",
+    "backToActive": "활성으로 돌아가기",
+    "noArchived": "보관된 세션 없음",
+    "noWorkspaces": "세션 없음",
+    "newWorkspace": "새 세션",
+    "needsAttention": "주의 필요",
+    "idle": "대기 중",
+    "running": "실행 중",
+    "pin": "고정",
+    "unpin": "고정 해제",
+    "archive": "보관",
+    "more": "더 많은 작업",
+    "rename": {
+      "title": "세션 이름 변경",
+      "description": "이 세션의 새 이름을 입력하세요.",
+      "nameLabel": "이름",
+      "placeholder": "세션 이름 입력",
+      "action": "이름 변경",
+      "renaming": "이름 변경 중..."
+    },
+    "unlinkFromIssue": "이슈에서 연결 해제",
+    "deleteWorkspace": "세션 삭제",
+    "unlink": "연결 해제",
+    "delete": "삭제",
+    "unlinkConfirmMessage": "이 세션을 이슈에서 연결 해제하시겠습니까? 세션은 그대로 유지되지만 이 이슈와의 연결이 끊어집니다.",
+    "deleteConfirmMessage": "이 세션을 삭제하시겠습니까? 이슈에서 연결이 해제되고 로컬 세션이 삭제됩니다. 이 작업은 되돌릴 수 없습니다.",
+    "unlinkError": "세션 연결 해제 실패",
+    "deleteError": "세션 삭제 실패",
+    "branchRequiredError": "세션을 만들기 전에 모든 리포지토리에 대해 브랜치를 선택하세요",
+    "filesChanged": "{{count}}개 파일",
+    "deleteDialog": {
+      "title": "세션 삭제",
+      "description": "이 세션을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
+      "deleteBranchLabel": "브랜치 삭제",
+      "cannotDeleteOpenPr": "PR이 열려 있는 동안에는 브랜치를 삭제할 수 없습니다",
+      "unlinkFromIssueLabel": "이슈에서도 연결 해제"
+    },
+    "linkError": "Failed to link 세션"
+  },
+  "fileTree": {
+    "searchPlaceholder": "파일 검색...",
+    "noResults": "일치하는 파일 없음",
+    "title": "파일",
+    "showGitHubComments": "GitHub 댓글 표시",
+    "hideGitHubComments": "GitHub 댓글 숨기기",
+    "prevGitHubComment": "이전 댓글 파일",
+    "nextGitHubComment": "다음 댓글 파일"
+  },
+  "sections": {
+    "changes": "변경사항",
+    "repositories": "저장소",
+    "addRepositories": "저장소 추가",
+    "project": "프로젝트",
+    "processes": "프로세스",
+    "devServer": "개발 서버",
+    "advanced": "고급",
+    "workingBranch": "작업 브랜치",
+    "recent": "최근",
+    "other": "기타",
+    "devServerPreview": "개발 서버 미리보기",
+    "terminal": "터미널",
+    "notes": "노트"
+  },
+  "notes": {
+    "placeholder": "이 세션에 대한 노트 추가...",
+    "selectWorkspace": "노트를 보려면 세션을 선택하세요"
+  },
+  "actions": {
+    "copyPath": "워크트리 경로 복사",
+    "cancel": "취소",
+    "saveChanges": "변경사항 저장",
+    "copied": "복사됨",
+    "collapse": "접기"
+  },
+  "comments": {
+    "addReviewComment": "리뷰 코멘트 추가",
+    "addPlaceholder": "코멘트 추가...",
+    "editPlaceholder": "코멘트 편집...",
+    "copyToReview": "리뷰로 복사"
+  },
+  "confirm": {
+    "defaultConfirm": "확인",
+    "defaultCancel": "취소"
+  },
+  "dialogs": {
+    "selectGitRepository": "폴더 선택",
+    "chooseExistingRepo": "파일 시스템에서 기존 폴더를 선택하세요",
+    "errorTitle": "오류"
+  },
+  "empty": {
+    "noChanges": "표시할 변경사항이 없습니다"
+  },
+  "turnNavigation": {
+    "title": "내 메시지",
+    "count_other": "{{count}}턴"
+  },
+  "commandBar": {
+    "noResults": "결과를 찾을 수 없습니다.",
+    "back": "뒤로",
+    "defaultPlaceholder": "명령어를 입력하거나 검색...",
+    "selectBranch": "Select Branch",
+    "selectBranchFor": "Select Branch for {{repoName}}",
+    "pages": {
+      "root": {
+        "groups": {
+          "actions": "작업",
+          "view": "보기",
+          "general": "일반"
+        }
+      },
+      "workspaceActions": {
+        "title": "세션 작업",
+        "groups": {
+          "session": "세션",
+          "scripts": "스크립트"
+        }
+      },
+      "repoActions": {
+        "title": "저장소 작업",
+        "groups": {
+          "actions": "작업"
+        }
+      },
+      "diffOptions": {
+        "title": "차이 옵션",
+        "groups": {
+          "display": "표시"
+        }
+      },
+      "viewOptions": {
+        "title": "보기 옵션",
+        "groups": {
+          "panels": "패널"
+        }
+      },
+      "issueActions": {
+        "title": "이슈 작업",
+        "groups": {
+          "actions": "작업"
+        }
+      }
+    },
+    "actions": {
+      "startReview": "리뷰 시작",
+      "rename": "이름 변경",
+      "duplicate": "복제",
+      "spinOff": "세션 분리",
+      "archive": "보관",
+      "unarchive": "보관 해제",
+      "delete": "삭제",
+      "runSetupScript": "설정 스크립트 실행",
+      "runCleanupScript": "정리 스크립트 실행",
+      "runArchiveScript": "보관 스크립트 실행",
+      "newWorkspace": "새 세션",
+      "createWorkspaceFromPr": "PR에서 세션 만들기",
+      "settings": "설정",
+      "projectSettings": "프로젝트 설정",
+      "signIn": "로그인",
+      "signOut": "로그아웃",
+      "giveFeedback": "피드백 보내기",
+      "workspacesGuide": "세션 가이드",
+      "projectsGuide": "프로젝트 가이드",
+      "openCommandBar": "명령 바 열기",
+      "toggleAllDiffs": "모든 차이점 전환",
+      "openInIde": "IDE에서 열기",
+      "openInIdeTooltip": "{{ide}}에서 열기",
+      "copyWorkspacePath": "세션 경로 복사",
+      "copyRawLogs": "원본 로그 복사",
+      "devServer": "개발 서버",
+      "startDevServer": "개발 서버 시작",
+      "stopDevServer": "개발 서버 중지",
+      "devServerTooltip": {
+        "start": "개발 서버 시작",
+        "stop": "개발 서버 중지",
+        "starting": "개발 서버 시작 중...",
+        "stopping": "개발 서버 중지 중..."
+      },
+      "createIssue": "이슈 만들기",
+      "changeStatus": "상태 변경",
+      "changePriority": "우선순위 변경",
+      "changeAssignees": "담당자 변경",
+      "makeSubIssueOf": "하위 이슈로 만들기",
+      "addSubIssue": "하위 이슈 추가",
+      "createSubIssue": "하위 이슈 만들기",
+      "removeParent": "상위 제거",
+      "linkWorkspace": "세션 연결",
+      "deleteIssue": "이슈 삭제",
+      "duplicateIssue": "이슈 복제",
+      "markBlocking": "차단 중으로 표시",
+      "markBlockedBy": "차단됨으로 표시",
+      "markRelated": "관련됨으로 표시",
+      "markDuplicateOf": "중복됨으로 표시",
+      "diffView": {
+        "switchToSplit": "양쪽 보기로 전환",
+        "switchToInline": "인라인 보기로 전환",
+        "tooltipInline": "인라인 보기",
+        "tooltipSplit": "양쪽 보기"
+      },
+      "whitespace": {
+        "show": "공백 변경 표시",
+        "ignore": "공백 변경 무시"
+      },
+      "lineWrap": {
+        "disable": "줄 바꿈 비활성화",
+        "enable": "줄 바꿈 활성화"
+      },
+      "leftSidebar": {
+        "hide": "왼쪽 사이드바 숨기기",
+        "show": "왼쪽 사이드바 표시"
+      },
+      "rightSidebar": {
+        "hide": "오른쪽 사이드바 숨기기",
+        "show": "오른쪽 사이드바 표시"
+      },
+      "chatPanel": {
+        "toggle": "채팅 패널 전환",
+        "hide": "채팅 패널 숨기기",
+        "show": "채팅 패널 표시"
+      },
+      "changesPanel": {
+        "toggle": "변경 패널 전환",
+        "hide": "변경 패널 숨기기",
+        "show": "변경 패널 표시"
+      },
+      "logsPanel": {
+        "toggle": "로그 패널 전환",
+        "hide": "로그 패널 숨기기",
+        "show": "로그 패널 표시"
+      },
+      "previewPanel": {
+        "toggle": "미리보기 패널 전환",
+        "hide": "미리보기 패널 숨기기",
+        "show": "미리보기 패널 표시"
+      },
+      "toggleAllDiffsTooltip": {
+        "collapse": "모든 차이점 접기",
+        "expand": "모든 차이점 펼치기"
+      }
+    }
+  },
+  "workspacesGuide": {
+    "welcome": {
+      "title": "환영합니다",
+      "content": "Vibe Kanban의 새롭게 디자인된 UI인 세션에 오신 것을 환영합니다. 초기 피드백을 위해 일부 사용자에게 먼저 공개하고 있습니다. 네비게이션 바의 피드백 아이콘을 통해 언제든지 의견을 공유해 주세요."
+    },
+    "commandBar": {
+      "title": "명령 바",
+      "content": "명령 바는 탐색의 중심 허브입니다. CMD+K로 열어 세션에서 사용 가능한 모든 작업을 검색하고 접근할 수 있습니다."
+    },
+    "contextBar": {
+      "title": "컨텍스트 바",
+      "content": "컨텍스트 바를 사용하면 패널 간에 빠르게 전환할 수 있습니다. 가장 편한 위치로 드래그하세요."
+    },
+    "sidebar": {
+      "title": "세션 사이드바",
+      "content": "모든 세션의 상태를 한눈에 확인할 수 있습니다. 알림은 주의가 필요한 세션을 강조 표시합니다. 병합된 세션을 보관하여 사이드바를 깔끔하게 유지하세요."
+    },
+    "multiRepo": {
+      "title": "멀티 저장소 지원",
+      "content": "단일 세션에 여러 저장소를 추가할 수 있습니다. 다른 저장소에서 작업하면서 한 저장소의 코드를 참조하거나 여러 저장소에 걸쳐 변경 사항을 동시에 구현할 수 있습니다."
+    },
+    "sessions": {
+      "title": "다중 세션",
+      "content": "단일 세션 내에서 다른 에이전트와의 세션을 포함하여 여러 에이전트 대화 세션을 만들 수 있습니다. 이를 통해 대화 제한을 우회하거나 별도의 스레드에서 검토 에이전트를 시작할 수 있습니다."
+    },
+    "preview": {
+      "title": "변경 사항 미리보기",
+      "content": "컨텍스트 전환 없이 내장 브라우저에서 작업을 미리 볼 수 있습니다. 데스크톱, 모바일 및 사용자 지정 뷰포트 크기에서 테스트할 수 있습니다."
+    },
+    "diffs": {
+      "title": "변경 사항 및 코멘트",
+      "content": "새롭게 디자인된 변경 사항 패널에는 변경된 파일 트리가 포함되어 있습니다. 변경 사항에 직접 코멘트하여 에이전트에게 피드백을 제공하고, 세션이 PR에 연결된 경우 GitHub 코멘트를 볼 수 있습니다."
+    },
+    "classicUi": {
+      "title": "클래식 UI로 돌아가기",
+      "content": "네비게이션 바 왼쪽의 나가기 아이콘을 클릭하면 클래식 칸반 보드로 돌아갑니다. 새 UI를 완전히 비활성화하려면 설정의 \"베타 기능\"에서 \"세션 베타 활성화\" 옵션을 업데이트하세요."
+    }
+  },
+  "logs": {
+    "searchLogs": "로그 검색",
+    "selectProcessToView": "로그를 보려면 프로세스를 선택하세요"
+  },
+  "processes": {
+    "noProcesses": "프로세스 없음",
+    "terminal": "터미널"
+  },
+  "search": {
+    "matchCount": "{{current}} / {{total}}",
+    "noMatches": "일치 항목 없음"
+  },
+  "contextUsage": {
+    "label": "컨텍스트 사용량",
+    "emptyTooltip": "컨텍스트 사용량은 다음 응답 후에 표시됩니다",
+    "tooltip": "컨텍스트: {{percentage}}% · {{used}} / {{total}} 토큰",
+    "ariaLabel": "컨텍스트 사용량: {{percentage}}%"
+  },
+  "shortcuts": {
+    "title": "키보드 단축키",
+    "inWorkspace": "(세션 내)",
+    "sequentialHint": "순차 단축키: 첫 번째 키를 누른 후 500ms 이내에 두 번째 키를 누르세요.",
+    "configurableHint": "설정 → 일반 → 메시지 입력에서 설정 가능",
+    "groups": {
+      "quickActions": "빠른 작업",
+      "navigation": "탐색",
+      "modifiers": "수정 키",
+      "goTo": "이동 (G ...)",
+      "workspace": "세션 (W ...)",
+      "view": "보기 (V ...)",
+      "issues": "이슈 (I ...)",
+      "git": "Git (X ...)",
+      "yank": "복사 (Y ...)",
+      "toggle": "전환 (T ...)",
+      "run": "실행 (R ...)"
+    },
+    "actions": {
+      "showHelp": "도움말 표시",
+      "closeCancel": "닫기/취소",
+      "createNewTask": "새 작업 만들기",
+      "deleteSelected": "선택 항목 삭제",
+      "focusSearch": "검색에 포커스",
+      "moveDown": "아래로 이동",
+      "moveUp": "위로 이동",
+      "moveLeft": "왼쪽으로 이동",
+      "moveRight": "오른쪽으로 이동",
+      "openCommandBar": "명령 바 열기",
+      "formatInlineCode": "Format inline code",
+      "sendMessage": "메시지 보내기",
+      "settings": "설정으로 이동",
+      "new-workspace": "새 세션으로 이동",
+      "duplicate-workspace": "세션 복제",
+      "rename-workspace": "세션 이름 변경",
+      "pin-workspace": "세션 고정/해제",
+      "archive-workspace": "세션 보관",
+      "delete-workspace": "세션 삭제",
+      "toggle-changes-mode": "변경사항 패널 전환",
+      "toggle-logs-mode": "로그 패널 전환",
+      "toggle-preview-mode": "미리보기 패널 전환",
+      "toggle-left-sidebar": "왼쪽 사이드바 전환",
+      "toggle-left-main-panel": "채팅 패널 전환",
+      "create-issue": "이슈 만들기",
+      "change-issue-status": "상태 변경",
+      "change-issue-priority": "우선순위 변경",
+      "change-assignees": "담당자 변경",
+      "make-sub-issue-of": "하위 이슈로 설정",
+      "add-sub-issue": "하위 이슈 추가",
+      "remove-parent-issue": "상위 이슈 해제",
+      "link-workspace": "세션 연결",
+      "duplicate-issue": "이슈 복제",
+      "delete-issue": "이슈 삭제",
+      "git-create-pr": "Pull Request 만들기",
+      "git-merge": "브랜치 병합",
+      "git-rebase": "브랜치 리베이스",
+      "git-push": "변경사항 푸시",
+      "copy-path": "경로 복사",
+      "copy-raw-logs": "원본 로그 복사",
+      "toggle-dev-server": "개발 서버 전환",
+      "toggle-wrap-lines": "줄 바꿈 전환",
+      "run-setup-script": "설정 스크립트 실행",
+      "run-cleanup-script": "정리 스크립트 실행",
+      "run-archive-script": "보관 스크립트 실행"
+    }
+  },
+  "typeahead": {
+    "tags": "태그",
+    "files": "파일",
+    "commands": "명령어",
+    "chooseRepo": "저장소 선택",
+    "selectedRepo": "선택된 저장소: {{repoName}}",
+    "missingRepo": "선택한 저장소를 더 이상 사용할 수 없습니다.",
+    "noTagsOrFiles": "태그 또는 파일을 찾을 수 없습니다",
+    "createTag": "새 태그 만들기",
+    "noCommands": "이 에이전트에 사용 가능한 명령어가 없습니다.",
+    "loadingCommands": "명령어 불러오는 중…",
+    "discoveringCommands": "명령어 검색 중…"
+  },
+  "kanban": {
+    "noVisibleStatuses": "모든 상태가 숨겨져 있습니다. 표시 설정을 사용하거나 다른 탭으로 전환하여 이슈를 확인하세요.",
+    "noProjectFound": "프로젝트를 찾을 수 없습니다",
+    "unassigned": "미할당",
+    "noTagsAvailable": "사용 가능한 태그 없음",
+    "createNewIssue": "새 이슈 만들기",
+    "searchTags": "태그 검색...",
+    "selectColorFor": "색상 선택:",
+    "createTag": "만들기",
+    "noPrCreated": "PR이 생성되지 않음",
+    "noCommentsYet": "아직 댓글이 없습니다",
+    "createdBy": "작성자",
+    "comments": "댓글",
+    "enterCommentPlaceholder": "댓글을 입력하세요...",
+    "attachFile": "파일 첨부",
+    "attachFileHint": "파일 첨부 (파일당 최대 20MB)",
+    "dropFilesHere": "여기에 파일을 놓으세요",
+    "fileDropHint": "모든 파일 형식, 최대 20MB",
+    "unknownUser": "알 수 없는 사용자",
+    "deletedUser": "삭제된 사용자",
+    "replyQuotePrefix": "님이 작성:",
+    "moreActions": "추가 작업",
+    "closePanel": "패널 닫기",
+    "copyLink": "링크 복사",
+    "issueTitlePlaceholder": "이슈 제목...",
+    "issueDescriptionPlaceholder": "작업 설명을 입력하세요...",
+    "createDraftWorkspaceImmediately": "초안 세션을 즉시 생성",
+    "createDraftWorkspaceDescription": "이슈를 생성한 후, 이슈 세부 정보가 미리 입력된 세션 생성 양식을 엽니다",
+    "createIssue": "작업 생성",
+    "newIssue": "새 이슈",
+    "previewCodeBlock": "[코드 블록]",
+    "previewImage": "[이미지]",
+    "previewImageWithName": "[이미지: {{name}}]",
+    "previewFile": "[파일]",
+    "previewFileWithName": "[파일: {{name}}]",
+    "imageAttachmentNameFallback": "첨부파일",
+    "removeImage": "이미지 제거",
+    "maxFilesAtOnce": "한 번에 최대 {{count}}개의 파일만 업로드할 수 있습니다",
+    "fileExceedsLimit": "파일 {{filename}} 이(가) 20MB 제한을 초과했습니다",
+    "unknownError": "알 수 없는 오류",
+    "failedToUploadFile": "{{filename}} 업로드 실패: {{message}}",
+    "downloadAttachment": "첨부파일 다운로드",
+    "subIssues": "하위 이슈",
+    "noSubIssues": "하위 이슈 없음",
+    "markIndependentIssue": "독립 이슈로 표시",
+    "parentIssue": "상위",
+    "subIssueIndicator": "↳",
+    "viewTabs": {
+      "active": "활성",
+      "all": "전체"
+    },
+    "loginRequired": {
+      "title": "로그인 필요",
+      "description": "이 프로젝트를 보려면 로그인하세요.",
+      "action": "로그인"
+    },
+    "team": "Team",
+    "personal": "Personal",
+    "searchPlaceholder": "Search issues...",
+    "filters": "Filters",
+    "clearFilters": "Clear filters",
+    "filtersDescription": "Adjust filters and sorting for this board view.",
+    "filterByTag": "Filter by tag",
+    "filterByPriority": "Filter by priority",
+    "tags": "Tags",
+    "sortBy": "Sort",
+    "workspaceSidebar": {
+      "sortDialogTitle": "Sort 세션",
+      "sortDialogDescription": "Choose how 세션 are ordered in the sidebar.",
+      "sortByLabel": "Sort by",
+      "sortOrderLabel": "Sort order",
+      "sortUpdatedAt": "Updated at",
+      "sortCreatedAt": "Created at",
+      "filterDialogTitle": "Filter 세션",
+      "filterDialogDescription": "Narrow down 세션 by project and PR state.",
+      "projectFilterLabel": "Project",
+      "prFilterLabel": "PR",
+      "prFilterAll": "All",
+      "prFilterHasPr": "Has PR",
+      "prFilterNoPr": "No PR",
+      "noProject": "No project",
+      "sortButtonTitle": "Sort 세션",
+      "filterButtonTitle": "Filter 세션"
+    },
+    "sortAscending": "Ascending",
+    "sortDescending": "Descending",
+    "assignee": "Assignee",
+    "self": "Me",
+    "priority": "Priority",
+    "subIssuesFilterLabel": "Sub-issues",
+    "workspacesFilterLabel": "세션",
+    "selectAssignees": "Select assignees...",
+    "relationships": "Relationships",
+    "noRelationships": "No relationships",
+    "openProjectsGuide": "Projects guide",
+    "editProjectSettings": "Edit project settings",
+    "linkWorkspace": "Link 세션...",
+    "createNewWorkspace": "Create new 세션",
+    "workspaces": "세션",
+    "showingWorkspaces": "Showing {{count}} of {{total}}",
+    "changeColor": "Change color",
+    "editName": "Edit name",
+    "deleteStatus": "Delete status",
+    "cannotDeleteWithIssues": "Move issues first",
+    "lastVisibleStatus": "At least one status must be visible",
+    "showStatus": "Show status",
+    "hideStatus": "Hide status",
+    "newStatus": "New Status",
+    "visibleColumns": "Visible Columns",
+    "dragToRearrange": "Drag to re-arrange",
+    "addColumn": "Add column",
+    "projectsGuide": {
+      "intro": {
+        "title": "Welcome",
+        "content": "Welcome to Vibe Kanban. Use the help sections in this panel to learn how things work, then create your first issue. You can re-open this help dialog or give feedback anytime from the navbar."
+      },
+      "welcome": {
+        "title": "Projects",
+        "content": "The project page is where you manage issues. You can view your issues as a kanban board, or as a list, and filter by status, tag, assignee and more."
+      },
+      "issues": {
+        "title": "Issues",
+        "content": "Each issue represents a feature or problem to solve. Issues have statuses, priorities, assignees, tags, relationships, comments, sub-issues and more."
+      },
+      "workspaces": {
+        "title": "세션",
+        "content": "To start working on an issue, create a 세션. A single issue can have multiple 세션. Issues describe the work to be done, 세션 are where the work happens."
+      },
+      "organizations": {
+        "title": "Invite your team",
+        "content": "We've automatically created a personal organization and initial project so you can get started with Vibe Kanban. Export your cloud data before shutdown."
+      }
+    }
+  },
+  "createMode": {
+    "headings": {
+      "repoStep": "어떤 리포지토리에서 작업하시겠어요?",
+      "chatStep": "무엇을 작업하시겠어요?"
+    },
+    "repoPicker": {
+      "actions": {
+        "recent": "최근",
+        "browse": "찾아보기",
+        "create": "생성"
+      },
+      "setupHintTitle": "설정 스크립트",
+      "setupHint": "팁: 이 저장소의 설정 스크립트를 설정 → 저장소에서 구성하세요",
+      "setupHintDismiss": "닫기",
+      "setupHintLink": "Configure in Settings"
+    },
+    "composerChips": {
+      "addFolderMenuItem": "폴더 추가",
+      "openFolder": "폴더 열기…",
+      "pickBranch": "브랜치 선택",
+      "pickFolderPlaceholder": "폴더를 선택하세요…",
+      "recentsEmpty": "최근 폴더가 없습니다",
+      "removeFolderAction": "제거",
+      "worktreeChip": "Worktree"
+    },
+    "placeholder": {
+      "typeForCommands": "/를 입력하여 명령어 사용"
+    },
+    "landing": {
+      "welcomeBack": "다시 오신 것을 환영합니다",
+      "recentSessions": "최근 세션",
+      "sessionsAwaitingInput_one": "{{count}}개의 세션이 입력을 기다리고 있습니다",
+      "sessionsAwaitingInput_other": "{{count}}개의 세션이 입력을 기다리고 있습니다",
+      "whatToWorkOn": "무엇을 작업하시겠습니까?",
+      "status": {
+        "awaitingInput": "입력 대기 중",
+        "running": "실행 중",
+        "failed": "실패"
+      }
+    }
+  },
+  "modelSelector": {
+    "preset": "프리셋",
+    "custom": "사용자 정의",
+    "permissions": "권한",
+    "permissionAuto": "자동 모드",
+    "permissionAsk": "권한 확인",
+    "permissionPlan": "계획 모드",
+    "permissionAcceptEdits": "편집 수락",
+    "permissionBypass": "권한 우회",
+    "agent": "에이전트",
+    "default": "기본값",
+    "model": "모델"
+  },
+  "crashScreen": {
+    "title": "문제가 발생했습니다",
+    "description": "애플리케이션에서 예기치 않은 오류가 발생했습니다.",
+    "reload": "새로고침",
+    "showDetails": "세부정보 표시",
+    "hideDetails": "세부정보 숨기기"
+  },
+  "syncError": {
+    "networkErrors": "네트워크 오류",
+    "streamsAffected": "{{count}}개 스트림이 영향을 받음",
+    "streamsAffected_other": "{{count}}개 스트림이 영향을 받음",
+    "status": "(상태 {{status}})",
+    "refreshPage": "페이지 새로고침",
+    "remoteAuthUnavailable": "원격 인증을 일시적으로 사용할 수 없습니다. 복구될 때까지 일부 원격 기능이 작동하지 않을 수 있습니다."
+  },
+  "onboardingSignIn": {
+    "subtitle": "Sign in to continue",
+    "signedInAs": "Signed in as {{name}}.",
+    "moreOptions": "More options",
+    "featureHeader": "Feature",
+    "signedInHeader": "Signed in",
+    "skipSignInHeader": "Don't sign in",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "appBar": {
+    "kanban": {
+      "tooltip": "프로젝트를 보려면 로그인하세요",
+      "title": "칸반 보드",
+      "description": "로그인하여 칸반 보드로 코딩 에이전트를 정리하세요."
+    }
+  },
+  "errors": {
+    "generic": "An unexpected error occurred"
+  },
+  "personal": "Personal",
+  "askQuestion": {
+    "title": "에이전트가 질문하고 있습니다",
+    "selectMultiple": "복수 선택",
+    "confirmSelection": "선택 확인",
+    "submitting": "답변 제출 중...",
+    "answeredCount": "{{count}}개의 질문에 답변함",
+    "answeredCount_other": "{{count}}개의 질문에 답변함"
+  },
+  "sidebar": {
+    "footer": {
+      "themeToggle": {
+        "aria": "{{mode}} 모드로 전환"
+      }
+    },
+    "hideSidebar": {
+      "aria": "사이드바 숨기기"
+    },
+    "kebab": {
+      "pin": "세션 고정",
+      "unpin": "세션 고정 해제"
+    },
+    "newSession": "새 세션",
+    "newSessionInFolder": "{{folder}}에 새 세션",
+    "pinned": {
+      "emptyHint": "각 세션 메뉴에서 고정하면 여기에 표시됩니다.",
+      "sectionHeader": "고정됨",
+      "dropHint": "여기에 놓아 고정"
+    },
+    "search": {
+      "collapse": {
+        "aria": "검색 닫기"
+      },
+      "open": {
+        "aria": "세션 검색"
+      }
+    },
+    "theme": {
+      "dark": "다크",
+      "light": "라이트"
+    },
+    "controlPanel": {
+      "openMenu": "제어판 열기",
+      "theme": {
+        "label": "테마",
+        "light": "라이트",
+        "dark": "다크",
+        "system": "시스템에 맞춤"
+      },
+      "settings": "설정",
+      "viewArchive": "보관함 보기"
+    }
+  },
+  "navbar": {
+    "board": "보드",
+    "mobileTabs": {
+      "workspaces": "세션",
+      "chat": "채팅",
+      "changes": "차이",
+      "logs": "로그",
+      "preview": "미리보기",
+      "git": "Git"
+    }
+  },
+  "time": {
+    "short": {
+      "now": "지금",
+      "minutes": "{{count}}분",
+      "hours": "{{count}}시간",
+      "days": "{{count}}일"
+    }
+  },
+  "panels": {
+    "changes": "변경 사항",
+    "logs": "로그",
+    "preview": "미리보기",
+    "git": "Git",
+    "terminal": "터미널",
+    "openPanelMenu": "패널 메뉴 열기",
+    "closePanel": "{{panel}} 패널 닫기"
+  },
+  "routines": {
+    "title": "루틴",
+    "subtitle": "일정에 따라 또는 수동으로 실행되는 템플릿 루틴을 만듭니다.",
+    "banner": "로컬 루틴은 컴퓨터가 켜져 있는 동안에만 실행됩니다.",
+    "newButton": "새 루틴",
+    "newPageTitle": "새 로컬 루틴",
+    "empty": "아직 루틴이 없습니다.",
+    "runNow": "지금 실행",
+    "edit": "편집",
+    "delete": "삭제",
+    "deleteConfirmTitle": "루틴 삭제",
+    "deleteConfirm": "루틴 \"{{name}}\"과(와) 실행 {{count}}건({{count}}개 세션 및 worktree)을 삭제하시겠습니까?",
+    "nextRun": "다음 실행 {{when}}",
+    "nextRunNever": "예정된 실행 없음",
+    "lastRun": "마지막 실행 {{when}}",
+    "neverRun": "실행된 적 없음",
+    "history": {
+      "title": "기록",
+      "empty": "아직 실행 기록이 없습니다."
+    },
+    "sections": {
+      "description": "설명",
+      "status": "상태",
+      "folder": "폴더",
+      "repeats": "반복",
+      "instructions": "지시사항"
+    },
+    "status": {
+      "pending": "대기 중",
+      "running": "실행 중",
+      "done": "완료",
+      "skipped": "건너뜀",
+      "failed": "실패"
+    },
+    "skipReason": {
+      "appOffline": "앱이 오프라인 상태였습니다",
+      "prevStillRunning": "이전 실행이 아직 진행 중입니다"
+    },
+    "enabled": "사용",
+    "disabled": "사용 안 함",
+    "fields": {
+      "name": "이름",
+      "namePlaceholder": "이 루틴의 짧은 이름",
+      "description": "설명",
+      "descriptionPlaceholder": "이 루틴은 어떤 작업을 하나요?",
+      "instructions": "지시사항",
+      "instructionsPlaceholder": "각 실행 시 에이전트에 전송되는 프롬프트입니다.",
+      "folder": "폴더",
+      "folderPlaceholder": "폴더 선택",
+      "currentBranch": "현재 브랜치",
+      "worktree": "worktree 사용",
+      "executor": "에이전트",
+      "variant": "프리셋",
+      "model": "모델",
+      "permission": "권한",
+      "schedule": "일정",
+      "time": "시간",
+      "minute": "분",
+      "dow": "요일"
+    },
+    "schedule": {
+      "manual": "수동",
+      "hourly": "매시간",
+      "daily": "매일",
+      "weekdays": "평일",
+      "weekly": "매주",
+      "summary": {
+        "manual": "수동 실행만",
+        "hourly": "매시 :{{minute}}분",
+        "hourlyNoTime": "매시",
+        "daily": "매일 {{time}}",
+        "dailyNoTime": "매일",
+        "weekdays": "월–금 {{time}}",
+        "weekdaysNoTime": "월–금",
+        "weekly": "매주 {{day}} {{time}}",
+        "weeklyDayOnly": "매주 {{day}}",
+        "weeklyAt": "매주 {{time}}",
+        "weeklyNoTime": "매주"
+      }
+    },
+    "days": {
+      "sun": "일요일",
+      "mon": "월요일",
+      "tue": "화요일",
+      "wed": "수요일",
+      "thu": "목요일",
+      "fri": "금요일",
+      "sat": "토요일"
+    },
+    "form": {
+      "submitCreate": "루틴 만들기",
+      "submitSave": "저장",
+      "cancel": "취소",
+      "validation": {
+        "nameRequired": "이름은 필수입니다",
+        "descriptionRequired": "설명은 필수입니다",
+        "instructionsRequired": "지시사항은 필수입니다",
+        "folderRequired": "폴더를 선택하세요",
+        "modelRequired": "모델을 선택하세요",
+        "permissionRequired": "권한 정책을 선택하세요",
+        "timeRequired": "시간을 선택하세요",
+        "minuteRequired": "분을 선택하세요",
+        "dowRequired": "요일을 선택하세요"
+      }
+    },
+    "sidebar": {
+      "nav": "루틴"
+    }
+  }
+}

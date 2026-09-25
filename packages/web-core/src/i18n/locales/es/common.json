@@ -1,0 +1,936 @@
+{
+  "editorNames": {
+    "custom": "Personalizado"
+  },
+  "folderPicker": {
+    "defaultTitle": "Seleccionar carpeta",
+    "defaultDescription": "Elige una carpeta para tu proyecto",
+    "legend": "Haz clic en los nombres de carpetas para navegar • Usa los botones de acción para seleccionar",
+    "manualPathLabel": "Ingresar ruta manualmente:",
+    "go": "Ir",
+    "searchLabel": "Buscar en el directorio actual:",
+    "filterPlaceholder": "Filtrar carpetas y archivos...",
+    "selectCurrent": "Seleccionar actual",
+    "gitRepo": "repositorio git",
+    "selectPath": "Seleccionar ruta"
+  },
+  "branchSelector": {
+    "badges": {
+      "current": "actual",
+      "remote": "remota"
+    },
+    "currentDisabled": "No se puede seleccionar la rama actual",
+    "empty": "No se encontraron ramas",
+    "placeholder": "Seleccionar una rama",
+    "searchPlaceholder": "Buscar ramas..."
+  },
+  "buttons": {
+    "cancel": "Cancelar",
+    "close": "Cerrar",
+    "connect": "Conectar",
+    "continue": "Continuar",
+    "create": "Crear",
+    "delete": "Eliminar",
+    "disconnect": "Desconectar",
+    "discard": "Descartar",
+    "edit": "Editar",
+    "manage": "Gestionar",
+    "replay": "Reproducir",
+    "reset": "Restablecer",
+    "save": "Guardar",
+    "send": "Enviar",
+    "addItem": "Añadir elemento",
+    "reply": "Responder",
+    "retry": "Retry",
+    "add": "Agregar"
+  },
+  "form": {
+    "notSpecified": "No especificado",
+    "selectOption": "Seleccionar una opción..."
+  },
+  "conversation": {
+    "deniedByUser": "{{toolName}} denegado por el usuario",
+    "output": "Salida",
+    "plan": "Plan",
+    "tool": "Herramienta",
+    "thinking": "Pensando",
+    "toolSummary": {
+      "read": "Leyó {{path}}",
+      "searched": "Buscó \"{{query}}\"",
+      "fetched": "Obtuvo {{url}}",
+      "ranCommand": "Ejecutó comando",
+      "createdTask": "Creó tarea: {{description}}",
+      "todoOperation": "{{operation}} tareas pendientes"
+    },
+    "aggregated": {
+      "label": {
+        "read": "Leer",
+        "search": "Buscar",
+        "fetched": "Obtenido",
+        "edit": "Editar",
+        "fetch": "Obtener"
+      },
+      "unit": {
+        "file_one": "{{count}} archivo",
+        "file_other": "{{count}} archivos",
+        "command_one": "{{count}} comando",
+        "command_other": "{{count}} comandos",
+        "url_one": "{{count}} URL",
+        "url_other": "{{count}} URL"
+      }
+    },
+    "subagent": {
+      "defaultType": "Subagente"
+    },
+    "loadingEarlierMessages": "Cargando mensajes anteriores",
+    "emptyTitle": "Envía un mensaje para iniciar la conversación.",
+    "emptyDescription": "La conversación de tu sesión aparecerá aquí cuando comience un nuevo turno.",
+    "toolName": {
+      "Skill": "Habilidad"
+    }
+  },
+  "changesPanel": {
+    "notGitRepo": "No es un repositorio Git — sin diff disponible"
+  },
+  "language": {
+    "browserDefault": "Predeterminado del navegador"
+  },
+  "states": {
+    "loading": "Cargando..."
+  },
+  "orgSwitcher": {
+    "organizations": "Organizaciones",
+    "orgSettings": "Configuración de la organización"
+  },
+  "ok": "OK",
+  "error": "Error",
+  "signIn": "Iniciar sesión",
+  "signOut": "Cerrar sesión",
+  "oauth": {
+    "title": "Iniciar sesión en Vibe Kanban",
+    "description": "Inicia sesión para unirte a organizaciones y compartir tareas con tu equipo",
+    "continueWithGitHub": "Continuar con GitHub",
+    "continueWithGoogle": "Continuar con Google",
+    "waitingTitle": "Completar Autenticación",
+    "waitingDescription": "Se ha abierto una ventana emergente para la autenticación",
+    "waitingForAuth": "Esperando autenticación...",
+    "popupInstructions": "Si la ventana emergente no se abrió, por favor revisa la configuración de bloqueo de ventanas emergentes.",
+    "back": "Atrás",
+    "successTitle": "¡Autenticación exitosa!",
+    "welcomeBack": "Bienvenido de nuevo, {{name}}",
+    "errorTitle": "Falló la autenticación",
+    "errorDescription": "Hubo un problema al autenticar tu cuenta",
+    "tryAgain": "Intentar de nuevo"
+  },
+  "toolbar": {
+    "sortBy": "Ordenar por",
+    "groupBy": "Agrupar por"
+  },
+  "sorting": {
+    "ascending": "Ascendente",
+    "descending": "Descendente"
+  },
+  "grouping": {
+    "date": "Fecha",
+    "assignee": "Asignado",
+    "label": "Etiqueta"
+  },
+  "workspaces": {
+    "title": "Sesiones",
+    "searchPlaceholder": "Buscar...",
+    "active": "Activo",
+    "archived": "Archivado",
+    "loading": "Cargando...",
+    "notFound": "Sesión no encontrada",
+    "selectToStart": "Selecciona una sesión para comenzar",
+    "draft": "Borrador",
+    "viewArchive": "Ver archivo",
+    "backToActive": "Volver a activos",
+    "noArchived": "No hay sesiones archivadas",
+    "noWorkspaces": "Sin sesiones",
+    "newWorkspace": "Nueva sesión",
+    "needsAttention": "Necesita Atención",
+    "idle": "Inactivo",
+    "running": "En Ejecución",
+    "pin": "Fijar",
+    "unpin": "Desfijar",
+    "archive": "Archivar",
+    "more": "Más acciones",
+    "rename": {
+      "title": "Renombrar sesión",
+      "description": "Ingresa un nuevo nombre para esta sesión.",
+      "nameLabel": "Nombre",
+      "placeholder": "Ingresa el nombre de la sesión",
+      "action": "Renombrar",
+      "renaming": "Renombrando..."
+    },
+    "unlinkFromIssue": "Desvincular del problema",
+    "deleteWorkspace": "Eliminar sesión",
+    "unlink": "Desvincular",
+    "delete": "Eliminar",
+    "unlinkConfirmMessage": "¿Estás seguro de que deseas desvincular esta sesión del problema? La sesión seguirá existiendo pero ya no estará asociada con este problema.",
+    "deleteConfirmMessage": "¿Estás seguro de que deseas eliminar esta sesión? Esto lo desvinculará del problema y eliminará la sesión local. Esta acción no se puede deshacer.",
+    "unlinkError": "Error al desvincular la sesión",
+    "deleteError": "Error al eliminar la sesión",
+    "branchRequiredError": "Selecciona una rama para cada repositorio antes de crear una sesión",
+    "filesChanged": "{{count}} archivos",
+    "deleteDialog": {
+      "title": "Eliminar sesión",
+      "description": "¿Estás seguro de que deseas eliminar esta sesión? Esta acción no se puede deshacer.",
+      "deleteBranchLabel": "Eliminar rama",
+      "cannotDeleteOpenPr": "No se puede eliminar la rama mientras el PR está abierto",
+      "unlinkFromIssueLabel": "También desvincular del issue"
+    },
+    "linkError": "Failed to link sesión"
+  },
+  "fileTree": {
+    "searchPlaceholder": "Buscar archivos...",
+    "noResults": "No hay archivos coincidentes",
+    "title": "Archivos",
+    "showGitHubComments": "Mostrar comentarios de GitHub",
+    "hideGitHubComments": "Ocultar comentarios de GitHub",
+    "prevGitHubComment": "Archivo anterior con comentarios",
+    "nextGitHubComment": "Siguiente archivo con comentarios"
+  },
+  "sections": {
+    "changes": "Cambios",
+    "repositories": "Repositorios",
+    "addRepositories": "Agregar repositorios",
+    "project": "Proyecto",
+    "processes": "Procesos",
+    "devServer": "Servidor de desarrollo",
+    "advanced": "Avanzado",
+    "workingBranch": "Rama de trabajo",
+    "recent": "Reciente",
+    "other": "Otro",
+    "devServerPreview": "Vista previa del servidor de desarrollo",
+    "terminal": "Terminal",
+    "notes": "Notas"
+  },
+  "notes": {
+    "placeholder": "Agregar notas sobre esta sesión...",
+    "selectWorkspace": "Selecciona una sesión para ver notas"
+  },
+  "actions": {
+    "copyPath": "Copiar ruta",
+    "cancel": "Cancelar",
+    "saveChanges": "Guardar cambios",
+    "copied": "Copiado",
+    "collapse": "Contraer"
+  },
+  "comments": {
+    "addReviewComment": "Agregar comentario de revisión",
+    "addPlaceholder": "Agregar un comentario...",
+    "editPlaceholder": "Editar comentario...",
+    "copyToReview": "Copiar a revisión"
+  },
+  "confirm": {
+    "defaultConfirm": "Confirmar",
+    "defaultCancel": "Cancelar"
+  },
+  "dialogs": {
+    "selectGitRepository": "Seleccionar carpeta",
+    "chooseExistingRepo": "Elige una carpeta existente de tu sistema de archivos",
+    "errorTitle": "Error"
+  },
+  "empty": {
+    "noChanges": "No hay cambios para mostrar"
+  },
+  "turnNavigation": {
+    "title": "Tus mensajes",
+    "count_one": "{{count}} turno",
+    "count_other": "{{count}} turnos"
+  },
+  "commandBar": {
+    "noResults": "No se encontraron resultados.",
+    "back": "Atrás",
+    "defaultPlaceholder": "Escribe un comando o busca...",
+    "selectBranch": "Select Branch",
+    "selectBranchFor": "Select Branch for {{repoName}}",
+    "pages": {
+      "root": {
+        "groups": {
+          "actions": "Acciones",
+          "view": "Ver",
+          "general": "General"
+        }
+      },
+      "workspaceActions": {
+        "title": "Acciones de sesión",
+        "groups": {
+          "session": "Sesión",
+          "scripts": "Scripts"
+        }
+      },
+      "repoActions": {
+        "title": "Acciones de repositorio",
+        "groups": {
+          "actions": "Acciones"
+        }
+      },
+      "diffOptions": {
+        "title": "Opciones de diferencias",
+        "groups": {
+          "display": "Visualización"
+        }
+      },
+      "viewOptions": {
+        "title": "Opciones de vista",
+        "groups": {
+          "panels": "Paneles"
+        }
+      },
+      "issueActions": {
+        "title": "Acciones de incidencia",
+        "groups": {
+          "actions": "Acciones"
+        }
+      }
+    },
+    "actions": {
+      "startReview": "Iniciar revisión",
+      "rename": "Renombrar",
+      "duplicate": "Duplicar",
+      "spinOff": "Derivar sesión",
+      "archive": "Archivar",
+      "unarchive": "Desarchivar",
+      "delete": "Eliminar",
+      "runSetupScript": "Ejecutar script de configuración",
+      "runCleanupScript": "Ejecutar script de limpieza",
+      "runArchiveScript": "Ejecutar script de archivo",
+      "newWorkspace": "Nueva sesión",
+      "createWorkspaceFromPr": "Crear sesión desde PR",
+      "settings": "Configuración",
+      "projectSettings": "Configuración del proyecto",
+      "signIn": "Iniciar sesión",
+      "signOut": "Cerrar sesión",
+      "giveFeedback": "Enviar comentarios",
+      "workspacesGuide": "Guía de sesiones",
+      "projectsGuide": "Guía de proyectos",
+      "openCommandBar": "Abrir barra de comandos",
+      "toggleAllDiffs": "Alternar todas las diferencias",
+      "openInIde": "Abrir en IDE",
+      "openInIdeTooltip": "Abrir en {{ide}}",
+      "copyWorkspacePath": "Copiar ruta de la sesión",
+      "copyRawLogs": "Copiar registros sin formato",
+      "devServer": "Servidor de desarrollo",
+      "startDevServer": "Iniciar servidor de desarrollo",
+      "stopDevServer": "Detener servidor de desarrollo",
+      "devServerTooltip": {
+        "start": "Iniciar servidor de desarrollo",
+        "stop": "Detener servidor de desarrollo",
+        "starting": "Iniciando servidor de desarrollo...",
+        "stopping": "Deteniendo servidor de desarrollo..."
+      },
+      "createIssue": "Crear incidencia",
+      "changeStatus": "Cambiar estado",
+      "changePriority": "Cambiar prioridad",
+      "changeAssignees": "Cambiar asignados",
+      "makeSubIssueOf": "Convertir en subincidencia de",
+      "addSubIssue": "Añadir subincidencia",
+      "createSubIssue": "Crear subincidencia",
+      "removeParent": "Eliminar padre",
+      "linkWorkspace": "Vincular sesión",
+      "deleteIssue": "Eliminar incidencia",
+      "duplicateIssue": "Duplicar incidencia",
+      "markBlocking": "Marcar como bloqueante",
+      "markBlockedBy": "Marcar como bloqueada por",
+      "markRelated": "Marcar como relacionada",
+      "markDuplicateOf": "Marcar como duplicada de",
+      "diffView": {
+        "switchToSplit": "Cambiar a vista lado a lado",
+        "switchToInline": "Cambiar a vista en línea",
+        "tooltipInline": "Vista en línea",
+        "tooltipSplit": "Vista lado a lado"
+      },
+      "whitespace": {
+        "show": "Mostrar cambios de espacios en blanco",
+        "ignore": "Ignorar cambios de espacios en blanco"
+      },
+      "lineWrap": {
+        "disable": "Desactivar ajuste de línea",
+        "enable": "Activar ajuste de línea"
+      },
+      "leftSidebar": {
+        "hide": "Ocultar barra lateral izquierda",
+        "show": "Mostrar barra lateral izquierda"
+      },
+      "rightSidebar": {
+        "hide": "Ocultar barra lateral derecha",
+        "show": "Mostrar barra lateral derecha"
+      },
+      "chatPanel": {
+        "toggle": "Alternar panel de chat",
+        "hide": "Ocultar panel de chat",
+        "show": "Mostrar panel de chat"
+      },
+      "changesPanel": {
+        "toggle": "Alternar panel de cambios",
+        "hide": "Ocultar panel de cambios",
+        "show": "Mostrar panel de cambios"
+      },
+      "logsPanel": {
+        "toggle": "Alternar panel de registros",
+        "hide": "Ocultar panel de registros",
+        "show": "Mostrar panel de registros"
+      },
+      "previewPanel": {
+        "toggle": "Alternar panel de vista previa",
+        "hide": "Ocultar panel de vista previa",
+        "show": "Mostrar panel de vista previa"
+      },
+      "toggleAllDiffsTooltip": {
+        "collapse": "Contraer todas las diferencias",
+        "expand": "Expandir todas las diferencias"
+      }
+    }
+  },
+  "workspacesGuide": {
+    "welcome": {
+      "title": "Bienvenido",
+      "content": "Bienvenido a Sesiones, una interfaz rediseñada para Vibe Kanban. Estamos lanzando esto a usuarios seleccionados para recibir comentarios tempranos. Comparte tus opiniones en cualquier momento usando el ícono de comentarios en la barra de navegación."
+    },
+    "commandBar": {
+      "title": "Barra de comandos",
+      "content": "La barra de comandos es tu centro principal de navegación. Ábrela con CMD+K para buscar y acceder a cada acción disponible en una sesión."
+    },
+    "contextBar": {
+      "title": "Barra de contexto",
+      "content": "La barra de contexto te permite cambiar entre paneles rápidamente. Arrástrala a donde mejor te funcione."
+    },
+    "sidebar": {
+      "title": "Barra lateral de sesiones",
+      "content": "Ve el estado de todos tus sesiones de un vistazo. Las notificaciones resaltan cuáles necesitan atención. Archiva las sesiones fusionadas para mantener tu barra lateral limpia."
+    },
+    "multiRepo": {
+      "title": "Soporte multi-repositorio",
+      "content": "Agrega múltiples repositorios a una sola sesión. Referencia código de un repositorio mientras trabajas en otro, o implementa cambios en varios repositorios a la vez."
+    },
+    "sessions": {
+      "title": "Múltiples sesiones",
+      "content": "Crea múltiples sesiones de conversación con agentes dentro de una sola sesión, incluyendo sesiones con diferentes agentes. Esto te ayuda a superar los límites de conversación o iniciar agentes de revisión en hilos separados."
+    },
+    "preview": {
+      "title": "Vista previa de cambios",
+      "content": "Previsualiza tu trabajo en un navegador integrado sin cambiar de contexto. Prueba en escritorio, móvil y tamaños de ventana personalizados."
+    },
+    "diffs": {
+      "title": "Diferencias y comentarios",
+      "content": "El panel de diferencias rediseñado incluye un árbol de archivos con tus cambios. Comenta directamente en las diferencias para dar retroalimentación al agente, y ve los comentarios de GitHub cuando tu sesión está vinculada a un PR."
+    },
+    "classicUi": {
+      "title": "Volver a la interfaz clásica",
+      "content": "Haz clic en el icono de salida en el lado izquierdo de la barra de navegación para volver al tablero kanban clásico. Para desactivar la nueva interfaz por completo, actualiza la opción \"Habilitar Beta de Sesiones\" en \"Funciones Beta\" en la configuración."
+    }
+  },
+  "logs": {
+    "searchLogs": "Buscar registros",
+    "selectProcessToView": "Seleccione un proceso para ver los registros"
+  },
+  "processes": {
+    "noProcesses": "Sin procesos",
+    "terminal": "Terminal"
+  },
+  "search": {
+    "matchCount": "{{current}} de {{total}}",
+    "noMatches": "Sin coincidencias"
+  },
+  "contextUsage": {
+    "label": "Uso del contexto",
+    "emptyTooltip": "El uso del contexto aparece después de la próxima respuesta",
+    "tooltip": "Contexto: {{percentage}}% · {{used}} / {{total}} tokens",
+    "ariaLabel": "Uso del contexto: {{percentage}}%"
+  },
+  "shortcuts": {
+    "title": "Atajos de Teclado",
+    "inWorkspace": "(en sesión)",
+    "sequentialHint": "Atajos secuenciales: Presiona la primera tecla, luego la segunda en 500ms.",
+    "configurableHint": "Configurable en Ajustes → General → Entrada de Mensaje",
+    "groups": {
+      "quickActions": "Acciones Rápidas",
+      "navigation": "Navegación",
+      "modifiers": "Modificadores",
+      "goTo": "Ir a (G ...)",
+      "workspace": "Sesión (W ...)",
+      "view": "Vista (V ...)",
+      "issues": "Issues (I ...)",
+      "git": "Git (X ...)",
+      "yank": "Copiar (Y ...)",
+      "toggle": "Alternar (T ...)",
+      "run": "Ejecutar (R ...)"
+    },
+    "actions": {
+      "showHelp": "Mostrar esta ayuda",
+      "closeCancel": "Cerrar/cancelar",
+      "createNewTask": "Crear nueva tarea",
+      "deleteSelected": "Eliminar seleccionado",
+      "focusSearch": "Enfocar búsqueda",
+      "moveDown": "Mover abajo",
+      "moveUp": "Mover arriba",
+      "moveLeft": "Mover a la izquierda",
+      "moveRight": "Mover a la derecha",
+      "openCommandBar": "Abrir barra de comandos",
+      "formatInlineCode": "Format inline code",
+      "sendMessage": "Enviar mensaje",
+      "settings": "Ir a Ajustes",
+      "new-workspace": "Ir a Nueva sesión",
+      "duplicate-workspace": "Duplicar sesión",
+      "rename-workspace": "Renombrar sesión",
+      "pin-workspace": "Fijar/Desfijar sesión",
+      "archive-workspace": "Archivar sesión",
+      "delete-workspace": "Eliminar sesión",
+      "toggle-changes-mode": "Alternar panel de cambios",
+      "toggle-logs-mode": "Alternar panel de registros",
+      "toggle-preview-mode": "Alternar panel de vista previa",
+      "toggle-left-sidebar": "Alternar barra lateral izquierda",
+      "toggle-left-main-panel": "Alternar panel de chat",
+      "create-issue": "Crear issue",
+      "change-issue-status": "Cambiar estado",
+      "change-issue-priority": "Cambiar prioridad",
+      "change-assignees": "Cambiar asignados",
+      "make-sub-issue-of": "Hacer sub-issue de",
+      "add-sub-issue": "Agregar sub-issue",
+      "remove-parent-issue": "Quitar padre",
+      "link-workspace": "Vincular sesión",
+      "duplicate-issue": "Duplicar issue",
+      "delete-issue": "Eliminar issue",
+      "git-create-pr": "Crear Pull Request",
+      "git-merge": "Fusionar rama",
+      "git-rebase": "Rebase de rama",
+      "git-push": "Enviar cambios",
+      "copy-path": "Copiar ruta",
+      "copy-raw-logs": "Copiar registros sin formato",
+      "toggle-dev-server": "Alternar servidor de desarrollo",
+      "toggle-wrap-lines": "Alternar ajuste de línea",
+      "run-setup-script": "Ejecutar script de configuración",
+      "run-cleanup-script": "Ejecutar script de limpieza",
+      "run-archive-script": "Ejecutar script de archivado"
+    }
+  },
+  "typeahead": {
+    "tags": "Etiquetas",
+    "files": "Archivos",
+    "commands": "Comandos",
+    "chooseRepo": "Elegir repositorio",
+    "selectedRepo": "Repositorio seleccionado: {{repoName}}",
+    "missingRepo": "El repositorio seleccionado ya no está disponible.",
+    "noTagsOrFiles": "No se encontraron etiquetas ni archivos",
+    "createTag": "Crear nueva etiqueta",
+    "noCommands": "No hay comandos disponibles para este agente.",
+    "loadingCommands": "Cargando comandos…",
+    "discoveringCommands": "Descubriendo comandos…"
+  },
+  "kanban": {
+    "noVisibleStatuses": "Todos los estados están ocultos. Usa la configuración de visualización o cambia a otra pestaña para ver los problemas.",
+    "noProjectFound": "No se encontró el proyecto",
+    "unassigned": "Sin asignar",
+    "noTagsAvailable": "No hay etiquetas disponibles",
+    "createNewIssue": "Crear nuevo issue",
+    "searchTags": "Buscar etiquetas...",
+    "selectColorFor": "Seleccionar color para",
+    "createTag": "Crear",
+    "noPrCreated": "No se creó PR",
+    "noCommentsYet": "Sin comentarios aún",
+    "createdBy": "Creado por",
+    "comments": "Comentarios",
+    "enterCommentPlaceholder": "Ingresa tu comentario aquí...",
+    "attachFile": "Adjuntar archivo",
+    "attachFileHint": "Adjuntar archivos (máx. 20MB por archivo)",
+    "dropFilesHere": "Suelta archivos aquí",
+    "fileDropHint": "Cualquier tipo de archivo hasta 20MB",
+    "unknownUser": "Usuario desconocido",
+    "deletedUser": "Usuario eliminado",
+    "replyQuotePrefix": "escribió:",
+    "moreActions": "Más acciones",
+    "closePanel": "Cerrar panel",
+    "copyLink": "Copiar enlace",
+    "issueTitlePlaceholder": "Título del issue...",
+    "issueDescriptionPlaceholder": "Ingresa la descripción de la tarea...",
+    "createDraftWorkspaceImmediately": "Crear sesión borrador inmediatamente",
+    "createDraftWorkspaceDescription": "Después de crear la incidencia, abrir el formulario de creación de sesión con los datos de la incidencia",
+    "createIssue": "Crear tarea",
+    "newIssue": "Nuevo issue",
+    "previewCodeBlock": "[Bloque de código]",
+    "previewImage": "[Imagen]",
+    "previewImageWithName": "[Imagen: {{name}}]",
+    "previewFile": "[Archivo]",
+    "previewFileWithName": "[Archivo: {{name}}]",
+    "imageAttachmentNameFallback": "Adjunto",
+    "removeImage": "Eliminar imagen",
+    "maxFilesAtOnce": "Máximo {{count}} archivos a la vez",
+    "fileExceedsLimit": "El archivo {{filename}} supera el límite de 20MB",
+    "unknownError": "Error desconocido",
+    "failedToUploadFile": "No se pudo subir {{filename}}: {{message}}",
+    "downloadAttachment": "Descargar archivo adjunto",
+    "subIssues": "Subtareas",
+    "noSubIssues": "Sin subtareas",
+    "markIndependentIssue": "Marcar como problema independiente",
+    "parentIssue": "Padre",
+    "subIssueIndicator": "↳",
+    "viewTabs": {
+      "active": "Activo",
+      "all": "Todo"
+    },
+    "loginRequired": {
+      "title": "Se requiere iniciar sesión",
+      "description": "Por favor inicia sesión para ver este proyecto.",
+      "action": "Iniciar sesión"
+    },
+    "team": "Team",
+    "personal": "Personal",
+    "searchPlaceholder": "Search issues...",
+    "filters": "Filters",
+    "clearFilters": "Clear filters",
+    "filtersDescription": "Adjust filters and sorting for this board view.",
+    "filterByTag": "Filter by tag",
+    "filterByPriority": "Filter by priority",
+    "tags": "Tags",
+    "sortBy": "Sort",
+    "workspaceSidebar": {
+      "sortDialogTitle": "Sort sesiones",
+      "sortDialogDescription": "Choose how sesiones are ordered in the sidebar.",
+      "sortByLabel": "Sort by",
+      "sortOrderLabel": "Sort order",
+      "sortUpdatedAt": "Updated at",
+      "sortCreatedAt": "Created at",
+      "filterDialogTitle": "Filter sesiones",
+      "filterDialogDescription": "Narrow down sesiones by project and PR state.",
+      "projectFilterLabel": "Project",
+      "prFilterLabel": "PR",
+      "prFilterAll": "All",
+      "prFilterHasPr": "Has PR",
+      "prFilterNoPr": "No PR",
+      "noProject": "No project",
+      "sortButtonTitle": "Sort sesiones",
+      "filterButtonTitle": "Filter sesiones"
+    },
+    "sortAscending": "Ascending",
+    "sortDescending": "Descending",
+    "assignee": "Assignee",
+    "self": "Me",
+    "priority": "Priority",
+    "subIssuesFilterLabel": "Sub-issues",
+    "workspacesFilterLabel": "Sesiones",
+    "selectAssignees": "Select assignees...",
+    "relationships": "Relationships",
+    "noRelationships": "No relationships",
+    "openProjectsGuide": "Projects guide",
+    "editProjectSettings": "Edit project settings",
+    "linkWorkspace": "Link sesión...",
+    "createNewWorkspace": "Create new sesión",
+    "workspaces": "Sesiones",
+    "showingWorkspaces": "Showing {{count}} of {{total}}",
+    "changeColor": "Change color",
+    "editName": "Edit name",
+    "deleteStatus": "Delete status",
+    "cannotDeleteWithIssues": "Move issues first",
+    "lastVisibleStatus": "At least one status must be visible",
+    "showStatus": "Show status",
+    "hideStatus": "Hide status",
+    "newStatus": "New Status",
+    "visibleColumns": "Visible Columns",
+    "dragToRearrange": "Drag to re-arrange",
+    "addColumn": "Add column",
+    "projectsGuide": {
+      "intro": {
+        "title": "Welcome",
+        "content": "Welcome to Vibe Kanban. Use the help sections in this panel to learn how things work, then create your first issue. You can re-open this help dialog or give feedback anytime from the navbar."
+      },
+      "welcome": {
+        "title": "Projects",
+        "content": "The project page is where you manage issues. You can view your issues as a kanban board, or as a list, and filter by status, tag, assignee and more."
+      },
+      "issues": {
+        "title": "Issues",
+        "content": "Each issue represents a feature or problem to solve. Issues have statuses, priorities, assignees, tags, relationships, comments, sub-issues and more."
+      },
+      "workspaces": {
+        "title": "Sesiones",
+        "content": "To start working on an issue, create a sesión. A single issue can have multiple sesiones. Issues describe the work to be done, sesiones are where the work happens."
+      },
+      "organizations": {
+        "title": "Invite your team",
+        "content": "We've automatically created a personal organization and initial project so you can get started with Vibe Kanban. Export your cloud data before shutdown."
+      }
+    }
+  },
+  "createMode": {
+    "headings": {
+      "repoStep": "¿En qué repositorios te gustaría trabajar?",
+      "chatStep": "¿En qué te gustaría trabajar?"
+    },
+    "repoPicker": {
+      "actions": {
+        "recent": "Recientes",
+        "browse": "Explorar",
+        "create": "Crear"
+      },
+      "setupHintTitle": "Scripts de Configuración",
+      "setupHint": "Consejo: Configura los scripts de instalación para este repositorio en Ajustes → Repositorios",
+      "setupHintDismiss": "Cerrar",
+      "setupHintLink": "Configure in Settings"
+    },
+    "composerChips": {
+      "addFolderMenuItem": "Agregar carpeta",
+      "openFolder": "Abrir carpeta…",
+      "pickBranch": "Seleccionar rama",
+      "pickFolderPlaceholder": "Selecciona una carpeta…",
+      "recentsEmpty": "Sin carpetas recientes",
+      "removeFolderAction": "Quitar",
+      "worktreeChip": "Worktree"
+    },
+    "placeholder": {
+      "typeForCommands": "Escribe / para comandos"
+    },
+    "landing": {
+      "welcomeBack": "Bienvenido de nuevo",
+      "recentSessions": "Sesiones recientes",
+      "sessionsAwaitingInput_one": "{{count}} sesión esperando entrada",
+      "sessionsAwaitingInput_other": "{{count}} sesiones esperando entrada",
+      "whatToWorkOn": "¿En qué te gustaría trabajar?",
+      "status": {
+        "awaitingInput": "Esperando entrada",
+        "running": "En ejecución",
+        "failed": "Fallido"
+      }
+    }
+  },
+  "modelSelector": {
+    "preset": "Preajuste",
+    "custom": "Personalizar",
+    "permissions": "Permisos",
+    "permissionAuto": "Modo Auto",
+    "permissionAsk": "Pedir permisos",
+    "permissionPlan": "Modo Plan",
+    "permissionAcceptEdits": "Aceptar ediciones",
+    "permissionBypass": "Omitir permisos",
+    "agent": "Agente",
+    "default": "Predeterminado",
+    "model": "Modelo"
+  },
+  "crashScreen": {
+    "title": "Algo salió mal",
+    "description": "La aplicación encontró un error inesperado.",
+    "reload": "Recargar",
+    "showDetails": "Mostrar detalles",
+    "hideDetails": "Ocultar detalles"
+  },
+  "syncError": {
+    "networkErrors": "Errores de red",
+    "streamsAffected": "{{count}} flujo afectado",
+    "streamsAffected_other": "{{count}} flujos afectados",
+    "status": "(estado {{status}})",
+    "refreshPage": "Actualizar página",
+    "remoteAuthUnavailable": "La autenticación remota no está disponible temporalmente. Es posible que algunas funciones remotas no funcionen hasta que se recupere."
+  },
+  "onboardingSignIn": {
+    "subtitle": "Sign in to continue",
+    "signedInAs": "Signed in as {{name}}.",
+    "moreOptions": "More options",
+    "featureHeader": "Feature",
+    "signedInHeader": "Signed in",
+    "skipSignInHeader": "Don't sign in",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "appBar": {
+    "kanban": {
+      "tooltip": "Inicia sesión para ver proyectos",
+      "title": "Tableros Kanban",
+      "description": "Inicia sesión para organizar tus agentes de codificación con tableros kanban."
+    }
+  },
+  "errors": {
+    "generic": "An unexpected error occurred"
+  },
+  "personal": "Personal",
+  "askQuestion": {
+    "title": "El agente está haciendo una pregunta",
+    "selectMultiple": "seleccionar varios",
+    "confirmSelection": "Confirmar selección",
+    "submitting": "Enviando respuestas...",
+    "answeredCount": "Respondió {{count}} pregunta",
+    "answeredCount_other": "Respondió {{count}} preguntas"
+  },
+  "sidebar": {
+    "footer": {
+      "themeToggle": {
+        "aria": "Cambiar a modo {{mode}}"
+      }
+    },
+    "hideSidebar": {
+      "aria": "Ocultar barra lateral"
+    },
+    "kebab": {
+      "pin": "Fijar sesión",
+      "unpin": "Desfijar sesión"
+    },
+    "newSession": "Nueva sesión",
+    "newSessionInFolder": "Nueva sesión en {{folder}}",
+    "pinned": {
+      "emptyHint": "Fija sesiones desde su menú para mantenerlas aquí.",
+      "sectionHeader": "Fijados",
+      "dropHint": "Suelta aquí para fijar"
+    },
+    "search": {
+      "collapse": {
+        "aria": "Cerrar búsqueda"
+      },
+      "open": {
+        "aria": "Buscar sesiones"
+      }
+    },
+    "theme": {
+      "dark": "oscuro",
+      "light": "claro"
+    },
+    "controlPanel": {
+      "openMenu": "Abrir panel de control",
+      "theme": {
+        "label": "Tema",
+        "light": "Claro",
+        "dark": "Oscuro",
+        "system": "Coincidir con el sistema"
+      },
+      "settings": "Configuración",
+      "viewArchive": "Ver archivo"
+    }
+  },
+  "navbar": {
+    "board": "Tablero",
+    "mobileTabs": {
+      "workspaces": "Sesiones",
+      "chat": "Chat",
+      "changes": "Cambios",
+      "logs": "Registros",
+      "preview": "Vista",
+      "git": "Git"
+    }
+  },
+  "time": {
+    "short": {
+      "now": "ahora",
+      "minutes": "{{count}}min",
+      "hours": "{{count}}h",
+      "days": "{{count}}d"
+    }
+  },
+  "panels": {
+    "changes": "Cambios",
+    "logs": "Registros",
+    "preview": "Vista previa",
+    "git": "Git",
+    "terminal": "Terminal",
+    "openPanelMenu": "Abrir menú de paneles",
+    "closePanel": "Cerrar panel {{panel}}"
+  },
+  "routines": {
+    "title": "Rutinas",
+    "subtitle": "Crea rutinas con plantillas que se ejecutan según un horario o manualmente.",
+    "banner": "Las rutinas locales solo se ejecutan mientras tu computadora está encendida.",
+    "newButton": "Nueva rutina",
+    "newPageTitle": "Nueva rutina local",
+    "empty": "Aún no hay rutinas.",
+    "runNow": "Ejecutar ahora",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "deleteConfirmTitle": "Eliminar rutina",
+    "deleteConfirm": "¿Eliminar la rutina \"{{name}}\" y {{count}} ejecuciones ({{count}} sesiones y worktrees)?",
+    "nextRun": "Próxima ejecución {{when}}",
+    "nextRunNever": "Sin próxima ejecución",
+    "lastRun": "Última ejecución {{when}}",
+    "neverRun": "Nunca ejecutada",
+    "history": {
+      "title": "Historial",
+      "empty": "Aún no hay ejecuciones."
+    },
+    "sections": {
+      "description": "Descripción",
+      "status": "Estado",
+      "folder": "Carpeta",
+      "repeats": "Repeticiones",
+      "instructions": "Instrucciones"
+    },
+    "status": {
+      "pending": "Pendiente",
+      "running": "En ejecución",
+      "done": "Completada",
+      "skipped": "Omitida",
+      "failed": "Fallida"
+    },
+    "skipReason": {
+      "appOffline": "La aplicación estaba desconectada",
+      "prevStillRunning": "La ejecución anterior aún está en curso"
+    },
+    "enabled": "Activada",
+    "disabled": "Desactivada",
+    "fields": {
+      "name": "Nombre",
+      "namePlaceholder": "Un nombre breve para esta rutina",
+      "description": "Descripción",
+      "descriptionPlaceholder": "¿Qué hace esta rutina?",
+      "instructions": "Instrucciones",
+      "instructionsPlaceholder": "El prompt enviado al agente en cada ejecución.",
+      "folder": "Carpeta",
+      "folderPlaceholder": "Selecciona una carpeta",
+      "currentBranch": "Rama actual",
+      "worktree": "Usar worktree",
+      "executor": "Agente",
+      "variant": "Preajuste",
+      "model": "Modelo",
+      "permission": "Permisos",
+      "schedule": "Horario",
+      "time": "Hora",
+      "minute": "Minuto",
+      "dow": "Día de la semana"
+    },
+    "schedule": {
+      "manual": "Manual",
+      "hourly": "Cada hora",
+      "daily": "Diaria",
+      "weekdays": "Días laborables",
+      "weekly": "Semanal",
+      "summary": {
+        "manual": "Solo manual",
+        "hourly": "Cada hora a las :{{minute}}",
+        "hourlyNoTime": "Cada hora",
+        "daily": "Todos los días a las {{time}}",
+        "dailyNoTime": "Todos los días",
+        "weekdays": "Lun–Vie a las {{time}}",
+        "weekdaysNoTime": "Lun–Vie",
+        "weekly": "Cada {{day}} a las {{time}}",
+        "weeklyDayOnly": "Cada {{day}}",
+        "weeklyAt": "Semanal a las {{time}}",
+        "weeklyNoTime": "Semanal"
+      }
+    },
+    "days": {
+      "sun": "Domingo",
+      "mon": "Lunes",
+      "tue": "Martes",
+      "wed": "Miércoles",
+      "thu": "Jueves",
+      "fri": "Viernes",
+      "sat": "Sábado"
+    },
+    "form": {
+      "submitCreate": "Crear rutina",
+      "submitSave": "Guardar",
+      "cancel": "Cancelar",
+      "validation": {
+        "nameRequired": "El nombre es obligatorio",
+        "descriptionRequired": "La descripción es obligatoria",
+        "instructionsRequired": "Las instrucciones son obligatorias",
+        "folderRequired": "Selecciona una carpeta",
+        "modelRequired": "Selecciona un modelo",
+        "permissionRequired": "Selecciona una política de permisos",
+        "timeRequired": "Selecciona una hora",
+        "minuteRequired": "Selecciona un minuto",
+        "dowRequired": "Selecciona un día"
+      }
+    },
+    "sidebar": {
+      "nav": "Rutinas"
+    }
+  }
+}

@@ -1,0 +1,1141 @@
+{
+  "schema_version": 2,
+  "cc_switch_source_sha": "72ab8a5cfdaa0161e83536f912a905eee26ea343",
+  "note": "Per-agent payloads are catalog-backed recommendations. The OpenAI preset uses the official Responses/OpenAI endpoints; DeepSeek includes Codex routing because its official API supports Responses. Remaining entries are derived from cc-switch's pinned preset sources. agents[] is the recommended set; GEMINI remains on ambient auth unless configured as Custom.",
+  "presets": [
+    {
+      "id": "openai",
+      "name": "OpenAI",
+      "agents": ["CODEX", "OPENCODE"],
+      "claude": {
+        "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
+        "baseUrl": null,
+        "haikuModel": null,
+        "env": {},
+        "apiKey": null
+      },
+      "codex": {
+        "baseUrl": "https://api.openai.com/v1",
+        "apiKey": null,
+        "env": {}
+      },
+      "opencode": {
+        "npm": "@ai-sdk/openai",
+        "baseUrl": "https://api.openai.com/v1",
+        "options": { "setCacheKey": true },
+        "env": {},
+        "apiKey": null
+      },
+      "deepseekTui": {
+        "baseUrl": "https://api.openai.com/v1",
+        "env": {},
+        "apiKey": null
+      },
+      "gemini": { "baseUrl": null, "apiKey": null, "env": {} },
+      "hermes": {
+        "baseUrl": null,
+        "apiMode": null,
+        "env": {},
+        "apiKey": null
+      },
+      "enabledModels": ["gpt-5.6-sol", "gpt-5.6-terra", "gpt-5.6-luna"]
+    },
+    {
+      "id": "openrouter",
+      "name": "OpenRouter",
+      "agents": [
+        "CLAUDE_CODE",
+        "CODEX",
+        "OPENCODE",
+        "HERMES",
+        "DEEPSEEK_TUI"
+      ],
+      "claude": {
+        "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
+        "baseUrl": "https://openrouter.ai/api",
+        "haikuModel": "anthropic/claude-haiku-4.5",
+        "env": {},
+        "apiKey": null
+      },
+      "codex": {
+        "baseUrl": "https://openrouter.ai/api/v1",
+        "apiKey": null,
+        "env": {}
+      },
+      "opencode": {
+        "npm": "@ai-sdk/anthropic",
+        "baseUrl": "https://openrouter.ai/api/v1",
+        "options": {
+          "setCacheKey": true
+        },
+        "env": {},
+        "apiKey": null
+      },
+      "deepseekTui": {
+        "baseUrl": "https://openrouter.ai/api/v1",
+        "env": {},
+        "apiKey": null
+      },
+      "gemini": {
+        "baseUrl": null,
+        "apiKey": null,
+        "env": {}
+      },
+      "hermes": {
+        "baseUrl": "https://openrouter.ai/api/v1",
+        "apiMode": "chat_completions",
+        "env": {},
+        "apiKey": null
+      },
+      "enabledModels": [
+        "anthropic/claude-sonnet-4.6",
+        "anthropic/claude-opus-4.7"
+      ]
+    },
+    {
+      "id": "deepseek",
+      "name": "DeepSeek",
+      "agents": [
+        "CLAUDE_CODE",
+        "CODEX",
+        "OPENCODE",
+        "HERMES",
+        "DEEPSEEK_TUI"
+      ],
+      "claude": {
+        "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
+        "baseUrl": "https://api.deepseek.com/anthropic",
+        "haikuModel": "deepseek-v4-flash",
+        "env": {},
+        "apiKey": null
+      },
+      "codex": {
+        "baseUrl": "https://api.deepseek.com",
+        "apiKey": null,
+        "env": {}
+      },
+      "opencode": {
+        "npm": "@ai-sdk/openai-compatible",
+        "baseUrl": "https://api.deepseek.com/v1",
+        "options": {
+          "setCacheKey": true
+        },
+        "env": {},
+        "apiKey": null
+      },
+      "deepseekTui": {
+        "baseUrl": "https://api.deepseek.com/v1",
+        "env": {},
+        "apiKey": null
+      },
+      "gemini": {
+        "baseUrl": null,
+        "apiKey": null,
+        "env": {}
+      },
+      "hermes": {
+        "baseUrl": "https://api.deepseek.com",
+        "apiMode": "chat_completions",
+        "env": {},
+        "apiKey": null
+      },
+      "enabledModels": [
+        "deepseek-v4-pro",
+        "deepseek-v4-flash"
+      ]
+    },
+    {
+      "id": "zhipu-glm",
+      "name": "Zhipu GLM",
+      "agents": [
+        "CLAUDE_CODE",
+        "OPENCODE",
+        "HERMES",
+        "DEEPSEEK_TUI"
+      ],
+      "claude": {
+        "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
+        "baseUrl": "https://open.bigmodel.cn/api/anthropic",
+        "haikuModel": "glm-5",
+        "env": {},
+        "apiKey": null
+      },
+      "codex": {
+        "baseUrl": null,
+        "apiKey": null,
+        "env": {}
+      },
+      "opencode": {
+        "npm": "@ai-sdk/openai-compatible",
+        "baseUrl": "https://open.bigmodel.cn/api/paas/v4",
+        "options": {
+          "setCacheKey": true
+        },
+        "env": {},
+        "apiKey": null
+      },
+      "deepseekTui": {
+        "baseUrl": "https://open.bigmodel.cn/api/paas/v4",
+        "env": {},
+        "apiKey": null
+      },
+      "gemini": {
+        "baseUrl": null,
+        "apiKey": null,
+        "env": {}
+      },
+      "hermes": {
+        "baseUrl": "https://open.bigmodel.cn/api/paas/v4",
+        "apiMode": "chat_completions",
+        "env": {},
+        "apiKey": null
+      },
+      "enabledModels": [
+        "glm-5"
+      ]
+    },
+    {
+      "id": "zhipu-glm-en",
+      "name": "Zhipu GLM en",
+      "agents": [
+        "CLAUDE_CODE",
+        "OPENCODE",
+        "HERMES",
+        "DEEPSEEK_TUI"
+      ],
+      "claude": {
+        "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
+        "baseUrl": "https://api.z.ai/api/anthropic",
+        "haikuModel": "glm-5",
+        "env": {},
+        "apiKey": null
+      },
+      "codex": {
+        "baseUrl": null,
+        "apiKey": null,
+        "env": {}
+      },
+      "opencode": {
+        "npm": "@ai-sdk/openai-compatible",
+        "baseUrl": "https://api.z.ai/v1",
+        "options": {
+          "setCacheKey": true
+        },
+        "env": {},
+        "apiKey": null
+      },
+      "deepseekTui": {
+        "baseUrl": "https://api.z.ai/v1",
+        "env": {},
+        "apiKey": null
+      },
+      "gemini": {
+        "baseUrl": null,
+        "apiKey": null,
+        "env": {}
+      },
+      "hermes": {
+        "baseUrl": "https://api.z.ai/api/paas/v4",
+        "apiMode": "chat_completions",
+        "env": {},
+        "apiKey": null
+      },
+      "enabledModels": [
+        "glm-5"
+      ]
+    },
+    {
+      "id": "bailian",
+      "name": "Bailian",
+      "agents": [
+        "CLAUDE_CODE",
+        "OPENCODE",
+        "HERMES",
+        "DEEPSEEK_TUI"
+      ],
+      "claude": {
+        "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
+        "baseUrl": "https://dashscope.aliyuncs.com/apps/anthropic",
+        "haikuModel": null,
+        "env": {},
+        "apiKey": null
+      },
+      "codex": {
+        "baseUrl": null,
+        "apiKey": null,
+        "env": {}
+      },
+      "opencode": {
+        "npm": "@ai-sdk/openai-compatible",
+        "baseUrl": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+        "options": {
+          "setCacheKey": true
+        },
+        "env": {},
+        "apiKey": null
+      },
+      "deepseekTui": {
+        "baseUrl": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+        "env": {},
+        "apiKey": null
+      },
+      "gemini": {
+        "baseUrl": null,
+        "apiKey": null,
+        "env": {}
+      },
+      "hermes": {
+        "baseUrl": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+        "apiMode": "chat_completions",
+        "env": {},
+        "apiKey": null
+      },
+      "enabledModels": [
+        "qwen3-coder-plus",
+        "qwen3-max"
+      ]
+    },
+    {
+      "id": "bailian-for-coding",
+      "name": "Bailian For Coding",
+      "agents": [
+        "CLAUDE_CODE",
+        "HERMES"
+      ],
+      "claude": {
+        "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
+        "baseUrl": "https://coding.dashscope.aliyuncs.com/apps/anthropic",
+        "haikuModel": null,
+        "env": {},
+        "apiKey": null
+      },
+      "codex": {
+        "baseUrl": null,
+        "apiKey": null,
+        "env": {}
+      },
+      "opencode": {
+        "npm": null,
+        "baseUrl": null,
+        "options": {},
+        "apiKey": null,
+        "env": {}
+      },
+      "deepseekTui": {
+        "baseUrl": null,
+        "apiKey": null,
+        "env": {}
+      },
+      "gemini": {
+        "baseUrl": null,
+        "apiKey": null,
+        "env": {}
+      },
+      "hermes": {
+        "baseUrl": "https://coding.dashscope.aliyuncs.com/apps/anthropic",
+        "apiMode": "anthropic_messages",
+        "env": {},
+        "apiKey": null
+      },
+      "enabledModels": [
+        "qwen3-coder-plus",
+        "qwen3-max"
+      ]
+    },
+    {
+      "id": "kimi",
+      "name": "Kimi",
+      "agents": [
+        "CLAUDE_CODE",
+        "HERMES",
+        "DEEPSEEK_TUI"
+      ],
+      "claude": {
+        "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
+        "baseUrl": "https://api.moonshot.cn/anthropic",
+        "haikuModel": "kimi-k2.6",
+        "env": {},
+        "apiKey": null
+      },
+      "codex": {
+        "baseUrl": null,
+        "apiKey": null,
+        "env": {}
+      },
+      "opencode": {
+        "npm": null,
+        "baseUrl": null,
+        "options": {},
+        "apiKey": null,
+        "env": {}
+      },
+      "deepseekTui": {
+        "baseUrl": "https://api.moonshot.cn/v1",
+        "env": {},
+        "apiKey": null
+      },
+      "gemini": {
+        "baseUrl": null,
+        "apiKey": null,
+        "env": {}
+      },
+      "hermes": {
+        "baseUrl": "https://api.moonshot.cn/v1",
+        "apiMode": "chat_completions",
+        "env": {},
+        "apiKey": null
+      },
+      "enabledModels": [
+        "kimi-k2.6"
+      ]
+    },
+    {
+      "id": "kimi-for-coding",
+      "name": "Kimi For Coding",
+      "agents": [
+        "CLAUDE_CODE",
+        "OPENCODE",
+        "HERMES"
+      ],
+      "claude": {
+        "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
+        "baseUrl": "https://api.kimi.com/coding/",
+        "haikuModel": null,
+        "env": {},
+        "apiKey": null
+      },
+      "codex": {
+        "baseUrl": null,
+        "apiKey": null,
+        "env": {}
+      },
+      "opencode": {
+        "npm": "@ai-sdk/anthropic",
+        "baseUrl": "https://api.kimi.com/coding/v1",
+        "options": {
+          "setCacheKey": true
+        },
+        "env": {},
+        "apiKey": null
+      },
+      "deepseekTui": {
+        "baseUrl": null,
+        "apiKey": null,
+        "env": {}
+      },
+      "gemini": {
+        "baseUrl": null,
+        "apiKey": null,
+        "env": {}
+      },
+      "hermes": {
+        "baseUrl": "https://api.kimi.com/coding/",
+        "apiMode": "anthropic_messages",
+        "env": {},
+        "apiKey": null
+      },
+      "enabledModels": [
+        "kimi-for-coding"
+      ]
+    },
+    {
+      "id": "minimax",
+      "name": "MiniMax",
+      "agents": [
+        "CLAUDE_CODE",
+        "OPENCODE",
+        "HERMES",
+        "DEEPSEEK_TUI"
+      ],
+      "claude": {
+        "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
+        "baseUrl": "https://api.minimaxi.com/anthropic",
+        "haikuModel": "MiniMax-M2.7",
+        "env": {
+          "API_TIMEOUT_MS": "3000000",
+          "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1"
+        },
+        "apiKey": null
+      },
+      "codex": {
+        "baseUrl": null,
+        "apiKey": null,
+        "env": {}
+      },
+      "opencode": {
+        "npm": "@ai-sdk/openai-compatible",
+        "baseUrl": "https://api.minimaxi.com/v1",
+        "options": {
+          "setCacheKey": true
+        },
+        "env": {},
+        "apiKey": null
+      },
+      "deepseekTui": {
+        "baseUrl": "https://api.minimaxi.com/v1",
+        "env": {},
+        "apiKey": null
+      },
+      "gemini": {
+        "baseUrl": null,
+        "apiKey": null,
+        "env": {}
+      },
+      "hermes": {
+        "baseUrl": "https://api.minimaxi.com/v1",
+        "apiMode": "chat_completions",
+        "env": {},
+        "apiKey": null
+      },
+      "enabledModels": [
+        "MiniMax-M2.7"
+      ]
+    },
+    {
+      "id": "minimax-en",
+      "name": "MiniMax en",
+      "agents": [
+        "CLAUDE_CODE",
+        "OPENCODE",
+        "HERMES",
+        "DEEPSEEK_TUI"
+      ],
+      "claude": {
+        "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
+        "baseUrl": "https://api.minimax.io/anthropic",
+        "haikuModel": "MiniMax-M2.7",
+        "env": {
+          "API_TIMEOUT_MS": "3000000",
+          "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1"
+        },
+        "apiKey": null
+      },
+      "codex": {
+        "baseUrl": null,
+        "apiKey": null,
+        "env": {}
+      },
+      "opencode": {
+        "npm": "@ai-sdk/openai-compatible",
+        "baseUrl": "https://api.minimax.io/v1",
+        "options": {
+          "setCacheKey": true
+        },
+        "env": {},
+        "apiKey": null
+      },
+      "deepseekTui": {
+        "baseUrl": "https://api.minimax.io/v1",
+        "env": {},
+        "apiKey": null
+      },
+      "gemini": {
+        "baseUrl": null,
+        "apiKey": null,
+        "env": {}
+      },
+      "hermes": {
+        "baseUrl": "https://api.minimax.io/v1",
+        "apiMode": "chat_completions",
+        "env": {},
+        "apiKey": null
+      },
+      "enabledModels": [
+        "MiniMax-M2.7"
+      ]
+    },
+    {
+      "id": "stepfun",
+      "name": "StepFun",
+      "agents": [
+        "CLAUDE_CODE",
+        "OPENCODE",
+        "HERMES",
+        "DEEPSEEK_TUI"
+      ],
+      "claude": {
+        "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
+        "baseUrl": "https://api.stepfun.com/step_plan",
+        "haikuModel": "step-3.5-flash-2603",
+        "env": {},
+        "apiKey": null
+      },
+      "codex": {
+        "baseUrl": null,
+        "apiKey": null,
+        "env": {}
+      },
+      "opencode": {
+        "npm": "@ai-sdk/openai-compatible",
+        "baseUrl": "https://api.stepfun.com/step_plan/v1",
+        "options": {
+          "setCacheKey": true
+        },
+        "env": {},
+        "apiKey": null
+      },
+      "deepseekTui": {
+        "baseUrl": "https://api.stepfun.com/step_plan/v1",
+        "env": {},
+        "apiKey": null
+      },
+      "gemini": {
+        "baseUrl": null,
+        "apiKey": null,
+        "env": {}
+      },
+      "hermes": {
+        "baseUrl": "https://api.stepfun.ai/v1",
+        "apiMode": "chat_completions",
+        "env": {},
+        "apiKey": null
+      },
+      "enabledModels": [
+        "step-3.5-flash-2603",
+        "step-3.5-flash"
+      ]
+    },
+    {
+      "id": "stepfun-en",
+      "name": "StepFun en",
+      "agents": [
+        "CLAUDE_CODE",
+        "OPENCODE",
+        "DEEPSEEK_TUI"
+      ],
+      "claude": {
+        "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
+        "baseUrl": "https://api.stepfun.ai/step_plan",
+        "haikuModel": "step-3.5-flash-2603",
+        "env": {},
+        "apiKey": null
+      },
+      "codex": {
+        "baseUrl": null,
+        "apiKey": null,
+        "env": {}
+      },
+      "opencode": {
+        "npm": "@ai-sdk/openai-compatible",
+        "baseUrl": "https://api.stepfun.ai/step_plan/v1",
+        "options": {},
+        "env": {},
+        "apiKey": null
+      },
+      "deepseekTui": {
+        "baseUrl": "https://api.stepfun.ai/step_plan/v1",
+        "env": {},
+        "apiKey": null
+      },
+      "gemini": {
+        "baseUrl": null,
+        "apiKey": null,
+        "env": {}
+      },
+      "hermes": {
+        "baseUrl": null,
+        "apiMode": null,
+        "apiKey": null,
+        "env": {}
+      },
+      "enabledModels": [
+        "step-3.5-flash-2603",
+        "step-3.5-flash"
+      ]
+    },
+    {
+      "id": "doubao-seed",
+      "name": "DouBaoSeed",
+      "agents": [
+        "CLAUDE_CODE",
+        "OPENCODE",
+        "HERMES",
+        "DEEPSEEK_TUI"
+      ],
+      "claude": {
+        "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
+        "baseUrl": "https://ark.cn-beijing.volces.com/api/coding",
+        "haikuModel": "doubao-seed-2-0-code-preview-latest",
+        "env": {
+          "API_TIMEOUT_MS": "3000000"
+        },
+        "apiKey": null
+      },
+      "codex": {
+        "baseUrl": null,
+        "apiKey": null,
+        "env": {}
+      },
+      "opencode": {
+        "npm": "@ai-sdk/openai-compatible",
+        "baseUrl": "https://ark.cn-beijing.volces.com/api/v3",
+        "options": {
+          "setCacheKey": true
+        },
+        "env": {},
+        "apiKey": null
+      },
+      "deepseekTui": {
+        "baseUrl": "https://ark.cn-beijing.volces.com/api/v3",
+        "env": {},
+        "apiKey": null
+      },
+      "gemini": {
+        "baseUrl": null,
+        "apiKey": null,
+        "env": {}
+      },
+      "hermes": {
+        "baseUrl": "https://ark.cn-beijing.volces.com/api/coding",
+        "apiMode": "anthropic_messages",
+        "env": {},
+        "apiKey": null
+      },
+      "enabledModels": [
+        "doubao-seed-2-0-code-preview-latest"
+      ]
+    },
+    {
+      "id": "xiaomi-mimo",
+      "name": "Xiaomi MiMo",
+      "agents": [
+        "CLAUDE_CODE",
+        "OPENCODE",
+        "HERMES",
+        "DEEPSEEK_TUI"
+      ],
+      "claude": {
+        "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
+        "baseUrl": "https://api.xiaomimimo.com/anthropic",
+        "haikuModel": "mimo-v2-pro",
+        "env": {},
+        "apiKey": null
+      },
+      "codex": {
+        "baseUrl": null,
+        "apiKey": null,
+        "env": {}
+      },
+      "opencode": {
+        "npm": "@ai-sdk/openai-compatible",
+        "baseUrl": "https://api.xiaomimimo.com/v1",
+        "options": {
+          "setCacheKey": true
+        },
+        "env": {},
+        "apiKey": null
+      },
+      "deepseekTui": {
+        "baseUrl": "https://api.xiaomimimo.com/v1",
+        "env": {},
+        "apiKey": null
+      },
+      "gemini": {
+        "baseUrl": null,
+        "apiKey": null,
+        "env": {}
+      },
+      "hermes": {
+        "baseUrl": "https://api.xiaomimimo.com/v1",
+        "apiMode": "chat_completions",
+        "env": {},
+        "apiKey": null
+      },
+      "enabledModels": [
+        "mimo-v2-pro"
+      ]
+    },
+    {
+      "id": "nvidia",
+      "name": "Nvidia",
+      "agents": [
+        "CLAUDE_CODE",
+        "OPENCODE",
+        "HERMES",
+        "DEEPSEEK_TUI"
+      ],
+      "claude": {
+        "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
+        "baseUrl": "https://integrate.api.nvidia.com",
+        "haikuModel": "moonshotai/kimi-k2.5",
+        "env": {},
+        "apiKey": null
+      },
+      "codex": {
+        "baseUrl": null,
+        "apiKey": null,
+        "env": {}
+      },
+      "opencode": {
+        "npm": "@ai-sdk/openai-compatible",
+        "baseUrl": "https://integrate.api.nvidia.com/v1",
+        "options": {
+          "setCacheKey": true
+        },
+        "env": {},
+        "apiKey": null
+      },
+      "deepseekTui": {
+        "baseUrl": "https://integrate.api.nvidia.com/v1",
+        "env": {},
+        "apiKey": null
+      },
+      "gemini": {
+        "baseUrl": null,
+        "apiKey": null,
+        "env": {}
+      },
+      "hermes": {
+        "baseUrl": "https://integrate.api.nvidia.com",
+        "apiMode": "chat_completions",
+        "env": {},
+        "apiKey": null
+      },
+      "enabledModels": [
+        "moonshotai/kimi-k2.5"
+      ]
+    },
+    {
+      "id": "aws-bedrock-api-key",
+      "name": "AWS Bedrock (API Key)",
+      "agents": [
+        "CLAUDE_CODE"
+      ],
+      "claude": {
+        "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
+        "baseUrl": "https://bedrock-runtime.${AWS_REGION}.amazonaws.com",
+        "haikuModel": "global.anthropic.claude-haiku-4-5-20251001-v1:0",
+        "env": {
+          "AWS_REGION": "${AWS_REGION}",
+          "CLAUDE_CODE_USE_BEDROCK": "1"
+        },
+        "apiKey": null
+      },
+      "codex": {
+        "baseUrl": null,
+        "apiKey": null,
+        "env": {}
+      },
+      "opencode": {
+        "npm": null,
+        "baseUrl": null,
+        "options": {},
+        "apiKey": null,
+        "env": {}
+      },
+      "deepseekTui": {
+        "baseUrl": null,
+        "apiKey": null,
+        "env": {}
+      },
+      "gemini": {
+        "baseUrl": null,
+        "apiKey": null,
+        "env": {}
+      },
+      "hermes": {
+        "baseUrl": null,
+        "apiMode": null,
+        "apiKey": null,
+        "env": {}
+      },
+      "enabledModels": []
+    },
+    {
+      "id": "novita-ai",
+      "name": "Novita AI",
+      "agents": [
+        "CLAUDE_CODE",
+        "OPENCODE",
+        "HERMES",
+        "DEEPSEEK_TUI"
+      ],
+      "claude": {
+        "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
+        "baseUrl": "https://api.novita.ai/anthropic",
+        "haikuModel": "zai-org/glm-5",
+        "env": {},
+        "apiKey": null
+      },
+      "codex": {
+        "baseUrl": null,
+        "apiKey": null,
+        "env": {}
+      },
+      "opencode": {
+        "npm": "@ai-sdk/openai-compatible",
+        "baseUrl": "https://api.novita.ai/openai",
+        "options": {
+          "setCacheKey": true
+        },
+        "env": {},
+        "apiKey": null
+      },
+      "deepseekTui": {
+        "baseUrl": "https://api.novita.ai/openai",
+        "env": {},
+        "apiKey": null
+      },
+      "gemini": {
+        "baseUrl": null,
+        "apiKey": null,
+        "env": {}
+      },
+      "hermes": {
+        "baseUrl": "https://api.novita.ai/v3/openai",
+        "apiMode": "chat_completions",
+        "env": {},
+        "apiKey": null
+      },
+      "enabledModels": [
+        "zai-org/glm-5"
+      ]
+    },
+    {
+      "id": "kat-coder",
+      "name": "KAT-Coder",
+      "agents": [
+        "CLAUDE_CODE",
+        "OPENCODE",
+        "HERMES",
+        "DEEPSEEK_TUI"
+      ],
+      "claude": {
+        "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
+        "baseUrl": "https://vanchin.streamlake.ai/api/gateway/v1/endpoints/${ENDPOINT_ID}/claude-code-proxy",
+        "haikuModel": "KAT-Coder-Air V1",
+        "env": {},
+        "apiKey": null
+      },
+      "codex": {
+        "baseUrl": null,
+        "apiKey": null,
+        "env": {}
+      },
+      "opencode": {
+        "npm": "@ai-sdk/openai-compatible",
+        "baseUrl": "https://vanchin.streamlake.ai/api/gateway/v1/endpoints/${ENDPOINT_ID}/openai",
+        "options": {
+          "setCacheKey": true
+        },
+        "env": {},
+        "apiKey": null
+      },
+      "deepseekTui": {
+        "baseUrl": "https://vanchin.streamlake.ai/api/gateway/v1/endpoints/${ENDPOINT_ID}/openai",
+        "env": {},
+        "apiKey": null
+      },
+      "gemini": {
+        "baseUrl": null,
+        "apiKey": null,
+        "env": {}
+      },
+      "hermes": {
+        "baseUrl": "https://vanchin.streamlake.ai/api/gateway/v1/endpoints/${ENDPOINT_ID}/claude-code-proxy",
+        "apiMode": "anthropic_messages",
+        "env": {},
+        "apiKey": null
+      },
+      "enabledModels": [
+        "KAT-Coder-Pro"
+      ]
+    },
+    {
+      "id": "longcat",
+      "name": "Longcat",
+      "agents": [
+        "CLAUDE_CODE",
+        "OPENCODE",
+        "HERMES",
+        "DEEPSEEK_TUI"
+      ],
+      "claude": {
+        "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
+        "baseUrl": "https://api.longcat.chat/anthropic",
+        "haikuModel": "LongCat-Flash-Chat",
+        "env": {
+          "CLAUDE_CODE_MAX_OUTPUT_TOKENS": "6000",
+          "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1"
+        },
+        "apiKey": null
+      },
+      "codex": {
+        "baseUrl": null,
+        "apiKey": null,
+        "env": {}
+      },
+      "opencode": {
+        "npm": "@ai-sdk/openai-compatible",
+        "baseUrl": "https://api.longcat.chat/v1",
+        "options": {
+          "setCacheKey": true
+        },
+        "env": {},
+        "apiKey": null
+      },
+      "deepseekTui": {
+        "baseUrl": "https://api.longcat.chat/v1",
+        "env": {},
+        "apiKey": null
+      },
+      "gemini": {
+        "baseUrl": null,
+        "apiKey": null,
+        "env": {}
+      },
+      "hermes": {
+        "baseUrl": "https://api.longcat.chat/openai/v1",
+        "apiMode": "chat_completions",
+        "env": {},
+        "apiKey": null
+      },
+      "enabledModels": [
+        "LongCat-Flash-Chat"
+      ]
+    },
+    {
+      "id": "bailing",
+      "name": "BaiLing",
+      "agents": [
+        "CLAUDE_CODE",
+        "OPENCODE",
+        "HERMES",
+        "DEEPSEEK_TUI"
+      ],
+      "claude": {
+        "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
+        "baseUrl": "https://api.tbox.cn/api/anthropic",
+        "haikuModel": "Ling-2.5-1T",
+        "env": {},
+        "apiKey": null
+      },
+      "codex": {
+        "baseUrl": null,
+        "apiKey": null,
+        "env": {}
+      },
+      "opencode": {
+        "npm": "@ai-sdk/openai-compatible",
+        "baseUrl": "https://api.tbox.cn/v1",
+        "options": {
+          "setCacheKey": true
+        },
+        "env": {},
+        "apiKey": null
+      },
+      "deepseekTui": {
+        "baseUrl": "https://api.tbox.cn/v1",
+        "env": {},
+        "apiKey": null
+      },
+      "gemini": {
+        "baseUrl": null,
+        "apiKey": null,
+        "env": {}
+      },
+      "hermes": {
+        "baseUrl": "https://api.tbox.cn/api/anthropic",
+        "apiMode": "anthropic_messages",
+        "env": {},
+        "apiKey": null
+      },
+      "enabledModels": [
+        "Ling-2.5-1T"
+      ]
+    },
+    {
+      "id": "modelscope",
+      "name": "ModelScope",
+      "agents": [
+        "CLAUDE_CODE",
+        "OPENCODE",
+        "HERMES",
+        "DEEPSEEK_TUI"
+      ],
+      "claude": {
+        "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
+        "baseUrl": "https://api-inference.modelscope.cn",
+        "haikuModel": "ZhipuAI/GLM-5",
+        "env": {},
+        "apiKey": null
+      },
+      "codex": {
+        "baseUrl": null,
+        "apiKey": null,
+        "env": {}
+      },
+      "opencode": {
+        "npm": "@ai-sdk/openai-compatible",
+        "baseUrl": "https://api-inference.modelscope.cn/v1",
+        "options": {
+          "setCacheKey": true
+        },
+        "env": {},
+        "apiKey": null
+      },
+      "deepseekTui": {
+        "baseUrl": "https://api-inference.modelscope.cn/v1",
+        "env": {},
+        "apiKey": null
+      },
+      "gemini": {
+        "baseUrl": null,
+        "apiKey": null,
+        "env": {}
+      },
+      "hermes": {
+        "baseUrl": "https://api-inference.modelscope.cn/v1",
+        "apiMode": "chat_completions",
+        "env": {},
+        "apiKey": null
+      },
+      "enabledModels": [
+        "ZhipuAI/GLM-5"
+      ]
+    },
+    {
+      "id": "baidu-qianfan",
+      "name": "Baidu Qianfan Coding Plan",
+      "agents": [
+        "CLAUDE_CODE"
+      ],
+      "claude": {
+        "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
+        "baseUrl": "https://qianfan.baidubce.com/anthropic/coding",
+        "haikuModel": "qianfan-code-latest",
+        "env": {},
+        "apiKey": null
+      },
+      "codex": {
+        "baseUrl": null,
+        "apiKey": null,
+        "env": {}
+      },
+      "opencode": {
+        "npm": null,
+        "baseUrl": null,
+        "options": {},
+        "apiKey": null,
+        "env": {}
+      },
+      "deepseekTui": {
+        "baseUrl": null,
+        "apiKey": null,
+        "env": {}
+      },
+      "gemini": {
+        "baseUrl": null,
+        "apiKey": null,
+        "env": {}
+      },
+      "hermes": {
+        "baseUrl": null,
+        "apiMode": null,
+        "apiKey": null,
+        "env": {}
+      },
+      "enabledModels": []
+    }
+  ]
+}

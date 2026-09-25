@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-title" content="cdesktop" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="theme-color" content="#f2f2f2" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#212121" media="(prefers-color-scheme: dark)">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource-variable/source-sans-3/index.min.css" media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/typeface-inconsolata/index.min.css" media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/harmonyos-sans-sc-webfont-splitted@1.1.0/dist/index.min.css" media="print" onload="this.media='all'">
+    <title>朝堂 AI OS</title>
+    <style>
+      html, body, #root { width: 100%; height: 100%; margin: 0; background: #050907; }
+      .boot-shell { display: grid; height: 100%; place-items: center; color: #d7b36a; font: 12px/1.6 system-ui, sans-serif; letter-spacing: .18em; }
+      .boot-shell button { margin-top: 16px; padding: 8px 14px; color: #d7b36a; border: 1px solid rgba(215,179,106,.45); background: #0b110e; cursor: pointer; }
+    </style>
+</head>
+
+<body>
+    <div id="root">
+      <div class="boot-shell" data-boot-shell>
+        <div>朝堂启殿中<br><button type="button" onclick="location.reload()">重新载入</button></div>
+      </div>
+    </div>
+    <script>
+      // Polyfill crypto.randomUUID for non-secure contexts (e.g. HTTP access
+      // via LAN IP). Required because @tanstack/db calls crypto.randomUUID()
+      // directly without a fallback.
+      // See: https://github.com/TanStack/db/issues/784
+      if (typeof crypto !== 'undefined' && typeof crypto.randomUUID !== 'function') {
+        crypto.randomUUID = function () {
+          var bytes = new Uint8Array(16);
+          if (typeof crypto.getRandomValues === 'function') {
+            crypto.getRandomValues(bytes);
+          } else {
+            for (var i = 0; i < 16; i++) bytes[i] = Math.floor(Math.random() * 256);
+          }
+          // Set RFC 4122 v4 version and variant bits
+          bytes[6] = (bytes[6] & 0x0f) | 0x40;
+          bytes[8] = (bytes[8] & 0x3f) | 0x80;
+          var h = [];
+          for (var j = 0; j < 16; j++) h.push(bytes[j].toString(16).padStart(2, '0'));
+          return (
+            h[0] + h[1] + h[2] + h[3] + '-' +
+            h[4] + h[5] + '-' +
+            h[6] + h[7] + '-' +
+            h[8] + h[9] + '-' +
+            h[10] + h[11] + h[12] + h[13] + h[14] + h[15]
+          );
+        };
+      }
+    </script>
+    <script>
+      // During a desktop development cold start Vite can answer its health
+      // probe before dependency optimisation has finished. Retry once instead
+      // of leaving a white native window; production failures keep a visible
+      // manual recovery action rather than entering a reload loop.
+      window.setTimeout(function () {
+        if (!document.querySelector('[data-boot-shell]')) return;
+        if (sessionStorage.getItem('chaotang.boot-retried') === '1') return;
+        sessionStorage.setItem('chaotang.boot-retried', '1');
+        location.reload();
+      }, 5000);
+    </script>
+    <script type="module" src="/src/app/entry/Bootstrap.tsx"></script>
+</body>
+
+</html>

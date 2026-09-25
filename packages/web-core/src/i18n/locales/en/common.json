@@ -1,0 +1,953 @@
+{
+  "editorNames": {
+    "custom": "Custom"
+  },
+  "buttons": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "send": "Send",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "continue": "Continue",
+    "reset": "Reset",
+    "manage": "Manage",
+    "connect": "Connect",
+    "disconnect": "Disconnect",
+    "close": "Close",
+    "replay": "Replay",
+    "discard": "Discard",
+    "addItem": "Add Item",
+    "reply": "Reply",
+    "retry": "Retry",
+    "add": "Add"
+  },
+  "form": {
+    "notSpecified": "Not specified",
+    "selectOption": "Select an option..."
+  },
+  "states": {
+    "loading": "Loading..."
+  },
+  "ok": "OK",
+  "error": "Error",
+  "errors": {
+    "generic": "An unexpected error occurred"
+  },
+  "language": {
+    "browserDefault": "Browser Default"
+  },
+  "conversation": {
+    "plan": "Plan",
+    "output": "Output",
+    "deniedByUser": "{{toolName}} denied by user",
+    "tool": "Tool",
+    "thinking": "Thinking",
+    "toolSummary": {
+      "read": "Read {{path}}",
+      "searched": "Searched for \"{{query}}\"",
+      "fetched": "Fetched {{url}}",
+      "ranCommand": "Ran command",
+      "createdTask": "Created task: {{description}}",
+      "todoOperation": "{{operation}} todos"
+    },
+    "aggregated": {
+      "label": {
+        "read": "Read",
+        "search": "Search",
+        "fetched": "Fetched",
+        "edit": "Edit",
+        "fetch": "Fetch"
+      },
+      "unit": {
+        "file_one": "{{count}} file",
+        "file_other": "{{count}} files",
+        "command_one": "{{count}} command",
+        "command_other": "{{count}} commands",
+        "url_one": "{{count}} URL",
+        "url_other": "{{count}} URLs"
+      }
+    },
+    "subagent": {
+      "defaultType": "Subagent"
+    },
+    "loadingEarlierMessages": "Loading earlier messages",
+    "emptyTitle": "Send a message to start the conversation.",
+    "emptyDescription": "Your workspace conversation will appear here once a new turn starts.",
+    "toolName": {
+      "Skill": "Skill"
+    }
+  },
+  "changesPanel": {
+    "notGitRepo": "Not a Git repo — no diff available"
+  },
+  "folderPicker": {
+    "defaultTitle": "Select Folder",
+    "defaultDescription": "Choose a folder for your project",
+    "legend": "Click folder names to navigate • Use action buttons to select",
+    "manualPathLabel": "Enter path manually:",
+    "go": "Go",
+    "searchLabel": "Search current directory:",
+    "filterPlaceholder": "Filter folders and files...",
+    "selectCurrent": "Select Current",
+    "gitRepo": "git repo",
+    "selectPath": "Select Path"
+  },
+  "branchSelector": {
+    "placeholder": "Select a branch",
+    "searchPlaceholder": "Search branches...",
+    "empty": "No branches found",
+    "badges": {
+      "current": "current",
+      "remote": "remote"
+    },
+    "currentDisabled": "Cannot select the current branch"
+  },
+  "orgSwitcher": {
+    "organizations": "Organizations",
+    "orgSettings": "Organization settings"
+  },
+  "personal": "Personal",
+  "signIn": "Sign in",
+  "signOut": "Sign out",
+  "oauth": {
+    "title": "Sign in to Vibe Kanban",
+    "description": "Sign in to join organizations and share tasks with your team",
+    "continueWithGitHub": "Continue with GitHub",
+    "continueWithGoogle": "Continue with Google",
+    "waitingTitle": "Complete Authentication",
+    "waitingDescription": "A popup window has been opened for authentication",
+    "waitingForAuth": "Waiting for authentication...",
+    "popupInstructions": "If the popup window didn't open, please check your popup blocker settings.",
+    "back": "Back",
+    "successTitle": "Authentication Successful!",
+    "welcomeBack": "Welcome back, {{name}}",
+    "errorTitle": "Authentication Failed",
+    "errorDescription": "There was a problem authenticating your account",
+    "tryAgain": "Try Again"
+  },
+  "onboardingSignIn": {
+    "subtitle": "Sign in to continue",
+    "signedInAs": "Signed in as {{name}}.",
+    "moreOptions": "More options",
+    "featureHeader": "Feature",
+    "signedInHeader": "Signed in",
+    "skipSignInHeader": "Don't sign in",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "toolbar": {
+    "sortBy": "Sort by",
+    "groupBy": "Group by"
+  },
+  "sorting": {
+    "ascending": "Ascending",
+    "descending": "Descending"
+  },
+  "grouping": {
+    "date": "Date",
+    "assignee": "Assignee",
+    "label": "Label"
+  },
+  "workspaces": {
+    "title": "Sessions",
+    "searchPlaceholder": "Search...",
+    "active": "Active",
+    "archived": "Archived",
+    "loading": "Loading...",
+    "notFound": "Session not found",
+    "selectToStart": "Select a session to get started",
+    "draft": "Draft",
+    "viewArchive": "View Archive",
+    "backToActive": "Back to Active",
+    "noArchived": "No archived sessions",
+    "noWorkspaces": "No sessions",
+    "newWorkspace": "New session",
+    "needsAttention": "Needs Attention",
+    "idle": "Idle",
+    "running": "Running",
+    "pin": "Pin",
+    "unpin": "Unpin",
+    "archive": "Archive",
+    "more": "More actions",
+    "rename": {
+      "title": "Rename Session",
+      "description": "Enter a new name for this session.",
+      "nameLabel": "Name",
+      "placeholder": "Enter session name",
+      "action": "Rename",
+      "renaming": "Renaming..."
+    },
+    "unlinkFromIssue": "Unlink from issue",
+    "deleteWorkspace": "Delete session",
+    "unlink": "Unlink",
+    "delete": "Delete",
+    "unlinkConfirmMessage": "Are you sure you want to unlink this session from the issue? The session will still exist but will no longer be associated with this issue.",
+    "deleteConfirmMessage": "Are you sure you want to delete this session? This will unlink it from the issue and delete the local session. This action cannot be undone.",
+    "unlinkError": "Failed to unlink session",
+    "deleteError": "Failed to delete session",
+    "linkError": "Failed to link session",
+    "branchRequiredError": "Select a branch for every repository before creating a workspace",
+    "filesChanged": "{{count}} files",
+    "deleteDialog": {
+      "title": "Delete Session",
+      "description": "Are you sure you want to delete this session? This action cannot be undone.",
+      "deleteBranchLabel": "Delete branch",
+      "cannotDeleteOpenPr": "Cannot delete branch while PR is open",
+      "unlinkFromIssueLabel": "Also unlink from issue"
+    }
+  },
+  "fileTree": {
+    "searchPlaceholder": "Search files...",
+    "noResults": "No matching files",
+    "title": "Files",
+    "showGitHubComments": "Show GitHub comments",
+    "hideGitHubComments": "Hide GitHub comments",
+    "prevGitHubComment": "Previous file with comments",
+    "nextGitHubComment": "Next file with comments"
+  },
+  "sidebar": {
+    "newSession": "New session",
+    "newSessionInFolder": "New session in {{folder}}",
+    "projects": "Projects",
+    "recent": "Recent",
+    "hideSidebar": {
+      "aria": "Hide sidebar"
+    },
+    "search": {
+      "open": {
+        "aria": "Search sessions"
+      },
+      "collapse": {
+        "aria": "Close search"
+      }
+    },
+    "pinned": {
+      "sectionHeader": "Pinned",
+      "emptyHint": "Pin sessions from their menu to keep them here.",
+      "dropHint": "Drop here to pin"
+    },
+    "kebab": {
+      "pin": "Pin session",
+      "unpin": "Unpin session"
+    },
+    "theme": {
+      "light": "light",
+      "dark": "dark"
+    },
+    "footer": {
+      "themeToggle": {
+        "aria": "Switch to {{mode}} mode"
+      }
+    },
+    "controlPanel": {
+      "openMenu": "Open control panel",
+      "theme": {
+        "label": "Theme",
+        "light": "Light",
+        "dark": "Dark",
+        "system": "Match system"
+      },
+      "settings": "Settings",
+      "viewArchive": "View archive"
+    }
+  },
+  "navbar": {
+    "board": "Board",
+    "mobileTabs": {
+      "workspaces": "Wksps",
+      "chat": "Chat",
+      "changes": "Diff",
+      "logs": "Logs",
+      "preview": "Preview",
+      "git": "Git"
+    }
+  },
+  "sections": {
+    "changes": "Changes",
+    "repositories": "Repositories",
+    "addRepositories": "Add Repositories",
+    "project": "Project",
+    "processes": "Processes",
+    "devServer": "Dev Server",
+    "advanced": "Advanced",
+    "workingBranch": "Working Branch",
+    "recent": "Recent",
+    "other": "Other",
+    "devServerPreview": "Dev Server Preview",
+    "terminal": "Terminal",
+    "notes": "Notes"
+  },
+  "notes": {
+    "placeholder": "Add notes about this session...",
+    "selectWorkspace": "Select a session to view notes"
+  },
+  "actions": {
+    "copyPath": "Copy path",
+    "cancel": "Cancel",
+    "saveChanges": "Save Changes",
+    "copied": "Copied",
+    "collapse": "Collapse"
+  },
+  "comments": {
+    "addReviewComment": "Add Review Comment",
+    "addPlaceholder": "Add a comment...",
+    "editPlaceholder": "Edit comment...",
+    "copyToReview": "Copy to review"
+  },
+  "confirm": {
+    "defaultConfirm": "Confirm",
+    "defaultCancel": "Cancel"
+  },
+  "dialogs": {
+    "selectGitRepository": "Select Folder",
+    "chooseExistingRepo": "Choose an existing folder from your file system",
+    "errorTitle": "Error"
+  },
+  "empty": {
+    "noChanges": "No changes to display"
+  },
+  "turnNavigation": {
+    "title": "Your Messages",
+    "count_one": "{{count}} turn",
+    "count_other": "{{count}} turns"
+  },
+  "commandBar": {
+    "noResults": "No results found.",
+    "back": "Back",
+    "defaultPlaceholder": "Type a command or search...",
+    "selectBranch": "Select Branch",
+    "selectBranchFor": "Select Branch for {{repoName}}",
+    "pages": {
+      "root": {
+        "groups": {
+          "actions": "Actions",
+          "view": "View",
+          "general": "General"
+        }
+      },
+      "workspaceActions": {
+        "title": "Session Actions",
+        "groups": {
+          "session": "Session",
+          "scripts": "Scripts"
+        }
+      },
+      "repoActions": {
+        "title": "Repository Actions",
+        "groups": {
+          "actions": "Actions"
+        }
+      },
+      "diffOptions": {
+        "title": "Diff Options",
+        "groups": {
+          "display": "Display"
+        }
+      },
+      "viewOptions": {
+        "title": "View Options",
+        "groups": {
+          "panels": "Panels"
+        }
+      },
+      "issueActions": {
+        "title": "Issue Actions",
+        "groups": {
+          "actions": "Actions"
+        }
+      }
+    },
+    "actions": {
+      "startReview": "Start Review",
+      "rename": "Rename",
+      "duplicate": "Duplicate",
+      "spinOff": "Spin off session",
+      "archive": "Archive",
+      "unarchive": "Unarchive",
+      "delete": "Delete",
+      "runSetupScript": "Run Setup Script",
+      "runCleanupScript": "Run Cleanup Script",
+      "runArchiveScript": "Run Archive Script",
+      "newWorkspace": "New Workspace",
+      "createWorkspaceFromPr": "Create Workspace from PR",
+      "settings": "Settings",
+      "projectSettings": "Project Settings",
+      "signIn": "Sign In",
+      "signOut": "Sign Out",
+      "giveFeedback": "Give Feedback",
+      "workspacesGuide": "Workspaces Guide",
+      "projectsGuide": "Projects Guide",
+      "openCommandBar": "Open Command Bar",
+      "toggleAllDiffs": "Toggle All Diffs",
+      "openInIde": "Open in IDE",
+      "openInIdeTooltip": "Open in {{ide}}",
+      "copyWorkspacePath": "Copy Workspace Path",
+      "copyRawLogs": "Copy Raw Logs",
+      "devServer": "Dev Server",
+      "startDevServer": "Start Dev Server",
+      "stopDevServer": "Stop Dev Server",
+      "devServerTooltip": {
+        "start": "Start dev server",
+        "stop": "Stop dev server",
+        "starting": "Starting dev server...",
+        "stopping": "Stopping dev server..."
+      },
+      "createIssue": "Create Issue",
+      "changeStatus": "Change Status",
+      "changePriority": "Change Priority",
+      "changeAssignees": "Change Assignees",
+      "makeSubIssueOf": "Make Sub-issue of",
+      "addSubIssue": "Add Sub-issue",
+      "createSubIssue": "Create Sub-issue",
+      "removeParent": "Remove Parent",
+      "linkWorkspace": "Link Workspace",
+      "deleteIssue": "Delete Issue",
+      "duplicateIssue": "Duplicate Issue",
+      "markBlocking": "Mark Blocking",
+      "markBlockedBy": "Mark Blocked By",
+      "markRelated": "Mark Related",
+      "markDuplicateOf": "Mark Duplicate Of",
+      "diffView": {
+        "switchToSplit": "Switch to Side-by-Side View",
+        "switchToInline": "Switch to Inline View",
+        "tooltipInline": "Inline view",
+        "tooltipSplit": "Side-by-side view"
+      },
+      "whitespace": {
+        "show": "Show Whitespace Changes",
+        "ignore": "Ignore Whitespace Changes"
+      },
+      "lineWrap": {
+        "disable": "Disable Line Wrapping",
+        "enable": "Enable Line Wrapping"
+      },
+      "leftSidebar": {
+        "hide": "Hide Left Sidebar",
+        "show": "Show Left Sidebar"
+      },
+      "rightSidebar": {
+        "hide": "Hide Right Sidebar",
+        "show": "Show Right Sidebar"
+      },
+      "chatPanel": {
+        "toggle": "Toggle Chat Panel",
+        "hide": "Hide Chat Panel",
+        "show": "Show Chat Panel"
+      },
+      "changesPanel": {
+        "toggle": "Toggle Changes Panel",
+        "hide": "Hide Changes Panel",
+        "show": "Show Changes Panel"
+      },
+      "logsPanel": {
+        "toggle": "Toggle Logs Panel",
+        "hide": "Hide Logs Panel",
+        "show": "Show Logs Panel"
+      },
+      "previewPanel": {
+        "toggle": "Toggle Preview Panel",
+        "hide": "Hide Preview Panel",
+        "show": "Show Preview Panel"
+      },
+      "toggleAllDiffsTooltip": {
+        "collapse": "Collapse all diffs",
+        "expand": "Expand all diffs"
+      }
+    }
+  },
+  "workspacesGuide": {
+    "welcome": {
+      "title": "Welcome",
+      "content": "Welcome to the Sessions page. One view of the sessions across all of your projects, and the fastest way to review work from your agents. Share feedback anytime via the navbar icon."
+    },
+    "commandBar": {
+      "title": "Command Bar",
+      "content": "The command bar is your central hub for navigation. Open it with CMD+K to search and access every action available in a session."
+    },
+    "contextBar": {
+      "title": "Context Bar",
+      "content": "The context bar lets you switch between panes quickly. Drag it wherever works best for you."
+    },
+    "sidebar": {
+      "title": "Session Sidebar",
+      "content": "See the status of all your sessions at a glance. Notifications highlight which ones need attention. Archive merged sessions to keep your sidebar clean."
+    },
+    "multiRepo": {
+      "title": "Multi-Repo Support",
+      "content": "Add multiple repos to a single session. Reference code from one repo while working in another, or implement changes across several repos at once."
+    },
+    "sessions": {
+      "title": "Multiple Sessions",
+      "content": "Create multiple agent conversation sessions within a single session, including sessions with different agents. This helps you work around conversation limits or spin up review agents in separate threads."
+    },
+    "preview": {
+      "title": "Preview Changes",
+      "content": "Preview your work in a built-in browser without switching contexts. Test across desktop, mobile, and custom viewport sizes."
+    },
+    "diffs": {
+      "title": "Diffs and Comments",
+      "content": "The redesigned diffs panel includes a file tree of your changes. Comment directly on diffs to give feedback to the agent, and view GitHub comments when your session is linked to a PR."
+    },
+    "classicUi": {
+      "title": "Return to Classic UI",
+      "content": "Click the exit icon on the left side of the navbar to return to the classic kanban board. To disable the new UI entirely, update the \"Enable Sessions Beta\" option under \"Beta Features\" in settings."
+    }
+  },
+  "logs": {
+    "searchLogs": "Search logs",
+    "selectProcessToView": "Select a process to view logs"
+  },
+  "processes": {
+    "noProcesses": "No processes",
+    "terminal": "Terminal"
+  },
+  "search": {
+    "matchCount": "{{current}} of {{total}}",
+    "noMatches": "No matches"
+  },
+  "contextUsage": {
+    "label": "Context usage",
+    "emptyTooltip": "Context usage appears after the next reply",
+    "tooltip": "Context: {{percentage}}% · {{used}} / {{total}} tokens",
+    "ariaLabel": "Context usage: {{percentage}}%"
+  },
+  "shortcuts": {
+    "title": "Keyboard Shortcuts",
+    "inWorkspace": "(in session)",
+    "sequentialHint": "Sequential shortcuts: Press the first key, then the second within 500ms.",
+    "configurableHint": "Configurable in Settings → General → Message Input",
+    "groups": {
+      "quickActions": "Quick Actions",
+      "navigation": "Navigation",
+      "modifiers": "Modifiers",
+      "goTo": "Go To (G ...)",
+      "workspace": "Session (W ...)",
+      "view": "View (V ...)",
+      "issues": "Issues (I ...)",
+      "git": "Git (X ...)",
+      "yank": "Yank (Y ...)",
+      "toggle": "Toggle (T ...)",
+      "run": "Run (R ...)"
+    },
+    "actions": {
+      "showHelp": "Show this help",
+      "closeCancel": "Close/cancel",
+      "createNewTask": "Create new task",
+      "deleteSelected": "Delete selected",
+      "focusSearch": "Focus search",
+      "moveDown": "Move down",
+      "moveUp": "Move up",
+      "moveLeft": "Move left",
+      "moveRight": "Move right",
+      "openCommandBar": "Open command bar",
+      "formatInlineCode": "Format inline code",
+      "sendMessage": "Send message",
+      "settings": "Go to Settings",
+      "new-workspace": "Go to New Session",
+      "duplicate-workspace": "Duplicate session",
+      "rename-workspace": "Rename session",
+      "pin-workspace": "Pin/Unpin session",
+      "archive-workspace": "Archive session",
+      "delete-workspace": "Delete session",
+      "toggle-changes-mode": "Toggle Changes panel",
+      "toggle-logs-mode": "Toggle Logs panel",
+      "toggle-preview-mode": "Toggle Preview panel",
+      "toggle-left-sidebar": "Toggle Left Sidebar",
+      "toggle-left-main-panel": "Toggle Chat panel",
+      "create-issue": "Create Issue",
+      "change-issue-status": "Change Status",
+      "change-issue-priority": "Change Priority",
+      "change-assignees": "Change Assignees",
+      "make-sub-issue-of": "Make Sub-issue of",
+      "add-sub-issue": "Add Sub-issue",
+      "remove-parent-issue": "Remove Parent",
+      "link-workspace": "Link Session",
+      "duplicate-issue": "Duplicate Issue",
+      "delete-issue": "Delete Issue",
+      "git-create-pr": "Create Pull Request",
+      "git-merge": "Merge branch",
+      "git-rebase": "Rebase branch",
+      "git-push": "Push changes",
+      "copy-path": "Copy path",
+      "copy-raw-logs": "Copy raw logs",
+      "toggle-dev-server": "Toggle dev server",
+      "toggle-wrap-lines": "Toggle line wrapping",
+      "run-setup-script": "Run setup script",
+      "run-cleanup-script": "Run cleanup script",
+      "run-archive-script": "Run archive script"
+    }
+  },
+  "typeahead": {
+    "tags": "Tags",
+    "files": "Files",
+    "commands": "Commands",
+    "chooseRepo": "Choose repo",
+    "selectedRepo": "Selected repo: {{repoName}}",
+    "missingRepo": "Selected repo is no longer available.",
+    "noTagsOrFiles": "No tags or files found",
+    "createTag": "Create new tag",
+    "noCommands": "No commands available for this agent.",
+    "loadingCommands": "Loading commands…",
+    "discoveringCommands": "Discovering commands…"
+  },
+  "kanban": {
+    "noVisibleStatuses": "All statuses are hidden. Use display settings or switch to another tab to view issues.",
+    "noProjectFound": "No project found",
+    "unassigned": "Unassigned",
+    "noTagsAvailable": "No tags available",
+    "createNewIssue": "Create new issue",
+    "searchTags": "Search tags...",
+    "selectColorFor": "Select color for",
+    "createTag": "Create",
+    "noPrCreated": "No PR created",
+    "noCommentsYet": "No comments yet",
+    "createdBy": "Created by",
+    "comments": "Comments",
+    "enterCommentPlaceholder": "Enter your comment here...",
+    "attachFile": "Attach file",
+    "attachFileHint": "Attach files (max 20MB each)",
+    "dropFilesHere": "Drop files here",
+    "fileDropHint": "Any file type up to 20MB",
+    "unknownUser": "Unknown User",
+    "deletedUser": "Deleted User",
+    "replyQuotePrefix": "wrote:",
+    "moreActions": "More actions",
+    "closePanel": "Close panel",
+    "copyLink": "Copy link",
+    "issueTitlePlaceholder": "Issue Title...",
+    "issueDescriptionPlaceholder": "Enter task description here...",
+    "createDraftWorkspaceImmediately": "Create draft session immediately",
+    "createDraftWorkspaceDescription": "After creating the issue, open the session creation form pre-filled with the issue details",
+    "createIssue": "Create Issue",
+    "newIssue": "New Issue",
+    "previewCodeBlock": "[Code block]",
+    "previewImage": "[Image]",
+    "previewImageWithName": "[Image: {{name}}]",
+    "previewFile": "[File]",
+    "previewFileWithName": "[File: {{name}}]",
+    "imageAttachmentNameFallback": "Attachment",
+    "removeImage": "Remove image",
+    "maxFilesAtOnce": "Maximum {{count}} files at once",
+    "fileExceedsLimit": "File {{filename}} exceeds 20MB limit",
+    "unknownError": "Unknown error",
+    "failedToUploadFile": "Failed to upload {{filename}}: {{message}}",
+    "downloadAttachment": "Download attachment",
+    "subIssues": "Sub-issues",
+    "noSubIssues": "No sub-issues",
+    "markIndependentIssue": "Mark as independent issue",
+    "parentIssue": "Parent",
+    "subIssueIndicator": "↳",
+    "viewTabs": {
+      "active": "Active",
+      "all": "All"
+    },
+    "loginRequired": {
+      "title": "Sign in required",
+      "description": "Please sign in to view this project.",
+      "action": "Sign in"
+    },
+    "team": "Team",
+    "personal": "Personal",
+    "searchPlaceholder": "Search issues...",
+    "filters": "Filters",
+    "clearFilters": "Clear filters",
+    "filtersDescription": "Adjust filters and sorting for this board view.",
+    "filterByTag": "Filter by tag",
+    "filterByPriority": "Filter by priority",
+    "tags": "Tags",
+    "sortBy": "Sort",
+    "workspaceSidebar": {
+      "sortDialogTitle": "Sort sessions",
+      "sortDialogDescription": "Choose how sessions are ordered in the sidebar.",
+      "sortByLabel": "Sort by",
+      "sortOrderLabel": "Sort order",
+      "sortUpdatedAt": "Updated at",
+      "sortCreatedAt": "Created at",
+      "filterDialogTitle": "Filter sessions",
+      "filterDialogDescription": "Narrow down sessions by project and PR state.",
+      "projectFilterLabel": "Project",
+      "prFilterLabel": "PR",
+      "prFilterAll": "All",
+      "prFilterHasPr": "Has PR",
+      "prFilterNoPr": "No PR",
+      "noProject": "No project",
+      "sortButtonTitle": "Sort sessions",
+      "filterButtonTitle": "Filter sessions"
+    },
+    "sortAscending": "Ascending",
+    "sortDescending": "Descending",
+    "assignee": "Assignee",
+    "self": "Me",
+    "priority": "Priority",
+    "subIssuesFilterLabel": "Sub-issues",
+    "workspacesFilterLabel": "Sessions",
+    "selectAssignees": "Select assignees...",
+    "relationships": "Relationships",
+    "noRelationships": "No relationships",
+    "openProjectsGuide": "Projects guide",
+    "editProjectSettings": "Edit project settings",
+    "linkWorkspace": "Link session...",
+    "createNewWorkspace": "Create new session",
+    "workspaces": "Sessions",
+    "showingWorkspaces": "Showing {{count}} of {{total}}",
+    "changeColor": "Change color",
+    "editName": "Edit name",
+    "deleteStatus": "Delete status",
+    "cannotDeleteWithIssues": "Move issues first",
+    "lastVisibleStatus": "At least one status must be visible",
+    "showStatus": "Show status",
+    "hideStatus": "Hide status",
+    "newStatus": "New Status",
+    "visibleColumns": "Visible Columns",
+    "dragToRearrange": "Drag to re-arrange",
+    "addColumn": "Add column",
+    "projectsGuide": {
+      "intro": {
+        "title": "Welcome",
+        "content": "Welcome to Vibe Kanban. Use the help sections in this panel to learn how things work, then create your first issue. You can re-open this help dialog or give feedback anytime from the navbar."
+      },
+      "welcome": {
+        "title": "Projects",
+        "content": "The project page is where you manage issues. You can view your issues as a kanban board, or as a list, and filter by status, tag, assignee and more."
+      },
+      "issues": {
+        "title": "Issues",
+        "content": "Each issue represents a feature or problem to solve. Issues have statuses, priorities, assignees, tags, relationships, comments, sub-issues and more."
+      },
+      "workspaces": {
+        "title": "Sessions",
+        "content": "To start working on an issue, create a session. A single issue can have multiple sessions. Issues describe the work to be done, sessions are where the work happens."
+      },
+      "organizations": {
+        "title": "Invite your team",
+        "content": "We've automatically created a personal organization and initial project so you can get started with Vibe Kanban. Export your cloud data before shutdown."
+      }
+    }
+  },
+  "createMode": {
+    "headings": {
+      "repoStep": "Which repositories would you like to work on?",
+      "chatStep": "What would you like to work on?"
+    },
+    "repoPicker": {
+      "actions": {
+        "recent": "Recent",
+        "browse": "Browse",
+        "create": "Create"
+      },
+      "setupHintTitle": "Setup Scripts",
+      "setupHint": "Tip: Configure setup scripts for this repository in Settings → Repositories",
+      "setupHintDismiss": "Dismiss",
+      "setupHintLink": "Configure in Settings"
+    },
+    "composerChips": {
+      "pickFolderPlaceholder": "Pick a folder…",
+      "pickBranch": "Select branch",
+      "openFolder": "Open folder…",
+      "recentsEmpty": "No recent folders",
+      "addFolderMenuItem": "Add folder",
+      "removeFolderAction": "Remove",
+      "worktreeChip": "Worktree"
+    },
+    "placeholder": {
+      "typeForCommands": "Type / for commands"
+    },
+    "landing": {
+      "welcomeBack": "Welcome back",
+      "recentSessions": "Recent sessions",
+      "sessionsAwaitingInput_one": "{{count}} session awaiting input",
+      "sessionsAwaitingInput_other": "{{count}} sessions awaiting input",
+      "whatToWorkOn": "What would you like to work on?",
+      "codexNotFound": "Codex CLI was not detected. Install and sign in to Codex before starting a local task.",
+      "quickStarts": {
+        "analyze": {
+          "label": "Analyze this project",
+          "prompt": "Analyze the current project's architecture, main modules, and startup flow, then suggest improvements."
+        },
+        "fix": {
+          "label": "Find and fix an issue",
+          "prompt": "Inspect this project for the issue most likely to affect users, identify its cause, and fix it."
+        },
+        "build": {
+          "label": "Build a new feature",
+          "prompt": "Understand the current project first, then help me implement a new feature."
+        }
+      },
+      "status": {
+        "awaitingInput": "Awaiting input",
+        "running": "Running",
+        "failed": "Failed"
+      }
+    }
+  },
+  "modelSelector": {
+    "preset": "Preset",
+    "custom": "Custom",
+    "permissions": "Permissions",
+    "permissionAuto": "Auto mode",
+    "permissionAsk": "Ask permissions",
+    "permissionPlan": "Plan mode",
+    "permissionAcceptEdits": "Accept edits",
+    "permissionBypass": "Bypass permissions",
+    "agent": "Agent",
+    "default": "Default",
+    "model": "Model"
+  },
+  "crashScreen": {
+    "title": "Something went wrong",
+    "description": "The application encountered an unexpected error.",
+    "reload": "Reload",
+    "showDetails": "Show details",
+    "hideDetails": "Hide details"
+  },
+  "syncError": {
+    "networkErrors": "Network Errors",
+    "streamsAffected": "{{count}} stream affected",
+    "streamsAffected_other": "{{count}} streams affected",
+    "status": "(status {{status}})",
+    "refreshPage": "Refresh Page",
+    "remoteAuthUnavailable": "Remote authentication is temporarily unavailable. Some remote features may not work until it recovers."
+  },
+  "appBar": {
+    "kanban": {
+      "tooltip": "Sign in to view projects",
+      "title": "Kanban Boards",
+      "description": "Sign in to organise your coding agents with kanban boards."
+    }
+  },
+  "askQuestion": {
+    "title": "Agent is asking a question",
+    "selectMultiple": "select multiple",
+    "confirmSelection": "Confirm selection",
+    "submitting": "Submitting answers...",
+    "answeredCount": "Answered {{count}} question",
+    "answeredCount_other": "Answered {{count}} questions"
+  },
+  "time": {
+    "short": {
+      "now": "now",
+      "minutes": "{{count}}m",
+      "hours": "{{count}}h",
+      "days": "{{count}}d"
+    }
+  },
+  "panels": {
+    "changes": "Changes",
+    "logs": "Logs",
+    "preview": "Preview",
+    "git": "Git",
+    "terminal": "Terminal",
+    "openPanelMenu": "Open panel menu",
+    "closePanel": "Close {{panel}} panel"
+  },
+  "routines": {
+    "title": "Routines",
+    "subtitle": "Create templated routines that run on schedule or manually.",
+    "banner": "Local routines only run while your computer is awake.",
+    "newButton": "New routine",
+    "newPageTitle": "New local routine",
+    "empty": "No routines yet.",
+    "runNow": "Run now",
+    "edit": "Edit",
+    "delete": "Delete",
+    "deleteConfirmTitle": "Delete routine",
+    "deleteConfirm": "Delete routine \"{{name}}\" and {{count}} runs ({{count}} workspaces and worktrees)?",
+    "nextRun": "Next run {{when}}",
+    "nextRunNever": "No upcoming run",
+    "lastRun": "Last run {{when}}",
+    "neverRun": "Never run",
+    "history": {
+      "title": "History",
+      "empty": "No runs yet."
+    },
+    "sections": {
+      "description": "Description",
+      "status": "Status",
+      "folder": "Folder",
+      "repeats": "Repeats",
+      "instructions": "Instructions"
+    },
+    "status": {
+      "pending": "Pending",
+      "running": "Running",
+      "done": "Done",
+      "skipped": "Skipped",
+      "failed": "Failed"
+    },
+    "skipReason": {
+      "appOffline": "App was offline",
+      "prevStillRunning": "Previous run still running"
+    },
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "fields": {
+      "name": "Name",
+      "namePlaceholder": "A short name for this routine",
+      "description": "Description",
+      "descriptionPlaceholder": "What does this routine do?",
+      "instructions": "Instructions",
+      "instructionsPlaceholder": "The prompt sent to the agent on each run.",
+      "folder": "Folder",
+      "folderPlaceholder": "Pick a folder",
+      "currentBranch": "Current branch",
+      "worktree": "Use worktree",
+      "executor": "Agent",
+      "variant": "Preset",
+      "model": "Model",
+      "permission": "Permission",
+      "schedule": "Schedule",
+      "time": "Time",
+      "minute": "Minute",
+      "dow": "Day of week"
+    },
+    "schedule": {
+      "manual": "Manual",
+      "hourly": "Hourly",
+      "daily": "Daily",
+      "weekdays": "Weekdays",
+      "weekly": "Weekly",
+      "summary": {
+        "manual": "Manual only",
+        "hourly": "Every hour at :{{minute}}",
+        "hourlyNoTime": "Every hour",
+        "daily": "Every day at {{time}}",
+        "dailyNoTime": "Every day",
+        "weekdays": "Mon–Fri at {{time}}",
+        "weekdaysNoTime": "Mon–Fri",
+        "weekly": "Every {{day}} at {{time}}",
+        "weeklyDayOnly": "Every {{day}}",
+        "weeklyAt": "Weekly at {{time}}",
+        "weeklyNoTime": "Weekly"
+      }
+    },
+    "days": {
+      "sun": "Sunday",
+      "mon": "Monday",
+      "tue": "Tuesday",
+      "wed": "Wednesday",
+      "thu": "Thursday",
+      "fri": "Friday",
+      "sat": "Saturday"
+    },
+    "form": {
+      "submitCreate": "Create routine",
+      "submitSave": "Save",
+      "cancel": "Cancel",
+      "validation": {
+        "nameRequired": "Name is required",
+        "descriptionRequired": "Description is required",
+        "instructionsRequired": "Instructions are required",
+        "folderRequired": "Pick a folder",
+        "modelRequired": "Pick a model",
+        "permissionRequired": "Pick a permission policy",
+        "timeRequired": "Pick a time",
+        "minuteRequired": "Pick a minute",
+        "dowRequired": "Pick a day"
+      }
+    },
+    "sidebar": {
+      "nav": "Routines"
+    }
+  }
+}

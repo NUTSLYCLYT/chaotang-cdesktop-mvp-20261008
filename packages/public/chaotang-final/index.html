@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta name="description" content="朝堂 AI OS 渐进式多部门交互图谱">
+  <title>朝堂 AI OS · 最终界面图谱</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%2396372f'/%3E%3Ctext x='32' y='44' text-anchor='middle' font-size='38' fill='%23f1d690'%3E%E6%9C%9D%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app" id="app" data-mode="smart" data-scroll="seal" data-task-state="quiet">
+    <div class="scene" id="scene" aria-hidden="true"></div>
+    <div class="scene-vignette" aria-hidden="true"></div>
+
+    <header class="topbar">
+      <button class="brand" type="button" data-page="A01" aria-label="朝 朝堂 AI OS 一位总负责人 一个真实任务 返回大殿">
+        <span class="brand-seal" aria-hidden="true">朝</span>
+        <span><strong>朝堂 AI OS</strong><small>一位总负责人 · 一个真实任务</small></span>
+      </button>
+      <nav class="primary-nav" aria-label="一级导航">
+        <button data-page="A01">大殿</button>
+        <button data-page="A02">上书房</button>
+        <button data-page="A03">军机处</button>
+        <button class="expert-nav" type="button" data-menu="ministries" aria-haspopup="menu" aria-controls="ministriesMenu" aria-expanded="false">六部各司</button>
+        <button data-page="C01">锦衣卫</button>
+        <button data-page="C02">钦天监</button>
+        <button class="expert-nav" data-page="A06">史馆</button>
+        <button data-open="atlas">更多</button>
+      </nav>
+      <div class="window-drag-surface" data-window-drag-surface aria-hidden="true"></div>
+      <div class="global-actions">
+        <div class="mode-switch" aria-label="界面模式">
+          <button class="is-active" type="button" data-mode="smart" aria-pressed="true">智能版</button>
+          <button type="button" data-mode="custom" aria-pressed="false">定制版</button>
+        </div>
+        <button type="button" data-open="alerts"><span class="dot danger"></span>演示预警 <b>2</b></button>
+        <button type="button" data-open="todo">演示待办 <b>3</b></button>
+        <button class="passport-control" type="button" data-open="growth">成长护照</button>
+        <button class="stat-control upgrade-control" type="button" data-open="upgrade" aria-label="朝堂升级" title="演示等级 · 点击查看受控升级">
+          <span>升级</span><b class="level-badge">LV.3</b>
+        </button>
+        <button class="stat-control compute-control" type="button" data-open="compute" aria-label="算筹" title="演示算筹余额 · 未连接真实账户">
+          <span>算筹</span><b class="compute-badge">2,480</b>
+        </button>
+        <button class="avatar" type="button" data-open="account" aria-label="用户头像与个人设置" title="个人朝堂 · 用户设置">君</button>
+      </div>
+    </header>
+
+    <div class="signal-bar" role="status">
+      <span class="truth-badge">DEMO · 交互原型</span>
+      <div class="signal-copy"><b>朝报：</b><span id="signalText">本页面不连接真实账户、来源或外部执行；所有状态均为体验演示。</span></div>
+      <button type="button" data-open="briefing">展开今日朝报</button>
+    </div>
+
+    <aside class="domain-rail" aria-label="人生六域">
+      <button data-page="E01"><span>业</span><b>事业</b></button>
+      <button data-page="E02"><span>财</span><b>财富</b></button>
+      <button data-page="E03"><span>学</span><b>学习</b></button>
+      <button data-page="E04"><span>生</span><b>生活</b></button>
+      <button data-page="E05"><span>健</span><b>健康</b></button>
+      <button data-page="E06"><span>乐</span><b>娱乐</b></button>
+      <button class="rail-more" data-open="atlas"><span>卅</span><b>全部</b></button>
+    </aside>
+
+    <aside class="side-panel left-panel" aria-label="当前上下文">
+      <div class="panel-head">
+        <div><span class="panel-kicker">当前上下文</span><h2 id="leftTitle"></h2></div>
+        <button class="icon-btn" type="button" data-collapse="left" aria-label="收起左栏" aria-expanded="true">‹</button>
+      </div>
+      <div class="smart-only smart-sidebar">
+        <section class="smart-role-card">
+          <span id="smartRoleTag">一句话认识这里</span>
+          <b id="smartRoleDefinition"></b>
+          <small id="smartRoleValue"></small>
+          <button type="button" data-open="example" id="smartRoleHook">看它怎样替你做完一件事 →</button>
+        </section>
+        <section class="smart-next-card">
+          <span>现在最值得做</span>
+          <b id="smartNowAction"></b>
+          <small id="smartNowReason"></small>
+          <button type="button" id="resumeTaskButton" hidden>继续上次任务</button>
+        </section>
+        <section class="smart-agent-card">
+          <div class="agent-portrait" id="smartAgentMonogram">丞</div>
+          <div><span>建议找他聊聊</span><b id="smartAgentName">丞相</b><small>AI Agent · 替你解释并形成下一步</small></div>
+          <button type="button" data-open="agents">召见</button>
+        </section>
+        <section class="smart-side-section">
+          <span>你可以得到</span>
+          <div class="smart-benefit-list" id="smartBenefitList"></div>
+        </section>
+        <section class="smart-growth-card">
+          <span>这次你会顺便学会</span>
+          <b id="smartGrowth"></b>
+          <button type="button" data-open="coach">给我一句可以照着说的话</button>
+        </section>
+        <section class="smart-proof-card" aria-labelledby="smartProofTitle">
+          <span>成长证据</span>
+          <b id="smartProofTitle"></b>
+          <small id="smartProofDetail"></small>
+          <button type="button" data-open="benchmark">查看对标依据</button>
+        </section>
+        <button class="smart-teach-link" type="button" data-open="example">看一个相似案例怎么做 →</button>
+      </div>
+      <div class="agent-card custom-only">
+        <div class="agent-portrait" id="agentMonogram">丞</div>
+        <div><b id="agentName"></b><small><span class="dot ok"></span>主责 Agent · 演示</small></div>
+        <button type="button" data-open="agents">召见</button>
+      </div>
+      <div class="panel-section custom-only">
+        <div class="section-title"><span id="leftSectionLabel">当前材料</span><button type="button" data-open="materials">查看全部</button></div>
+        <div class="panel-list" id="leftList"></div>
+      </div>
+      <div class="panel-section custom-only">
+        <div class="section-title"><span>专业细节</span><button type="button" data-open="system">系统细节</button></div>
+        <div class="mini-grid">
+          <button data-open="passport"><span>任务护照</span><b>同一任务</b></button>
+          <button data-open="permissions"><span>权限边界</span><b>可撤销</b></button>
+          <button data-open="versions"><span>版本与日志</span><b>待接入</b></button>
+          <button data-open="capability"><span>能力状态</span><b>DEMO</b></button>
+        </div>
+      </div>
+      <button class="panel-footer-link custom-only" type="button" data-open="history">查看本议题全部历史 →</button>
+    </aside>
+
+    <main class="stage" id="stage">
+      <div class="page-heading">
+        <span id="pageKicker">大殿 · 今日</span>
+        <h1 id="pageTitle" tabindex="-1"></h1>
+        <p id="pageSubtitle"></p>
+      </div>
+      <p class="sr-only" id="routeAnnouncement" role="status" aria-live="polite"></p>
+
+      <section class="scroll-card" aria-labelledby="verdictTitle">
+        <button class="scroll-handle left" type="button" data-scroll-toggle aria-label="切换卷轴状态"></button>
+        <button class="scroll-handle right" type="button" data-scroll-toggle aria-label="切换卷轴状态"></button>
+        <div class="seal-state">
+          <button type="button" data-scroll-toggle><span>玺</span><b id="sealActionLabel">查看完整建议与结果</b></button>
+        </div>
+        <header class="display-bar">
+          <div><span>御屏</span><b id="displayContext">当前御断</b></div>
+          <nav class="display-tabs" aria-label="御屏内容">
+            <button type="button" class="is-active" data-surface="brief" aria-pressed="true">御断</button>
+            <button type="button" data-surface="progress" aria-pressed="false">办理</button>
+            <button type="button" data-surface="materials" aria-pressed="false">材料</button>
+            <button type="button" data-surface="result" aria-pressed="false">成果</button>
+          </nav>
+          <button class="display-collapse" type="button" data-scroll-collapse aria-label="收起御屏到底部">⌄ 收起</button>
+        </header>
+        <section class="display-surface" id="displaySurface" aria-live="polite" hidden>
+          <div class="display-surface-head">
+            <button type="button" data-surface="brief">← 返回御断</button>
+            <span id="displaySurfaceKicker">次级页面</span>
+          </div>
+          <div id="displaySurfaceBody"></div>
+        </section>
+        <div class="scroll-content" id="scrollContent">
+          <div class="scroll-meta">
+            <span id="stageLabel">阶段 · 发现</span>
+            <button type="button" data-scroll-toggle><span id="scrollStateLabel">半卷</span>⌃</button>
+          </div>
+          <div class="smart-only smart-outcome" aria-live="polite">
+            <span>你将得到</span>
+            <b id="smartOutcome"></b>
+          </div>
+          <p class="scroll-eyebrow"><span class="smart-only">丞相建议</span><span class="custom-only">一句御断</span></p>
+          <h2 id="verdictTitle"></h2>
+          <p class="smart-only smart-reason"><span>为什么这样选</span><b id="smartReason"></b></p>
+          <div class="triad">
+            <article><span>发生了什么</span><b id="situation"></b></article>
+            <article><span>与你的关系</span><b id="impact"></b></article>
+            <article><span>现在做什么</span><b id="nowAction"></b></article>
+          </div>
+          <div class="full-only detail-grid">
+            <article><span>朝堂能代办什么</span><p id="canDo"></p></article>
+            <article><span>为什么可信</span><p id="whyTrust"></p></article>
+          </div>
+          <div class="compare-only compare-grid" aria-label="三策比较">
+            <button type="button" data-strategy="稳策" aria-pressed="false"><span>稳策</span><b>先补关键证据</b><p>最小投入验证事实，证据不足时不扩大行动。</p><small>风险最低 · 速度较慢</small></button>
+            <button type="button" data-strategy="衡策" aria-pressed="false"><span>衡策</span><b>边验证边推进</b><p>保留核心投入，同时设置明确的停止与复盘条件。</p><small>结果与风险平衡</small></button>
+            <button type="button" data-strategy="进策" aria-pressed="false"><span>进策</span><b>抢占当前窗口</b><p>在授权边界内集中资源，按短周期检查点快速校正。</p><small>速度最快 · 风险最高</small></button>
+          </div>
+          <div class="evidence-line">
+            <button type="button" data-open="evidence">查看判断依据</button>
+            <span id="evidenceLabel">演示材料 · 尚未接入真实来源</span>
+          </div>
+          <div class="primary-zone">
+            <button class="primary-action" type="button" id="primaryAction"></button>
+            <small id="primaryConsequence"></small>
+          </div>
+          <section class="smart-only next-choice" aria-label="简化的下一步选择">
+            <span>只需要二选一</span>
+            <div>
+              <button type="button" id="explainNextAction">先讲明白</button>
+              <button type="button" id="deferNextAction">暂存，稍后处理</button>
+            </div>
+          </section>
+          <div class="smart-only smart-help" aria-label="教学与说明">
+            <button type="button" data-open="advice">为什么这样建议</button>
+            <button type="button" data-open="example">看示范案例</button>
+            <button type="button" data-open="coach">教我一步</button>
+            <button type="button" data-open="glossary">名词解释</button>
+          </div>
+          <section class="smart-only smart-task" aria-label="朝堂协同状态">
+            <div class="smart-task-copy">
+              <span><i class="dot" id="smartTaskDot"></i><b id="smartTaskTitle">静殿待命</b></span>
+              <small id="smartTaskDetail">尚无真实任务；百官保持待命，不伪造办理进度。</small>
+            </div>
+            <div class="smart-task-actions">
+              <button type="button" data-open="coordination">查看朝堂如何协同</button>
+              <button type="button" id="taskResultShortcut" hidden>进入同一任务成果</button>
+            </div>
+            <div class="smart-stamps" id="smartStamps" aria-label="任务阶段">
+              <span data-task-step="intent">明确结果</span>
+              <span data-task-step="understand">丞相理解</span>
+              <span data-task-step="advise">形成方案</span>
+              <span data-task-step="confirm">用户确认</span>
+              <span data-task-step="coordinate">百司会办</span>
+              <span data-task-step="result">交付成果</span>
+            </div>
+          </section>
+          <div class="secondary-actions" id="secondaryActions"></div>
+        </div>
+      </section>
+    </main>
+
+    <aside class="side-panel right-panel" aria-label="判断与结果">
+      <div class="panel-head">
+        <div><span class="panel-kicker">结果与边界</span><h2 id="rightTitle"></h2></div>
+        <button class="icon-btn" type="button" data-collapse="right" aria-label="收起右栏" aria-expanded="true">›</button>
+      </div>
+      <div class="smart-only smart-sidebar">
+        <section class="smart-adviser-note">
+          <span><b id="smartRightAgent">丞相</b>建议</span>
+          <strong id="smartRightAdvice"></strong>
+          <button type="button" data-open="advice">为什么这样建议</button>
+        </section>
+        <section class="smart-side-section">
+          <div class="smart-section-heading"><span>值得关注</span><button type="button" data-surface="progress">查看办理</button></div>
+          <div class="smart-watch-list" id="smartWatchList"></div>
+        </section>
+        <section class="smart-side-section">
+          <div class="smart-section-heading"><span>这个部门还能为你做</span><button type="button" data-open="capability">能力状态</button></div>
+          <div class="smart-ability-list" id="smartAbilityList"></div>
+        </section>
+        <section class="smart-news-card">
+          <span>新信息与提醒</span>
+          <b id="smartNewsTitle">尚未接入真实信息源</b>
+          <small id="smartNewsDetail">正式版只展示与你当前目标有关、可追溯的信息。</small>
+          <button type="button" data-surface="materials">查看来源与材料</button>
+        </section>
+        <button class="smart-teach-link" type="button" data-open="coach">不知道怎么选？教我一步 →</button>
+      </div>
+      <div class="result-summary custom-only">
+        <span>当前最重要</span>
+        <b id="rightSummary"></b>
+        <small id="rightTiming"></small>
+      </div>
+      <div class="panel-section custom-only">
+        <div class="section-title"><span id="rightSectionLabel">待你处理</span><button type="button" data-open="todo">全部</button></div>
+        <div class="panel-list" id="rightList"></div>
+      </div>
+      <div class="trust-strip custom-only">
+        <span><i class="dot warn"></i>来源状态</span>
+        <b>演示 · 未连接真实后端</b>
+        <button type="button" data-open="evidence">证据与缺口</button>
+      </div>
+      <div class="right-actions custom-only">
+        <button type="button" data-open="assumptions">调整假设</button>
+        <button type="button" data-open="workflow">查看执行图</button>
+        <button type="button" data-open="system">接口与日志</button>
+      </div>
+    </aside>
+
+    <section class="composer" aria-label="多智能体对话栏">
+      <div class="composer-context">
+        <button type="button" data-agent-picker><span class="agent-dot" id="composerAgentDot">丞</span><b>正在与 <span id="composerAgent">丞相</span> AI Agent 商议</b><i>⌄</i></button>
+        <div class="context-chips" id="contextChips"></div>
+        <button type="button" data-open="materials">＋ 添加材料</button>
+        <button type="button" data-open="evidence">引用</button>
+        <button type="button" data-open="history">历史</button>
+      </div>
+      <div class="prompt-row">
+        <button class="add-context" type="button" data-open="materials" aria-label="添加材料或上下文">＋</button>
+        <textarea id="promptInput" rows="1" aria-label="向当前智能体描述你想得到的结果" placeholder="告诉朝堂你想得到什么结果、最担心什么……"></textarea>
+        <button class="voice" type="button" data-open="voice" aria-label="语音输入设计（尚未接入）" title="查看语音输入设计">声</button>
+        <button class="send" type="button" id="sendButton" disabled>发送</button>
+      </div>
+      <div class="capability-dock" aria-label="对话能力选择">
+        <button type="button" data-agent-picker><span>官</span><b>智能体</b><small id="agentDockStatus">跟随页面</small></button>
+        <button type="button" data-open="models"><span>模</span><b>大模型</b><small id="modelDockStatus">自动选择</small></button>
+        <button class="smart-only" type="button" data-open="capabilityHub"><span>＋</span><b>更多能力</b><small>按结果推荐</small></button>
+        <button class="custom-only" type="button" data-open="skills"><span>技</span><b>Skills</b><small id="skillDockStatus">按需选择</small></button>
+        <button class="custom-only" type="button" data-open="plugins"><span>件</span><b>插件</b><small id="pluginDockStatus">尚未接入</small></button>
+        <button class="custom-only" type="button" data-open="agentTeam"><span>众</span><b>协同</b><small>最小编队</small></button>
+        <button type="button" data-open="contextManager"><span>引</span><b>上下文</b><small id="contextDockStatus">当前议题</small></button>
+        <span class="capability-truth">原型选择不会调用模型、插件或外部服务</span>
+      </div>
+      <div class="composer-foot"><span id="composerHint">当前阶段只澄清目标，不会自动执行。</span><span>Enter 发送 · Shift+Enter 换行</span></div>
+    </section>
+
+    <div class="menu-popover" id="ministriesMenu" role="menu" aria-label="六部承办" hidden>
+      <span>六部承办</span>
+      <button type="button" role="menuitem" data-page="B01">吏部 · 人与 Agent</button>
+      <button type="button" role="menuitem" data-page="B02">户部 · 财务投资</button>
+      <button type="button" role="menuitem" data-page="B03">礼部 · 营销媒体</button>
+      <button type="button" role="menuitem" data-page="B04">兵部 · 客户增长</button>
+      <button type="button" role="menuitem" data-page="B05">刑部 · 合同合规</button>
+      <button type="button" role="menuitem" data-page="B06">工部 · 产品交付</button>
+    </div>
+
+    <dialog class="drawer" id="drawer" aria-labelledby="drawerTitle">
+      <div class="drawer-head"><div><span id="drawerKicker">朝堂系统</span><h2 id="drawerTitle">详情</h2></div><button type="button" data-close>关闭 Esc</button></div>
+      <div class="drawer-body" id="drawerBody"></div>
+    </dialog>
+
+    <dialog class="atlas" id="atlas" aria-labelledby="atlasTitle">
+      <div class="atlas-head"><div><span id="atlasCount">渐进式真实 DOM 页面候选</span><h2 id="atlasTitle">朝堂完整界面图谱</h2></div><button type="button" data-close>关闭 Esc</button></div>
+      <div class="atlas-filter" id="atlasFilters"></div>
+      <div class="atlas-grid" id="atlasGrid"></div>
+    </dialog>
+
+    <aside class="button-tutor" id="buttonTutor" aria-live="polite" hidden>
+      <span>御前指引</span>
+      <b id="buttonTutorTitle"></b>
+      <small id="buttonTutorDetail"></small>
+    </aside>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </div>
+  <noscript>本原型需要 JavaScript 才能切换页面和展示交互状态。</noscript>
+  <script src="pages.js"></script>
+  <script src="app.js"></script>
+  <script src="bridge.js"></script>
+</body>
+</html>

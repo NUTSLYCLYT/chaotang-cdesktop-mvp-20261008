@@ -1,0 +1,16 @@
+pub mod error;
+pub mod fusion_owner;
+pub mod middleware;
+pub mod provider_injection;
+pub mod relay_pairing;
+pub mod routes;
+pub mod routines_scheduler;
+pub mod runtime;
+pub mod scheduling;
+pub mod skill_install;
+pub mod startup;
+
+// #[cfg(feature = "cloud")]
+// type DeploymentImpl = vibe_kanban_cloud::deployment::CloudDeployment;
+// #[cfg(not(feature = "cloud"))]
+pub type DeploymentImpl = local_deployment::LocalDeployment;

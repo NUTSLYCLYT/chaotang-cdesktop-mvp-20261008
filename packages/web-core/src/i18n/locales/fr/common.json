@@ -1,0 +1,936 @@
+{
+  "editorNames": {
+    "custom": "Personnalisé"
+  },
+  "buttons": {
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "send": "Envoyer",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "create": "Créer",
+    "continue": "Continuer",
+    "reset": "Réinitialiser",
+    "manage": "Gérer",
+    "connect": "Connecter",
+    "disconnect": "Déconnecter",
+    "close": "Fermer",
+    "replay": "Rejouer",
+    "discard": "Abandonner",
+    "addItem": "Ajouter un élément",
+    "reply": "Répondre",
+    "retry": "Retry",
+    "add": "Ajouter"
+  },
+  "form": {
+    "notSpecified": "Non spécifié",
+    "selectOption": "Sélectionner une option..."
+  },
+  "states": {
+    "loading": "Chargement..."
+  },
+  "language": {
+    "browserDefault": "Par défaut du navigateur"
+  },
+  "conversation": {
+    "plan": "Plan",
+    "output": "Sortie",
+    "deniedByUser": "{{toolName}} refusé par l'utilisateur",
+    "tool": "Outil",
+    "thinking": "Réflexion",
+    "toolSummary": {
+      "read": "Lu {{path}}",
+      "searched": "Recherché \"{{query}}\"",
+      "fetched": "Récupéré {{url}}",
+      "ranCommand": "Commande exécutée",
+      "createdTask": "Tâche créée : {{description}}",
+      "todoOperation": "{{operation}} tâches à faire"
+    },
+    "aggregated": {
+      "label": {
+        "read": "Lire",
+        "search": "Rechercher",
+        "fetched": "Récupéré",
+        "edit": "Modifier",
+        "fetch": "Récupérer"
+      },
+      "unit": {
+        "file_one": "{{count}} fichier",
+        "file_other": "{{count}} fichiers",
+        "command_one": "{{count}} commande",
+        "command_other": "{{count}} commandes",
+        "url_one": "{{count}} URL",
+        "url_other": "{{count}} URL"
+      }
+    },
+    "subagent": {
+      "defaultType": "Sous-agent"
+    },
+    "loadingEarlierMessages": "Chargement des messages précédents",
+    "emptyTitle": "Envoyez un message pour démarrer la conversation.",
+    "emptyDescription": "La conversation de votre session apparaîtra ici dès qu'un nouveau tour commencera.",
+    "toolName": {
+      "Skill": "Compétence"
+    }
+  },
+  "changesPanel": {
+    "notGitRepo": "Pas un dépôt Git — aucun diff disponible"
+  },
+  "folderPicker": {
+    "defaultTitle": "Sélectionner un dossier",
+    "defaultDescription": "Choisissez un dossier pour votre projet",
+    "legend": "Cliquez sur les noms de dossiers pour naviguer • Utilisez les boutons d'action pour sélectionner",
+    "manualPathLabel": "Saisir le chemin manuellement :",
+    "go": "Aller",
+    "searchLabel": "Rechercher dans le répertoire actuel :",
+    "filterPlaceholder": "Filtrer les dossiers et fichiers...",
+    "selectCurrent": "Sélectionner l'actuel",
+    "gitRepo": "dépôt git",
+    "selectPath": "Sélectionner le chemin"
+  },
+  "branchSelector": {
+    "placeholder": "Sélectionner une branche",
+    "searchPlaceholder": "Rechercher des branches...",
+    "empty": "Aucune branche trouvée",
+    "badges": {
+      "current": "actuelle",
+      "remote": "distante"
+    },
+    "currentDisabled": "Impossible de sélectionner la branche actuelle"
+  },
+  "orgSwitcher": {
+    "organizations": "Organisations",
+    "orgSettings": "Paramètres de l'organisation"
+  },
+  "ok": "OK",
+  "error": "Erreur",
+  "signIn": "Se connecter",
+  "signOut": "Se déconnecter",
+  "oauth": {
+    "title": "Se connecter à Vibe Kanban",
+    "description": "Connectez-vous pour rejoindre des organisations et partager des tâches avec votre équipe",
+    "continueWithGitHub": "Continuer avec GitHub",
+    "continueWithGoogle": "Continuer avec Google",
+    "waitingTitle": "Terminer l'authentification",
+    "waitingDescription": "Une fenêtre popup a été ouverte pour l'authentification",
+    "waitingForAuth": "En attente de l'authentification...",
+    "popupInstructions": "Si la fenêtre popup ne s'est pas ouverte, veuillez vérifier les paramètres de votre bloqueur de popups.",
+    "back": "Retour",
+    "successTitle": "Authentification réussie !",
+    "welcomeBack": "Bienvenue, {{name}}",
+    "errorTitle": "Échec de l'authentification",
+    "errorDescription": "Un problème est survenu lors de l'authentification de votre compte",
+    "tryAgain": "Réessayer"
+  },
+  "toolbar": {
+    "sortBy": "Trier par",
+    "groupBy": "Grouper par"
+  },
+  "sorting": {
+    "ascending": "Croissant",
+    "descending": "Décroissant"
+  },
+  "grouping": {
+    "date": "Date",
+    "assignee": "Assigné",
+    "label": "Libellé"
+  },
+  "workspaces": {
+    "title": "Sessions",
+    "searchPlaceholder": "Rechercher...",
+    "active": "Actif",
+    "archived": "Archivé",
+    "loading": "Chargement...",
+    "notFound": "Session introuvable",
+    "selectToStart": "Sélectionnez une session pour commencer",
+    "draft": "Brouillon",
+    "viewArchive": "Voir les archives",
+    "backToActive": "Retour aux actifs",
+    "noArchived": "Aucune session archivée",
+    "noWorkspaces": "Aucune session",
+    "newWorkspace": "Nouvelle session",
+    "needsAttention": "Nécessite Attention",
+    "idle": "Inactif",
+    "running": "En Cours",
+    "pin": "Épingler",
+    "unpin": "Désépingler",
+    "archive": "Archiver",
+    "more": "Plus d'actions",
+    "rename": {
+      "title": "Renommer la session",
+      "description": "Saisissez un nouveau nom pour cette session.",
+      "nameLabel": "Nom",
+      "placeholder": "Saisir le nom de la session",
+      "action": "Renommer",
+      "renaming": "Renommage..."
+    },
+    "unlinkFromIssue": "Dissocier du problème",
+    "deleteWorkspace": "Supprimer la session",
+    "unlink": "Dissocier",
+    "delete": "Supprimer",
+    "unlinkConfirmMessage": "Êtes-vous sûr de vouloir dissocier cette session du problème ? La session existera toujours mais ne sera plus associée à ce problème.",
+    "deleteConfirmMessage": "Êtes-vous sûr de vouloir supprimer cette session ? Cela la dissociera du problème et supprimera la session locale. Cette action est irréversible.",
+    "unlinkError": "Échec de la dissociation de la session",
+    "deleteError": "Échec de la suppression de la session",
+    "branchRequiredError": "Sélectionnez une branche pour chaque dépôt avant de créer une session",
+    "filesChanged": "{{count}} fichiers",
+    "deleteDialog": {
+      "title": "Supprimer la session",
+      "description": "Êtes-vous sûr de vouloir supprimer cette session ? Cette action est irréversible.",
+      "deleteBranchLabel": "Supprimer la branche",
+      "cannotDeleteOpenPr": "Impossible de supprimer la branche tant que la PR est ouverte",
+      "unlinkFromIssueLabel": "Également dissocier du ticket"
+    },
+    "linkError": "Failed to link session"
+  },
+  "fileTree": {
+    "searchPlaceholder": "Rechercher des fichiers...",
+    "noResults": "Aucun fichier correspondant",
+    "title": "Fichiers",
+    "showGitHubComments": "Afficher les commentaires GitHub",
+    "hideGitHubComments": "Masquer les commentaires GitHub",
+    "prevGitHubComment": "Fichier précédent avec commentaires",
+    "nextGitHubComment": "Fichier suivant avec commentaires"
+  },
+  "sections": {
+    "changes": "Modifications",
+    "repositories": "Dépôts",
+    "addRepositories": "Ajouter des dépôts",
+    "project": "Projet",
+    "processes": "Processus",
+    "devServer": "Serveur de développement",
+    "advanced": "Avancé",
+    "workingBranch": "Branche de travail",
+    "recent": "Récent",
+    "other": "Autre",
+    "devServerPreview": "Aperçu du serveur de développement",
+    "terminal": "Terminal",
+    "notes": "Notes"
+  },
+  "notes": {
+    "placeholder": "Ajouter des notes sur cette session...",
+    "selectWorkspace": "Sélectionnez une session pour voir les notes"
+  },
+  "actions": {
+    "copyPath": "Copier le chemin",
+    "cancel": "Annuler",
+    "saveChanges": "Enregistrer les modifications",
+    "copied": "Copié",
+    "collapse": "Réduire"
+  },
+  "comments": {
+    "addReviewComment": "Ajouter un commentaire de révision",
+    "addPlaceholder": "Ajouter un commentaire...",
+    "editPlaceholder": "Modifier le commentaire...",
+    "copyToReview": "Copier vers la révision"
+  },
+  "confirm": {
+    "defaultConfirm": "Confirmer",
+    "defaultCancel": "Annuler"
+  },
+  "dialogs": {
+    "selectGitRepository": "Sélectionner un dossier",
+    "chooseExistingRepo": "Choisissez un dossier existant depuis votre système de fichiers",
+    "errorTitle": "Erreur"
+  },
+  "empty": {
+    "noChanges": "Aucune modification à afficher"
+  },
+  "turnNavigation": {
+    "title": "Vos messages",
+    "count_one": "{{count}} tour",
+    "count_other": "{{count}} tours"
+  },
+  "commandBar": {
+    "noResults": "Aucun résultat trouvé.",
+    "back": "Retour",
+    "defaultPlaceholder": "Tapez une commande ou recherchez...",
+    "selectBranch": "Select Branch",
+    "selectBranchFor": "Select Branch for {{repoName}}",
+    "pages": {
+      "root": {
+        "groups": {
+          "actions": "Actions",
+          "view": "Affichage",
+          "general": "Général"
+        }
+      },
+      "workspaceActions": {
+        "title": "Actions de session",
+        "groups": {
+          "session": "Session",
+          "scripts": "Scripts"
+        }
+      },
+      "repoActions": {
+        "title": "Actions du dépôt",
+        "groups": {
+          "actions": "Actions"
+        }
+      },
+      "diffOptions": {
+        "title": "Options de diff",
+        "groups": {
+          "display": "Affichage"
+        }
+      },
+      "viewOptions": {
+        "title": "Options d'affichage",
+        "groups": {
+          "panels": "Panneaux"
+        }
+      },
+      "issueActions": {
+        "title": "Actions de ticket",
+        "groups": {
+          "actions": "Actions"
+        }
+      }
+    },
+    "actions": {
+      "startReview": "Démarrer la revue",
+      "rename": "Renommer",
+      "duplicate": "Dupliquer",
+      "spinOff": "Détacher la session",
+      "archive": "Archiver",
+      "unarchive": "Désarchiver",
+      "delete": "Supprimer",
+      "runSetupScript": "Exécuter le script de configuration",
+      "runCleanupScript": "Exécuter le script de nettoyage",
+      "runArchiveScript": "Exécuter le script d'archivage",
+      "newWorkspace": "Nouvelle session",
+      "createWorkspaceFromPr": "Créer une session depuis une PR",
+      "settings": "Paramètres",
+      "projectSettings": "Paramètres du projet",
+      "signIn": "Se connecter",
+      "signOut": "Se déconnecter",
+      "giveFeedback": "Donner un retour",
+      "workspacesGuide": "Guide des sessions",
+      "projectsGuide": "Guide des projets",
+      "openCommandBar": "Ouvrir la barre de commandes",
+      "toggleAllDiffs": "Basculer tous les diffs",
+      "openInIde": "Ouvrir dans l'IDE",
+      "openInIdeTooltip": "Ouvrir dans {{ide}}",
+      "copyWorkspacePath": "Copier le chemin de la session",
+      "copyRawLogs": "Copier les logs bruts",
+      "devServer": "Serveur de développement",
+      "startDevServer": "Démarrer le serveur de développement",
+      "stopDevServer": "Arrêter le serveur de développement",
+      "devServerTooltip": {
+        "start": "Démarrer le serveur de développement",
+        "stop": "Arrêter le serveur de développement",
+        "starting": "Démarrage du serveur de développement...",
+        "stopping": "Arrêt du serveur de développement..."
+      },
+      "createIssue": "Créer un ticket",
+      "changeStatus": "Changer le statut",
+      "changePriority": "Changer la priorité",
+      "changeAssignees": "Changer les assignés",
+      "makeSubIssueOf": "Faire un sous-ticket de",
+      "addSubIssue": "Ajouter un sous-ticket",
+      "createSubIssue": "Créer un sous-ticket",
+      "removeParent": "Retirer le parent",
+      "linkWorkspace": "Lier la session",
+      "deleteIssue": "Supprimer le ticket",
+      "duplicateIssue": "Dupliquer le ticket",
+      "markBlocking": "Marquer comme bloquant",
+      "markBlockedBy": "Marquer comme bloqué par",
+      "markRelated": "Marquer comme lié",
+      "markDuplicateOf": "Marquer comme doublon de",
+      "diffView": {
+        "switchToSplit": "Passer à la vue côte à côte",
+        "switchToInline": "Passer à la vue en ligne",
+        "tooltipInline": "Vue en ligne",
+        "tooltipSplit": "Vue côte à côte"
+      },
+      "whitespace": {
+        "show": "Afficher les changements d'espaces",
+        "ignore": "Ignorer les changements d'espaces"
+      },
+      "lineWrap": {
+        "disable": "Désactiver le retour à la ligne",
+        "enable": "Activer le retour à la ligne"
+      },
+      "leftSidebar": {
+        "hide": "Masquer la barre latérale gauche",
+        "show": "Afficher la barre latérale gauche"
+      },
+      "rightSidebar": {
+        "hide": "Masquer la barre latérale droite",
+        "show": "Afficher la barre latérale droite"
+      },
+      "chatPanel": {
+        "toggle": "Basculer le panneau de chat",
+        "hide": "Masquer le panneau de chat",
+        "show": "Afficher le panneau de chat"
+      },
+      "changesPanel": {
+        "toggle": "Basculer le panneau des changements",
+        "hide": "Masquer le panneau des changements",
+        "show": "Afficher le panneau des changements"
+      },
+      "logsPanel": {
+        "toggle": "Basculer le panneau des logs",
+        "hide": "Masquer le panneau des logs",
+        "show": "Afficher le panneau des logs"
+      },
+      "previewPanel": {
+        "toggle": "Basculer le panneau d'aperçu",
+        "hide": "Masquer le panneau d'aperçu",
+        "show": "Afficher le panneau d'aperçu"
+      },
+      "toggleAllDiffsTooltip": {
+        "collapse": "Réduire tous les diffs",
+        "expand": "Développer tous les diffs"
+      }
+    }
+  },
+  "workspacesGuide": {
+    "welcome": {
+      "title": "Bienvenue",
+      "content": "Bienvenue dans les Sessions, une interface repensée pour Vibe Kanban. Nous la déployons auprès d'utilisateurs sélectionnés pour recueillir leurs premiers retours. Partagez vos impressions à tout moment en utilisant l'icône de feedback dans la barre de navigation."
+    },
+    "commandBar": {
+      "title": "Barre de commandes",
+      "content": "La barre de commandes est votre hub central de navigation. Ouvrez-la avec CMD+K pour rechercher et accéder à toutes les actions disponibles dans une session."
+    },
+    "contextBar": {
+      "title": "Barre de contexte",
+      "content": "La barre de contexte vous permet de basculer rapidement entre les panneaux. Faites-la glisser là où cela vous convient le mieux."
+    },
+    "sidebar": {
+      "title": "Barre latérale des sessions",
+      "content": "Visualisez l'état de tous vos sessions d'un coup d'œil. Les notifications mettent en évidence ceux qui nécessitent votre attention. Archivez les sessions fusionnées pour garder votre barre latérale propre."
+    },
+    "multiRepo": {
+      "title": "Support multi-dépôts",
+      "content": "Ajoutez plusieurs dépôts à un seul session. Référencez le code d'un dépôt tout en travaillant dans un autre, ou implémentez des modifications sur plusieurs dépôts à la fois."
+    },
+    "sessions": {
+      "title": "Sessions multiples",
+      "content": "Créez plusieurs sessions de conversation d'agent au sein d'un même session, y compris des sessions avec différents agents. Cela vous aide à contourner les limites de conversation ou à lancer des agents de révision dans des fils séparés."
+    },
+    "preview": {
+      "title": "Prévisualiser les modifications",
+      "content": "Prévisualisez votre travail dans un navigateur intégré sans changer de contexte. Testez sur ordinateur, mobile et des tailles de viewport personnalisées."
+    },
+    "diffs": {
+      "title": "Diffs et commentaires",
+      "content": "Le panneau de diffs repensé inclut une arborescence de vos modifications. Commentez directement sur les diffs pour donner des retours à l'agent, et visualisez les commentaires GitHub lorsque votre session est liée à une PR."
+    },
+    "classicUi": {
+      "title": "Retourner à l'interface classique",
+      "content": "Cliquez sur l'icône de sortie à gauche de la barre de navigation pour revenir au tableau kanban classique. Pour désactiver complètement la nouvelle interface, modifiez l'option \"Activer la bêta des sessions\" sous \"Fonctionnalités bêta\" dans les paramètres."
+    }
+  },
+  "logs": {
+    "searchLogs": "Rechercher dans les logs",
+    "selectProcessToView": "Sélectionnez un processus pour voir les logs"
+  },
+  "processes": {
+    "noProcesses": "Aucun processus",
+    "terminal": "Terminal"
+  },
+  "search": {
+    "matchCount": "{{current}} sur {{total}}",
+    "noMatches": "Aucune correspondance"
+  },
+  "contextUsage": {
+    "label": "Utilisation du contexte",
+    "emptyTooltip": "L'utilisation du contexte apparaît après la prochaine réponse",
+    "tooltip": "Contexte : {{percentage}}% · {{used}} / {{total}} tokens",
+    "ariaLabel": "Utilisation du contexte : {{percentage}}%"
+  },
+  "shortcuts": {
+    "title": "Raccourcis Clavier",
+    "inWorkspace": "(dans la session)",
+    "sequentialHint": "Raccourcis séquentiels : Appuyez sur la première touche, puis sur la seconde en 500ms.",
+    "configurableHint": "Configurable dans Paramètres → Général → Saisie de Message",
+    "groups": {
+      "quickActions": "Actions Rapides",
+      "navigation": "Navigation",
+      "modifiers": "Modificateurs",
+      "goTo": "Aller à (G ...)",
+      "workspace": "Session (W ...)",
+      "view": "Vue (V ...)",
+      "issues": "Tickets (I ...)",
+      "git": "Git (X ...)",
+      "yank": "Copier (Y ...)",
+      "toggle": "Basculer (T ...)",
+      "run": "Exécuter (R ...)"
+    },
+    "actions": {
+      "showHelp": "Afficher cette aide",
+      "closeCancel": "Fermer/annuler",
+      "createNewTask": "Créer une nouvelle tâche",
+      "deleteSelected": "Supprimer la sélection",
+      "focusSearch": "Aller à la recherche",
+      "moveDown": "Déplacer vers le bas",
+      "moveUp": "Déplacer vers le haut",
+      "moveLeft": "Déplacer vers la gauche",
+      "moveRight": "Déplacer vers la droite",
+      "openCommandBar": "Ouvrir la barre de commandes",
+      "formatInlineCode": "Format inline code",
+      "sendMessage": "Envoyer le message",
+      "settings": "Aller aux Paramètres",
+      "new-workspace": "Aller à la nouvelle session",
+      "duplicate-workspace": "Dupliquer la session",
+      "rename-workspace": "Renommer la session",
+      "pin-workspace": "Épingler/Désépingler la session",
+      "archive-workspace": "Archiver la session",
+      "delete-workspace": "Supprimer la session",
+      "toggle-changes-mode": "Basculer le panneau Modifications",
+      "toggle-logs-mode": "Basculer le panneau Logs",
+      "toggle-preview-mode": "Basculer le panneau Aperçu",
+      "toggle-left-sidebar": "Basculer la barre latérale gauche",
+      "toggle-left-main-panel": "Basculer le panneau Chat",
+      "create-issue": "Créer un ticket",
+      "change-issue-status": "Changer le statut",
+      "change-issue-priority": "Changer la priorité",
+      "change-assignees": "Changer les assignés",
+      "make-sub-issue-of": "Transformer en sous-ticket de",
+      "add-sub-issue": "Ajouter un sous-ticket",
+      "remove-parent-issue": "Retirer le parent",
+      "link-workspace": "Lier une session",
+      "duplicate-issue": "Dupliquer le ticket",
+      "delete-issue": "Supprimer le ticket",
+      "git-create-pr": "Créer une Pull Request",
+      "git-merge": "Fusionner la branche",
+      "git-rebase": "Rebaser la branche",
+      "git-push": "Pousser les modifications",
+      "copy-path": "Copier le chemin",
+      "copy-raw-logs": "Copier les logs bruts",
+      "toggle-dev-server": "Basculer le serveur de développement",
+      "toggle-wrap-lines": "Basculer le retour à la ligne",
+      "run-setup-script": "Exécuter le script de configuration",
+      "run-cleanup-script": "Exécuter le script de nettoyage",
+      "run-archive-script": "Exécuter le script d'archivage"
+    }
+  },
+  "typeahead": {
+    "tags": "Tags",
+    "files": "Fichiers",
+    "commands": "Commandes",
+    "chooseRepo": "Choisir un dépôt",
+    "selectedRepo": "Dépôt sélectionné : {{repoName}}",
+    "missingRepo": "Le dépôt sélectionné n'est plus disponible.",
+    "noTagsOrFiles": "Aucun tag ou fichier trouvé",
+    "createTag": "Créer un nouveau tag",
+    "noCommands": "Aucune commande disponible pour cet agent.",
+    "loadingCommands": "Chargement des commandes…",
+    "discoveringCommands": "Détection des commandes…"
+  },
+  "kanban": {
+    "noVisibleStatuses": "Tous les statuts sont masqués. Utilisez les paramètres d'affichage ou changez d'onglet pour voir les problèmes.",
+    "noProjectFound": "Aucun projet trouvé",
+    "unassigned": "Non assigné",
+    "noTagsAvailable": "Aucun tag disponible",
+    "createNewIssue": "Créer un nouveau ticket",
+    "searchTags": "Rechercher des tags...",
+    "selectColorFor": "Sélectionner la couleur pour",
+    "createTag": "Créer",
+    "noPrCreated": "Aucune PR créée",
+    "noCommentsYet": "Aucun commentaire",
+    "createdBy": "Créé par",
+    "comments": "Commentaires",
+    "enterCommentPlaceholder": "Entrez votre commentaire ici...",
+    "attachFile": "Joindre un fichier",
+    "attachFileHint": "Joindre des fichiers (20Mo max par fichier)",
+    "dropFilesHere": "Déposez les fichiers ici",
+    "fileDropHint": "Tout type de fichier jusqu'à 20Mo",
+    "unknownUser": "Utilisateur inconnu",
+    "deletedUser": "Utilisateur supprimé",
+    "replyQuotePrefix": "a écrit :",
+    "moreActions": "Plus d'actions",
+    "closePanel": "Fermer le panneau",
+    "copyLink": "Copier le lien",
+    "issueTitlePlaceholder": "Titre du ticket...",
+    "issueDescriptionPlaceholder": "Entrez la description de la tâche...",
+    "createDraftWorkspaceImmediately": "Créer immédiatement une session brouillon",
+    "createDraftWorkspaceDescription": "Après la création de l'issue, ouvrir le formulaire de création de session pré-rempli avec les détails de l'issue",
+    "createIssue": "Créer la tâche",
+    "newIssue": "Nouveau ticket",
+    "previewCodeBlock": "[Bloc de code]",
+    "previewImage": "[Image]",
+    "previewImageWithName": "[Image : {{name}}]",
+    "previewFile": "[Fichier]",
+    "previewFileWithName": "[Fichier : {{name}}]",
+    "imageAttachmentNameFallback": "Pièce jointe",
+    "removeImage": "Supprimer l'image",
+    "maxFilesAtOnce": "Maximum {{count}} fichiers à la fois",
+    "fileExceedsLimit": "Le fichier {{filename}} dépasse la limite de 20Mo",
+    "unknownError": "Erreur inconnue",
+    "failedToUploadFile": "Échec de l'envoi de {{filename}} : {{message}}",
+    "downloadAttachment": "Télécharger la pièce jointe",
+    "subIssues": "Sous-tâches",
+    "noSubIssues": "Aucune sous-tâche",
+    "markIndependentIssue": "Marquer comme problème indépendant",
+    "parentIssue": "Parent",
+    "subIssueIndicator": "↳",
+    "viewTabs": {
+      "active": "Actif",
+      "all": "Tout"
+    },
+    "loginRequired": {
+      "title": "Connexion requise",
+      "description": "Veuillez vous connecter pour voir ce projet.",
+      "action": "Se connecter"
+    },
+    "team": "Team",
+    "personal": "Personal",
+    "searchPlaceholder": "Search issues...",
+    "filters": "Filters",
+    "clearFilters": "Clear filters",
+    "filtersDescription": "Adjust filters and sorting for this board view.",
+    "filterByTag": "Filter by tag",
+    "filterByPriority": "Filter by priority",
+    "tags": "Tags",
+    "sortBy": "Sort",
+    "workspaceSidebar": {
+      "sortDialogTitle": "Sort sessions",
+      "sortDialogDescription": "Choose how sessions are ordered in the sidebar.",
+      "sortByLabel": "Sort by",
+      "sortOrderLabel": "Sort order",
+      "sortUpdatedAt": "Updated at",
+      "sortCreatedAt": "Created at",
+      "filterDialogTitle": "Filter sessions",
+      "filterDialogDescription": "Narrow down sessions by project and PR state.",
+      "projectFilterLabel": "Project",
+      "prFilterLabel": "PR",
+      "prFilterAll": "All",
+      "prFilterHasPr": "Has PR",
+      "prFilterNoPr": "No PR",
+      "noProject": "No project",
+      "sortButtonTitle": "Sort sessions",
+      "filterButtonTitle": "Filter sessions"
+    },
+    "sortAscending": "Ascending",
+    "sortDescending": "Descending",
+    "assignee": "Assignee",
+    "self": "Me",
+    "priority": "Priority",
+    "subIssuesFilterLabel": "Sub-issues",
+    "workspacesFilterLabel": "Sessions",
+    "selectAssignees": "Select assignees...",
+    "relationships": "Relationships",
+    "noRelationships": "No relationships",
+    "openProjectsGuide": "Projects guide",
+    "editProjectSettings": "Edit project settings",
+    "linkWorkspace": "Link session...",
+    "createNewWorkspace": "Create new session",
+    "workspaces": "Sessions",
+    "showingWorkspaces": "Showing {{count}} of {{total}}",
+    "changeColor": "Change color",
+    "editName": "Edit name",
+    "deleteStatus": "Delete status",
+    "cannotDeleteWithIssues": "Move issues first",
+    "lastVisibleStatus": "At least one status must be visible",
+    "showStatus": "Show status",
+    "hideStatus": "Hide status",
+    "newStatus": "New Status",
+    "visibleColumns": "Visible Columns",
+    "dragToRearrange": "Drag to re-arrange",
+    "addColumn": "Add column",
+    "projectsGuide": {
+      "intro": {
+        "title": "Welcome",
+        "content": "Welcome to Vibe Kanban. Use the help sections in this panel to learn how things work, then create your first issue. You can re-open this help dialog or give feedback anytime from the navbar."
+      },
+      "welcome": {
+        "title": "Projects",
+        "content": "The project page is where you manage issues. You can view your issues as a kanban board, or as a list, and filter by status, tag, assignee and more."
+      },
+      "issues": {
+        "title": "Issues",
+        "content": "Each issue represents a feature or problem to solve. Issues have statuses, priorities, assignees, tags, relationships, comments, sub-issues and more."
+      },
+      "workspaces": {
+        "title": "Sessions",
+        "content": "To start working on an issue, create a session. A single issue can have multiple sessions. Issues describe the work to be done, sessions are where the work happens."
+      },
+      "organizations": {
+        "title": "Invite your team",
+        "content": "We've automatically created a personal organization and initial project so you can get started with Vibe Kanban. Export your cloud data before shutdown."
+      }
+    }
+  },
+  "createMode": {
+    "headings": {
+      "repoStep": "Sur quels dépôts voulez-vous travailler ?",
+      "chatStep": "Sur quoi voulez-vous travailler ?"
+    },
+    "repoPicker": {
+      "actions": {
+        "recent": "Récents",
+        "browse": "Parcourir",
+        "create": "Créer"
+      },
+      "setupHintTitle": "Scripts de Configuration",
+      "setupHint": "Astuce : Configurez les scripts d'installation pour ce dépôt dans Paramètres → Dépôts",
+      "setupHintDismiss": "Fermer",
+      "setupHintLink": "Configure in Settings"
+    },
+    "composerChips": {
+      "addFolderMenuItem": "Ajouter un dossier",
+      "openFolder": "Ouvrir un dossier…",
+      "pickBranch": "Choisir une branche",
+      "pickFolderPlaceholder": "Choisissez un dossier…",
+      "recentsEmpty": "Aucun dossier récent",
+      "removeFolderAction": "Retirer",
+      "worktreeChip": "Worktree"
+    },
+    "placeholder": {
+      "typeForCommands": "Tapez / pour les commandes"
+    },
+    "landing": {
+      "welcomeBack": "Bon retour",
+      "recentSessions": "Sessions récentes",
+      "sessionsAwaitingInput_one": "{{count}} session en attente de saisie",
+      "sessionsAwaitingInput_other": "{{count}} sessions en attente de saisie",
+      "whatToWorkOn": "Sur quoi aimeriez-vous travailler ?",
+      "status": {
+        "awaitingInput": "En attente",
+        "running": "En cours",
+        "failed": "Échoué"
+      }
+    }
+  },
+  "modelSelector": {
+    "preset": "Préréglage",
+    "custom": "Personnaliser",
+    "permissions": "Permissions",
+    "permissionAuto": "Mode Auto",
+    "permissionAsk": "Demander permissions",
+    "permissionPlan": "Mode Plan",
+    "permissionAcceptEdits": "Accepter les modifications",
+    "permissionBypass": "Contourner permissions",
+    "agent": "Agent",
+    "default": "Par défaut",
+    "model": "Modèle"
+  },
+  "crashScreen": {
+    "title": "Une erreur est survenue",
+    "description": "L'application a rencontré une erreur inattendue.",
+    "reload": "Recharger",
+    "showDetails": "Afficher les détails",
+    "hideDetails": "Masquer les détails"
+  },
+  "syncError": {
+    "networkErrors": "Erreurs réseau",
+    "streamsAffected": "{{count}} flux affecté",
+    "streamsAffected_other": "{{count}} flux affectés",
+    "status": "(statut {{status}})",
+    "refreshPage": "Actualiser la page",
+    "remoteAuthUnavailable": "L’authentification distante est temporairement indisponible. Certaines fonctionnalités distantes peuvent ne pas fonctionner jusqu’à son rétablissement."
+  },
+  "onboardingSignIn": {
+    "subtitle": "Sign in to continue",
+    "signedInAs": "Signed in as {{name}}.",
+    "moreOptions": "More options",
+    "featureHeader": "Feature",
+    "signedInHeader": "Signed in",
+    "skipSignInHeader": "Don't sign in",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "appBar": {
+    "kanban": {
+      "tooltip": "Connectez-vous pour voir les projets",
+      "title": "Tableaux Kanban",
+      "description": "Connectez-vous pour organiser vos agents de codage avec des tableaux kanban."
+    }
+  },
+  "errors": {
+    "generic": "An unexpected error occurred"
+  },
+  "personal": "Personal",
+  "askQuestion": {
+    "title": "L'agent pose une question",
+    "selectMultiple": "sélection multiple",
+    "confirmSelection": "Confirmer la sélection",
+    "submitting": "Envoi des réponses...",
+    "answeredCount": "Répondu à {{count}} question",
+    "answeredCount_other": "Répondu à {{count}} questions"
+  },
+  "sidebar": {
+    "footer": {
+      "themeToggle": {
+        "aria": "Passer en mode {{mode}}"
+      }
+    },
+    "hideSidebar": {
+      "aria": "Masquer la barre latérale"
+    },
+    "kebab": {
+      "pin": "Épingler la session",
+      "unpin": "Désépingler la session"
+    },
+    "newSession": "Nouvelle session",
+    "newSessionInFolder": "Nouvelle session dans {{folder}}",
+    "pinned": {
+      "emptyHint": "Épinglez des sessions depuis leur menu pour les garder ici.",
+      "sectionHeader": "Épinglés",
+      "dropHint": "Déposez ici pour épingler"
+    },
+    "search": {
+      "collapse": {
+        "aria": "Fermer la recherche"
+      },
+      "open": {
+        "aria": "Rechercher des sessions"
+      }
+    },
+    "theme": {
+      "dark": "sombre",
+      "light": "clair"
+    },
+    "controlPanel": {
+      "openMenu": "Ouvrir le panneau de configuration",
+      "theme": {
+        "label": "Thème",
+        "light": "Clair",
+        "dark": "Sombre",
+        "system": "Système"
+      },
+      "settings": "Paramètres",
+      "viewArchive": "Voir les archives"
+    }
+  },
+  "navbar": {
+    "board": "Tableau",
+    "mobileTabs": {
+      "workspaces": "Sess.",
+      "chat": "Chat",
+      "changes": "Diff",
+      "logs": "Journ.",
+      "preview": "Aperçu",
+      "git": "Git"
+    }
+  },
+  "time": {
+    "short": {
+      "now": "maint.",
+      "minutes": "{{count}}min",
+      "hours": "{{count}}h",
+      "days": "{{count}}j"
+    }
+  },
+  "panels": {
+    "changes": "Modifications",
+    "logs": "Journaux",
+    "preview": "Aperçu",
+    "git": "Git",
+    "terminal": "Terminal",
+    "openPanelMenu": "Ouvrir le menu des panneaux",
+    "closePanel": "Fermer le panneau {{panel}}"
+  },
+  "routines": {
+    "title": "Routines",
+    "subtitle": "Créez des routines basées sur des modèles qui s'exécutent selon un horaire ou manuellement.",
+    "banner": "Les routines locales ne s'exécutent que lorsque votre ordinateur est allumé.",
+    "newButton": "Nouvelle routine",
+    "newPageTitle": "Nouvelle routine locale",
+    "empty": "Aucune routine pour le moment.",
+    "runNow": "Exécuter maintenant",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "deleteConfirmTitle": "Supprimer la routine",
+    "deleteConfirm": "Supprimer la routine « {{name}} » et {{count}} exécutions ({{count}} sessions et worktrees) ?",
+    "nextRun": "Prochaine exécution {{when}}",
+    "nextRunNever": "Aucune exécution prévue",
+    "lastRun": "Dernière exécution {{when}}",
+    "neverRun": "Jamais exécutée",
+    "history": {
+      "title": "Historique",
+      "empty": "Aucune exécution pour le moment."
+    },
+    "sections": {
+      "description": "Description",
+      "status": "Statut",
+      "folder": "Dossier",
+      "repeats": "Récurrence",
+      "instructions": "Instructions"
+    },
+    "status": {
+      "pending": "En attente",
+      "running": "En cours",
+      "done": "Terminée",
+      "skipped": "Ignorée",
+      "failed": "Échouée"
+    },
+    "skipReason": {
+      "appOffline": "L'application était hors ligne",
+      "prevStillRunning": "L'exécution précédente est toujours en cours"
+    },
+    "enabled": "Activée",
+    "disabled": "Désactivée",
+    "fields": {
+      "name": "Nom",
+      "namePlaceholder": "Un nom court pour cette routine",
+      "description": "Description",
+      "descriptionPlaceholder": "Que fait cette routine ?",
+      "instructions": "Instructions",
+      "instructionsPlaceholder": "Le prompt envoyé à l'agent à chaque exécution.",
+      "folder": "Dossier",
+      "folderPlaceholder": "Choisir un dossier",
+      "currentBranch": "Branche actuelle",
+      "worktree": "Utiliser un worktree",
+      "executor": "Agent",
+      "variant": "Préréglage",
+      "model": "Modèle",
+      "permission": "Permission",
+      "schedule": "Planification",
+      "time": "Heure",
+      "minute": "Minute",
+      "dow": "Jour de la semaine"
+    },
+    "schedule": {
+      "manual": "Manuel",
+      "hourly": "Toutes les heures",
+      "daily": "Quotidien",
+      "weekdays": "Jours ouvrés",
+      "weekly": "Hebdomadaire",
+      "summary": {
+        "manual": "Manuel uniquement",
+        "hourly": "Chaque heure à :{{minute}}",
+        "hourlyNoTime": "Chaque heure",
+        "daily": "Chaque jour à {{time}}",
+        "dailyNoTime": "Chaque jour",
+        "weekdays": "Lun–Ven à {{time}}",
+        "weekdaysNoTime": "Lun–Ven",
+        "weekly": "Chaque {{day}} à {{time}}",
+        "weeklyDayOnly": "Chaque {{day}}",
+        "weeklyAt": "Hebdomadaire à {{time}}",
+        "weeklyNoTime": "Hebdomadaire"
+      }
+    },
+    "days": {
+      "sun": "Dimanche",
+      "mon": "Lundi",
+      "tue": "Mardi",
+      "wed": "Mercredi",
+      "thu": "Jeudi",
+      "fri": "Vendredi",
+      "sat": "Samedi"
+    },
+    "form": {
+      "submitCreate": "Créer la routine",
+      "submitSave": "Enregistrer",
+      "cancel": "Annuler",
+      "validation": {
+        "nameRequired": "Le nom est requis",
+        "descriptionRequired": "La description est requise",
+        "instructionsRequired": "Les instructions sont requises",
+        "folderRequired": "Choisissez un dossier",
+        "modelRequired": "Choisissez un modèle",
+        "permissionRequired": "Choisissez une politique de permission",
+        "timeRequired": "Choisissez une heure",
+        "minuteRequired": "Choisissez une minute",
+        "dowRequired": "Choisissez un jour"
+      }
+    },
+    "sidebar": {
+      "nav": "Routines"
+    }
+  }
+}

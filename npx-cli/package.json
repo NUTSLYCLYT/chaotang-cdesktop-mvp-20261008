@@ -1,0 +1,35 @@
+{
+  "name": "cdesktop",
+  "private": false,
+  "version": "0.2.3",
+  "main": "index.js",
+  "bin": {
+    "cdesktop": "bin/cli.js"
+  },
+  "scripts": {
+    "build": "esbuild src/cli.ts --bundle --platform=node --target=node20 --format=cjs --outfile=bin/cli.js --external:adm-zip --banner:js=\"#!/usr/bin/env node\"",
+    "check": "tsc --noEmit -p tsconfig.json"
+  },
+  "keywords": [],
+  "author": "cdesktop",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cdesktop-ai/cdesktop"
+  },
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "license": "Apache-2.0",
+  "description": "NPX wrapper around cdesktop and cdesktop-mcp",
+  "devDependencies": {
+    "esbuild": "^0.27.2"
+  },
+  "dependencies": {
+    "adm-zip": "^0.5.16",
+    "cac": "^7.0.0"
+  },
+  "files": [
+    "bin",
+    "dist"
+  ]
+}

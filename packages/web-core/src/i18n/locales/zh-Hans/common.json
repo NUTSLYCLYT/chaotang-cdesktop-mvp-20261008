@@ -1,0 +1,952 @@
+{
+  "editorNames": {
+    "custom": "自定义"
+  },
+  "buttons": {
+    "save": "保存",
+    "cancel": "取消",
+    "send": "发送",
+    "delete": "删除",
+    "edit": "编辑",
+    "create": "创建",
+    "continue": "继续",
+    "reset": "重置",
+    "manage": "管理",
+    "connect": "连接",
+    "disconnect": "断开连接",
+    "close": "关闭",
+    "replay": "重播",
+    "discard": "放弃",
+    "addItem": "添加项目",
+    "reply": "回复",
+    "retry": "Retry",
+    "add": "添加"
+  },
+  "form": {
+    "notSpecified": "未指定",
+    "selectOption": "选择一个选项..."
+  },
+  "states": {
+    "loading": "加载中..."
+  },
+  "language": {
+    "browserDefault": "浏览器默认"
+  },
+  "conversation": {
+    "plan": "计划",
+    "output": "输出",
+    "deniedByUser": "用户拒绝了 {{toolName}}",
+    "tool": "工具",
+    "thinking": "思考中",
+    "toolSummary": {
+      "read": "读取 {{path}}",
+      "searched": "搜索 \"{{query}}\"",
+      "fetched": "获取 {{url}}",
+      "ranCommand": "执行命令",
+      "createdTask": "创建任务：{{description}}",
+      "todoOperation": "{{operation}} 待办事项"
+    },
+    "aggregated": {
+      "label": {
+        "read": "读取",
+        "search": "搜索",
+        "fetched": "已获取",
+        "edit": "编辑",
+        "fetch": "获取"
+      },
+      "unit": {
+        "file_one": "{{count}} 个文件",
+        "file_other": "{{count}} 个文件",
+        "command_one": "{{count}} 条命令",
+        "command_other": "{{count}} 条命令",
+        "url_one": "{{count}} 个 URL",
+        "url_other": "{{count}} 个 URL"
+      }
+    },
+    "subagent": {
+      "defaultType": "子智能体"
+    },
+    "loadingEarlierMessages": "正在加载早期消息",
+    "emptyTitle": "发送消息以开始对话。",
+    "emptyDescription": "新一轮开始后，会话内容将在此处显示。",
+    "toolName": {
+      "Skill": "技能"
+    }
+  },
+  "changesPanel": {
+    "notGitRepo": "不是 Git 仓库 — 无可用 diff"
+  },
+  "folderPicker": {
+    "defaultTitle": "选择文件夹",
+    "defaultDescription": "为您的项目选择一个文件夹",
+    "legend": "点击文件夹名称进行导航 • 使用操作按钮进行选择",
+    "manualPathLabel": "手动输入路径:",
+    "go": "前往",
+    "searchLabel": "搜索当前目录:",
+    "filterPlaceholder": "筛选文件夹和文件...",
+    "selectCurrent": "选择当前",
+    "gitRepo": "git 仓库",
+    "selectPath": "选择路径"
+  },
+  "branchSelector": {
+    "placeholder": "选择分支",
+    "searchPlaceholder": "搜索分支...",
+    "empty": "未找到分支",
+    "badges": {
+      "current": "当前",
+      "remote": "远程"
+    },
+    "currentDisabled": "无法选择当前分支"
+  },
+  "orgSwitcher": {
+    "organizations": "组织",
+    "orgSettings": "组织设置"
+  },
+  "ok": "确定",
+  "error": "错误",
+  "signIn": "登录",
+  "signOut": "退出登录",
+  "oauth": {
+    "title": "登录 Vibe Kanban",
+    "description": "登录以加入组织并与团队共享任务",
+    "continueWithGitHub": "使用 GitHub 继续",
+    "continueWithGoogle": "使用 Google 继续",
+    "waitingTitle": "完成身份验证",
+    "waitingDescription": "已打开弹出窗口进行身份验证",
+    "waitingForAuth": "等待身份验证...",
+    "popupInstructions": "如果弹出窗口未打开，请检查您的弹窗拦截器设置。",
+    "back": "返回",
+    "successTitle": "身份验证成功！",
+    "welcomeBack": "欢迎回来，{{name}}",
+    "errorTitle": "身份验证失败",
+    "errorDescription": "验证您的账户时出现问题",
+    "tryAgain": "重试"
+  },
+  "toolbar": {
+    "sortBy": "排序方式",
+    "groupBy": "分组方式"
+  },
+  "sorting": {
+    "ascending": "升序",
+    "descending": "降序"
+  },
+  "grouping": {
+    "date": "日期",
+    "assignee": "负责人",
+    "label": "标签"
+  },
+  "workspaces": {
+    "title": "会话",
+    "searchPlaceholder": "搜索...",
+    "active": "活跃",
+    "archived": "已归档",
+    "loading": "加载中...",
+    "notFound": "未找到会话",
+    "selectToStart": "选择一个会话开始",
+    "draft": "草稿",
+    "viewArchive": "查看归档",
+    "backToActive": "返回活跃",
+    "noArchived": "没有已归档的会话",
+    "noWorkspaces": "没有会话",
+    "newWorkspace": "新会话",
+    "needsAttention": "需要注意",
+    "idle": "空闲",
+    "running": "运行中",
+    "pin": "置顶",
+    "unpin": "取消置顶",
+    "archive": "归档",
+    "more": "更多操作",
+    "rename": {
+      "title": "重命名会话",
+      "description": "输入此会话的新名称。",
+      "nameLabel": "名称",
+      "placeholder": "输入会话名称",
+      "action": "重命名",
+      "renaming": "正在重命名..."
+    },
+    "unlinkFromIssue": "从问题取消关联",
+    "deleteWorkspace": "删除会话",
+    "unlink": "取消关联",
+    "delete": "删除",
+    "unlinkConfirmMessage": "确定要将此会话与问题取消关联吗？会话仍将存在，但不再与此问题关联。",
+    "deleteConfirmMessage": "确定要删除此会话吗？这将取消与问题的关联并删除本地会话。此操作无法撤销。",
+    "unlinkError": "取消关联会话失败",
+    "deleteError": "删除会话失败",
+    "branchRequiredError": "在创建会话之前，请为每个仓库选择一个分支",
+    "filesChanged": "{{count}} 个文件",
+    "deleteDialog": {
+      "title": "删除会话",
+      "description": "确定要删除此会话吗？此操作无法撤销。",
+      "deleteBranchLabel": "删除分支",
+      "cannotDeleteOpenPr": "PR 开启时无法删除分支",
+      "unlinkFromIssueLabel": "同时取消与议题的关联"
+    },
+    "linkError": "Failed to link 会话"
+  },
+  "fileTree": {
+    "searchPlaceholder": "搜索文件...",
+    "noResults": "没有匹配的文件",
+    "title": "文件",
+    "showGitHubComments": "显示 GitHub 评论",
+    "hideGitHubComments": "隐藏 GitHub 评论",
+    "prevGitHubComment": "上一个有评论的文件",
+    "nextGitHubComment": "下一个有评论的文件"
+  },
+  "sections": {
+    "changes": "更改",
+    "repositories": "仓库",
+    "addRepositories": "添加仓库",
+    "project": "项目",
+    "processes": "进程",
+    "devServer": "开发服务器",
+    "advanced": "高级",
+    "workingBranch": "工作分支",
+    "recent": "最近",
+    "other": "其他",
+    "devServerPreview": "开发服务器预览",
+    "terminal": "终端",
+    "notes": "笔记"
+  },
+  "notes": {
+    "placeholder": "添加关于此会话的笔记...",
+    "selectWorkspace": "选择一个会话以查看笔记"
+  },
+  "actions": {
+    "copyPath": "复制路径",
+    "cancel": "取消",
+    "saveChanges": "保存更改",
+    "copied": "已复制",
+    "collapse": "收起"
+  },
+  "comments": {
+    "addReviewComment": "添加审查评论",
+    "addPlaceholder": "添加评论...",
+    "editPlaceholder": "编辑评论...",
+    "copyToReview": "复制到审查"
+  },
+  "confirm": {
+    "defaultConfirm": "确认",
+    "defaultCancel": "取消"
+  },
+  "dialogs": {
+    "selectGitRepository": "选择文件夹",
+    "chooseExistingRepo": "从文件系统中选择现有文件夹",
+    "errorTitle": "错误"
+  },
+  "empty": {
+    "noChanges": "没有要显示的更改"
+  },
+  "turnNavigation": {
+    "title": "你的消息",
+    "count_other": "{{count}} 轮"
+  },
+  "commandBar": {
+    "noResults": "未找到结果。",
+    "back": "返回",
+    "defaultPlaceholder": "输入命令或搜索...",
+    "selectBranch": "Select Branch",
+    "selectBranchFor": "Select Branch for {{repoName}}",
+    "pages": {
+      "root": {
+        "groups": {
+          "actions": "操作",
+          "view": "视图",
+          "general": "通用"
+        }
+      },
+      "workspaceActions": {
+        "title": "会话操作",
+        "groups": {
+          "session": "会话",
+          "scripts": "脚本"
+        }
+      },
+      "repoActions": {
+        "title": "仓库操作",
+        "groups": {
+          "actions": "操作"
+        }
+      },
+      "diffOptions": {
+        "title": "差异选项",
+        "groups": {
+          "display": "显示"
+        }
+      },
+      "viewOptions": {
+        "title": "视图选项",
+        "groups": {
+          "panels": "面板"
+        }
+      },
+      "issueActions": {
+        "title": "议题操作",
+        "groups": {
+          "actions": "操作"
+        }
+      }
+    },
+    "actions": {
+      "startReview": "开始评审",
+      "rename": "重命名",
+      "duplicate": "复制",
+      "spinOff": "派生会话",
+      "archive": "归档",
+      "unarchive": "取消归档",
+      "delete": "删除",
+      "runSetupScript": "运行设置脚本",
+      "runCleanupScript": "运行清理脚本",
+      "runArchiveScript": "运行归档脚本",
+      "newWorkspace": "新建会话",
+      "createWorkspaceFromPr": "从 PR 创建会话",
+      "settings": "设置",
+      "projectSettings": "项目设置",
+      "signIn": "登录",
+      "signOut": "登出",
+      "giveFeedback": "提供反馈",
+      "workspacesGuide": "会话指南",
+      "projectsGuide": "项目指南",
+      "openCommandBar": "打开命令栏",
+      "toggleAllDiffs": "切换所有差异",
+      "openInIde": "在 IDE 中打开",
+      "openInIdeTooltip": "在 {{ide}} 中打开",
+      "copyWorkspacePath": "复制会话路径",
+      "copyRawLogs": "复制原始日志",
+      "devServer": "开发服务器",
+      "startDevServer": "启动开发服务器",
+      "stopDevServer": "停止开发服务器",
+      "devServerTooltip": {
+        "start": "启动开发服务器",
+        "stop": "停止开发服务器",
+        "starting": "正在启动开发服务器...",
+        "stopping": "正在停止开发服务器..."
+      },
+      "createIssue": "创建议题",
+      "changeStatus": "更改状态",
+      "changePriority": "更改优先级",
+      "changeAssignees": "更改负责人",
+      "makeSubIssueOf": "设为子议题",
+      "addSubIssue": "添加子议题",
+      "createSubIssue": "创建子议题",
+      "removeParent": "移除父级",
+      "linkWorkspace": "链接会话",
+      "deleteIssue": "删除议题",
+      "duplicateIssue": "复制议题",
+      "markBlocking": "标记为阻塞",
+      "markBlockedBy": "标记为被阻塞",
+      "markRelated": "标记为相关",
+      "markDuplicateOf": "标记为重复",
+      "diffView": {
+        "switchToSplit": "切换为并排视图",
+        "switchToInline": "切换为内联视图",
+        "tooltipInline": "内联视图",
+        "tooltipSplit": "并排视图"
+      },
+      "whitespace": {
+        "show": "显示空白更改",
+        "ignore": "忽略空白更改"
+      },
+      "lineWrap": {
+        "disable": "禁用行换行",
+        "enable": "启用行换行"
+      },
+      "leftSidebar": {
+        "hide": "隐藏左侧栏",
+        "show": "显示左侧栏"
+      },
+      "rightSidebar": {
+        "hide": "隐藏右侧栏",
+        "show": "显示右侧栏"
+      },
+      "chatPanel": {
+        "toggle": "切换聊天面板",
+        "hide": "隐藏聊天面板",
+        "show": "显示聊天面板"
+      },
+      "changesPanel": {
+        "toggle": "切换更改面板",
+        "hide": "隐藏更改面板",
+        "show": "显示更改面板"
+      },
+      "logsPanel": {
+        "toggle": "切换日志面板",
+        "hide": "隐藏日志面板",
+        "show": "显示日志面板"
+      },
+      "previewPanel": {
+        "toggle": "切换预览面板",
+        "hide": "隐藏预览面板",
+        "show": "显示预览面板"
+      },
+      "toggleAllDiffsTooltip": {
+        "collapse": "折叠所有差异",
+        "expand": "展开所有差异"
+      }
+    }
+  },
+  "workspacesGuide": {
+    "welcome": {
+      "title": "欢迎",
+      "content": "欢迎使用 会话，这是 Vibe Kanban 的全新设计界面。我们正在向部分用户推出以获取早期反馈。您可以随时通过导航栏中的反馈图标分享您的想法。"
+    },
+    "commandBar": {
+      "title": "命令栏",
+      "content": "命令栏是您的导航中心。使用 CMD+K 打开它，可以搜索和访问会话中的所有可用操作。"
+    },
+    "contextBar": {
+      "title": "上下文栏",
+      "content": "上下文栏让您可以快速切换不同面板。将它拖动到最适合您的位置。"
+    },
+    "sidebar": {
+      "title": "会话侧边栏",
+      "content": "一目了然地查看所有会话的状态。通知会突出显示需要关注的会话。归档已合并的会话以保持侧边栏整洁。"
+    },
+    "multiRepo": {
+      "title": "多仓库支持",
+      "content": "将多个仓库添加到单个会话。在处理一个仓库时可以引用另一个仓库的代码，或者同时在多个仓库中实现更改。"
+    },
+    "sessions": {
+      "title": "多会话",
+      "content": "在单个会话内创建多个智能体对话会话，包括与不同智能体的会话。这可以帮助您绕过对话限制，或在单独的线程中启动审查智能体。"
+    },
+    "preview": {
+      "title": "预览更改",
+      "content": "无需切换上下文，即可在内置浏览器中预览您的工作。支持桌面、移动设备和自定义视口尺寸测试。"
+    },
+    "diffs": {
+      "title": "差异和评论",
+      "content": "重新设计的差异面板包含更改的文件树。直接在差异上评论以向智能体提供反馈，当您的会话链接到 PR 时还可以查看 GitHub 评论。"
+    },
+    "classicUi": {
+      "title": "返回经典界面",
+      "content": "点击导航栏左侧的退出图标可返回经典看板。要完全禁用新界面，请在设置中的「测试版功能」下更新「启用 会话 测试版」选项。"
+    }
+  },
+  "logs": {
+    "searchLogs": "搜索日志",
+    "selectProcessToView": "选择一个进程以查看日志"
+  },
+  "processes": {
+    "noProcesses": "无进程",
+    "terminal": "终端"
+  },
+  "search": {
+    "matchCount": "{{current}} / {{total}}",
+    "noMatches": "无匹配项"
+  },
+  "contextUsage": {
+    "label": "上下文使用量",
+    "emptyTooltip": "上下文使用量将在下一次回复后显示",
+    "tooltip": "上下文：{{percentage}}% · {{used}} / {{total}} tokens",
+    "ariaLabel": "上下文使用量：{{percentage}}%"
+  },
+  "shortcuts": {
+    "title": "键盘快捷键",
+    "inWorkspace": "(在会话中)",
+    "sequentialHint": "组合快捷键：先按第一个键，然后在500毫秒内按第二个键。",
+    "configurableHint": "可在 设置 → 常规 → 消息输入 中配置",
+    "groups": {
+      "quickActions": "快捷操作",
+      "navigation": "导航",
+      "modifiers": "修饰键",
+      "goTo": "前往 (G ...)",
+      "workspace": "会话 (W ...)",
+      "view": "视图 (V ...)",
+      "issues": "问题 (I ...)",
+      "git": "Git (X ...)",
+      "yank": "复制 (Y ...)",
+      "toggle": "切换 (T ...)",
+      "run": "运行 (R ...)"
+    },
+    "actions": {
+      "showHelp": "显示帮助",
+      "closeCancel": "关闭/取消",
+      "createNewTask": "创建新任务",
+      "deleteSelected": "删除所选",
+      "focusSearch": "聚焦搜索",
+      "moveDown": "向下移动",
+      "moveUp": "向上移动",
+      "moveLeft": "向左移动",
+      "moveRight": "向右移动",
+      "openCommandBar": "打开命令栏",
+      "formatInlineCode": "Format inline code",
+      "sendMessage": "发送消息",
+      "settings": "前往设置",
+      "new-workspace": "前往新会话",
+      "duplicate-workspace": "复制会话",
+      "rename-workspace": "重命名会话",
+      "pin-workspace": "置顶/取消置顶会话",
+      "archive-workspace": "归档会话",
+      "delete-workspace": "删除会话",
+      "toggle-changes-mode": "切换更改面板",
+      "toggle-logs-mode": "切换日志面板",
+      "toggle-preview-mode": "切换预览面板",
+      "toggle-left-sidebar": "切换左侧边栏",
+      "toggle-left-main-panel": "切换聊天面板",
+      "create-issue": "创建问题",
+      "change-issue-status": "更改状态",
+      "change-issue-priority": "更改优先级",
+      "change-assignees": "更改负责人",
+      "make-sub-issue-of": "设为子问题",
+      "add-sub-issue": "添加子问题",
+      "remove-parent-issue": "移除父级",
+      "link-workspace": "关联会话",
+      "duplicate-issue": "复制问题",
+      "delete-issue": "删除问题",
+      "git-create-pr": "创建 Pull Request",
+      "git-merge": "合并分支",
+      "git-rebase": "变基分支",
+      "git-push": "推送更改",
+      "copy-path": "复制路径",
+      "copy-raw-logs": "复制原始日志",
+      "toggle-dev-server": "切换开发服务器",
+      "toggle-wrap-lines": "切换自动换行",
+      "run-setup-script": "运行设置脚本",
+      "run-cleanup-script": "运行清理脚本",
+      "run-archive-script": "运行归档脚本"
+    }
+  },
+  "typeahead": {
+    "tags": "标签",
+    "files": "文件",
+    "commands": "命令",
+    "chooseRepo": "选择仓库",
+    "selectedRepo": "已选择仓库：{{repoName}}",
+    "missingRepo": "所选仓库已不可用。",
+    "noTagsOrFiles": "未找到标签或文件",
+    "createTag": "创建新标签",
+    "noCommands": "此智能体没有可用的命令。",
+    "loadingCommands": "正在加载命令…",
+    "discoveringCommands": "正在发现命令…"
+  },
+  "kanban": {
+    "noVisibleStatuses": "所有状态已隐藏。请使用显示设置或切换到其他标签页查看问题。",
+    "noProjectFound": "未找到项目",
+    "unassigned": "未分配",
+    "noTagsAvailable": "无可用标签",
+    "createNewIssue": "创建新问题",
+    "searchTags": "搜索标签...",
+    "selectColorFor": "选择颜色：",
+    "createTag": "创建",
+    "noPrCreated": "未创建 PR",
+    "noCommentsYet": "暂无评论",
+    "createdBy": "创建者",
+    "comments": "评论",
+    "enterCommentPlaceholder": "在此输入评论...",
+    "attachFile": "附加文件",
+    "attachFileHint": "附加文件（每个文件最大 20MB）",
+    "dropFilesHere": "将文件拖放到这里",
+    "fileDropHint": "任意文件类型，最大 20MB",
+    "unknownUser": "未知用户",
+    "deletedUser": "已删除用户",
+    "replyQuotePrefix": "写道：",
+    "moreActions": "更多操作",
+    "closePanel": "关闭面板",
+    "copyLink": "复制链接",
+    "issueTitlePlaceholder": "问题标题...",
+    "issueDescriptionPlaceholder": "输入任务描述...",
+    "createDraftWorkspaceImmediately": "立即创建草稿会话",
+    "createDraftWorkspaceDescription": "创建议题后，打开预填了议题详情的会话创建表单",
+    "createIssue": "创建任务",
+    "newIssue": "新问题",
+    "previewCodeBlock": "[代码块]",
+    "previewImage": "[图片]",
+    "previewImageWithName": "[图片: {{name}}]",
+    "previewFile": "[文件]",
+    "previewFileWithName": "[文件: {{name}}]",
+    "imageAttachmentNameFallback": "附件",
+    "removeImage": "移除图片",
+    "maxFilesAtOnce": "一次最多上传 {{count}} 个文件",
+    "fileExceedsLimit": "文件 {{filename}} 超过 20MB 限制",
+    "unknownError": "未知错误",
+    "failedToUploadFile": "上传 {{filename}} 失败：{{message}}",
+    "downloadAttachment": "下载附件",
+    "subIssues": "子任务",
+    "noSubIssues": "无子任务",
+    "markIndependentIssue": "标记为独立问题",
+    "parentIssue": "父级",
+    "subIssueIndicator": "↳",
+    "viewTabs": {
+      "active": "活动",
+      "all": "全部"
+    },
+    "loginRequired": {
+      "title": "需要登录",
+      "description": "请登录以查看此项目。",
+      "action": "登录"
+    },
+    "team": "Team",
+    "personal": "Personal",
+    "searchPlaceholder": "Search issues...",
+    "filters": "Filters",
+    "clearFilters": "Clear filters",
+    "filtersDescription": "Adjust filters and sorting for this board view.",
+    "filterByTag": "Filter by tag",
+    "filterByPriority": "Filter by priority",
+    "tags": "Tags",
+    "sortBy": "Sort",
+    "workspaceSidebar": {
+      "sortDialogTitle": "Sort 会话",
+      "sortDialogDescription": "Choose how 会话 are ordered in the sidebar.",
+      "sortByLabel": "Sort by",
+      "sortOrderLabel": "Sort order",
+      "sortUpdatedAt": "Updated at",
+      "sortCreatedAt": "Created at",
+      "filterDialogTitle": "Filter 会话",
+      "filterDialogDescription": "Narrow down 会话 by project and PR state.",
+      "projectFilterLabel": "Project",
+      "prFilterLabel": "PR",
+      "prFilterAll": "All",
+      "prFilterHasPr": "Has PR",
+      "prFilterNoPr": "No PR",
+      "noProject": "No project",
+      "sortButtonTitle": "Sort 会话",
+      "filterButtonTitle": "Filter 会话"
+    },
+    "sortAscending": "Ascending",
+    "sortDescending": "Descending",
+    "assignee": "Assignee",
+    "self": "Me",
+    "priority": "Priority",
+    "subIssuesFilterLabel": "Sub-issues",
+    "workspacesFilterLabel": "会话",
+    "selectAssignees": "Select assignees...",
+    "relationships": "Relationships",
+    "noRelationships": "No relationships",
+    "openProjectsGuide": "Projects guide",
+    "editProjectSettings": "Edit project settings",
+    "linkWorkspace": "Link 会话...",
+    "createNewWorkspace": "Create new 会话",
+    "workspaces": "会话",
+    "showingWorkspaces": "Showing {{count}} of {{total}}",
+    "changeColor": "Change color",
+    "editName": "Edit name",
+    "deleteStatus": "Delete status",
+    "cannotDeleteWithIssues": "Move issues first",
+    "lastVisibleStatus": "At least one status must be visible",
+    "showStatus": "Show status",
+    "hideStatus": "Hide status",
+    "newStatus": "New Status",
+    "visibleColumns": "Visible Columns",
+    "dragToRearrange": "Drag to re-arrange",
+    "addColumn": "Add column",
+    "projectsGuide": {
+      "intro": {
+        "title": "Welcome",
+        "content": "Welcome to Vibe Kanban. Use the help sections in this panel to learn how things work, then create your first issue. You can re-open this help dialog or give feedback anytime from the navbar."
+      },
+      "welcome": {
+        "title": "Projects",
+        "content": "The project page is where you manage issues. You can view your issues as a kanban board, or as a list, and filter by status, tag, assignee and more."
+      },
+      "issues": {
+        "title": "Issues",
+        "content": "Each issue represents a feature or problem to solve. Issues have statuses, priorities, assignees, tags, relationships, comments, sub-issues and more."
+      },
+      "workspaces": {
+        "title": "会话",
+        "content": "To start working on an issue, create a 会话. A single issue can have multiple 会话. Issues describe the work to be done, 会话 are where the work happens."
+      },
+      "organizations": {
+        "title": "Invite your team",
+        "content": "We've automatically created a personal organization and initial project so you can get started with Vibe Kanban. Export your cloud data before shutdown."
+      }
+    }
+  },
+  "createMode": {
+    "headings": {
+      "repoStep": "你想在哪些仓库上工作？",
+      "chatStep": "你想做什么工作？"
+    },
+    "repoPicker": {
+      "actions": {
+        "recent": "最近",
+        "browse": "浏览",
+        "create": "创建"
+      },
+      "setupHintTitle": "设置脚本",
+      "setupHint": "提示：在设置 → 仓库中为此仓库配置设置脚本",
+      "setupHintDismiss": "关闭",
+      "setupHintLink": "Configure in Settings"
+    },
+    "composerChips": {
+      "addFolderMenuItem": "添加文件夹",
+      "openFolder": "打开文件夹…",
+      "pickBranch": "选择分支",
+      "pickFolderPlaceholder": "选择一个文件夹…",
+      "recentsEmpty": "没有最近的文件夹",
+      "removeFolderAction": "移除",
+      "worktreeChip": "Worktree"
+    },
+    "placeholder": {
+      "typeForCommands": "输入 / 查看命令"
+    },
+    "landing": {
+      "welcomeBack": "欢迎回来",
+      "recentSessions": "最近会话",
+      "sessionsAwaitingInput_one": "{{count}} 个会话等待输入",
+      "sessionsAwaitingInput_other": "{{count}} 个会话等待输入",
+      "whatToWorkOn": "你想要做什么？",
+      "codexNotFound": "未检测到 Codex CLI。请先安装并登录 Codex，再开始本地任务。",
+      "quickStarts": {
+        "analyze": {
+          "label": "分析当前项目",
+          "prompt": "请先分析当前项目的架构、主要模块和启动方式，然后给出改进建议。"
+        },
+        "fix": {
+          "label": "查找并修复问题",
+          "prompt": "请检查当前项目中最可能影响用户体验的问题，定位原因并修复。"
+        },
+        "build": {
+          "label": "实现一个新功能",
+          "prompt": "请先理解当前项目，然后和我一起实现一个新功能。"
+        }
+      },
+      "status": {
+        "awaitingInput": "等待输入",
+        "running": "运行中",
+        "failed": "失败"
+      }
+    }
+  },
+  "modelSelector": {
+    "preset": "预设",
+    "custom": "自定义",
+    "permissions": "权限",
+    "permissionAuto": "自动模式",
+    "permissionAsk": "请求权限",
+    "permissionPlan": "计划模式",
+    "permissionAcceptEdits": "接受编辑",
+    "permissionBypass": "绕过权限",
+    "agent": "智能体",
+    "default": "默认",
+    "model": "模型"
+  },
+  "crashScreen": {
+    "title": "出了点问题",
+    "description": "应用程序遇到了意外错误。",
+    "reload": "重新加载",
+    "showDetails": "显示详情",
+    "hideDetails": "隐藏详情"
+  },
+  "syncError": {
+    "networkErrors": "网络错误",
+    "streamsAffected": "{{count}} 个数据流受影响",
+    "streamsAffected_other": "{{count}} 个数据流受影响",
+    "status": "(状态 {{status}})",
+    "refreshPage": "刷新页面",
+    "remoteAuthUnavailable": "远程身份验证暂时不可用。在恢复之前，部分远程功能可能无法使用。"
+  },
+  "onboardingSignIn": {
+    "subtitle": "Sign in to continue",
+    "signedInAs": "Signed in as {{name}}.",
+    "moreOptions": "More options",
+    "featureHeader": "Feature",
+    "signedInHeader": "Signed in",
+    "skipSignInHeader": "Don't sign in",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "appBar": {
+    "kanban": {
+      "tooltip": "登录以查看项目",
+      "title": "看板",
+      "description": "登录以使用看板管理您的编码智能体。"
+    }
+  },
+  "errors": {
+    "generic": "An unexpected error occurred"
+  },
+  "personal": "Personal",
+  "askQuestion": {
+    "title": "智能体正在提问",
+    "selectMultiple": "多选",
+    "confirmSelection": "确认选择",
+    "submitting": "正在提交回答...",
+    "answeredCount": "已回答{{count}}个问题",
+    "answeredCount_other": "已回答{{count}}个问题"
+  },
+  "sidebar": {
+    "footer": {
+      "themeToggle": {
+        "aria": "切换到{{mode}}模式"
+      }
+    },
+    "hideSidebar": {
+      "aria": "隐藏侧边栏"
+    },
+    "kebab": {
+      "pin": "固定会话",
+      "unpin": "取消固定会话"
+    },
+    "newSession": "新建会话",
+    "newSessionInFolder": "在 {{folder}} 中新建会话",
+    "projects": "项目",
+    "recent": "最近",
+    "pinned": {
+      "emptyHint": "从会话菜单中固定它们以保留在此处。",
+      "sectionHeader": "已固定",
+      "dropHint": "拖放到此处以固定"
+    },
+    "search": {
+      "collapse": {
+        "aria": "关闭搜索"
+      },
+      "open": {
+        "aria": "搜索会话"
+      }
+    },
+    "theme": {
+      "dark": "暗色",
+      "light": "亮色"
+    },
+    "controlPanel": {
+      "openMenu": "打开控制面板",
+      "theme": {
+        "label": "主题",
+        "light": "亮色",
+        "dark": "暗色",
+        "system": "跟随系统"
+      },
+      "settings": "设置",
+      "viewArchive": "查看归档"
+    }
+  },
+  "navbar": {
+    "board": "看板",
+    "mobileTabs": {
+      "workspaces": "会话",
+      "chat": "聊天",
+      "changes": "差异",
+      "logs": "日志",
+      "preview": "预览",
+      "git": "Git"
+    }
+  },
+  "time": {
+    "short": {
+      "now": "现在",
+      "minutes": "{{count}}分",
+      "hours": "{{count}}时",
+      "days": "{{count}}天"
+    }
+  },
+  "panels": {
+    "changes": "更改",
+    "logs": "日志",
+    "preview": "预览",
+    "git": "Git",
+    "terminal": "终端",
+    "openPanelMenu": "打开面板菜单",
+    "closePanel": "关闭 {{panel}} 面板"
+  },
+  "routines": {
+    "title": "定时任务",
+    "subtitle": "创建按计划或手动运行的模板化定时任务。",
+    "banner": "本地定时任务仅在您的计算机开启时运行。",
+    "newButton": "新建定时任务",
+    "newPageTitle": "新建本地定时任务",
+    "empty": "暂无定时任务。",
+    "runNow": "立即运行",
+    "edit": "编辑",
+    "delete": "删除",
+    "deleteConfirmTitle": "删除定时任务",
+    "deleteConfirm": "确定要删除定时任务 \"{{name}}\" 及其 {{count}} 次运行（{{count}} 个会话和 worktree）吗？",
+    "nextRun": "下次运行 {{when}}",
+    "nextRunNever": "无即将运行",
+    "lastRun": "上次运行 {{when}}",
+    "neverRun": "从未运行",
+    "history": {
+      "title": "历史记录",
+      "empty": "暂无运行记录。"
+    },
+    "sections": {
+      "description": "描述",
+      "status": "状态",
+      "folder": "文件夹",
+      "repeats": "重复",
+      "instructions": "指令"
+    },
+    "status": {
+      "pending": "等待中",
+      "running": "运行中",
+      "done": "已完成",
+      "skipped": "已跳过",
+      "failed": "失败"
+    },
+    "skipReason": {
+      "appOffline": "应用处于离线状态",
+      "prevStillRunning": "上次运行仍在进行中"
+    },
+    "enabled": "已启用",
+    "disabled": "已禁用",
+    "fields": {
+      "name": "名称",
+      "namePlaceholder": "此定时任务的简短名称",
+      "description": "描述",
+      "descriptionPlaceholder": "此定时任务的作用是什么？",
+      "instructions": "指令",
+      "instructionsPlaceholder": "每次运行时发送给智能体的提示词。",
+      "folder": "文件夹",
+      "folderPlaceholder": "选择文件夹",
+      "currentBranch": "当前分支",
+      "worktree": "使用 worktree",
+      "executor": "智能体",
+      "variant": "预设",
+      "model": "模型",
+      "permission": "权限",
+      "schedule": "计划",
+      "time": "时间",
+      "minute": "分钟",
+      "dow": "星期"
+    },
+    "schedule": {
+      "manual": "手动",
+      "hourly": "每小时",
+      "daily": "每天",
+      "weekdays": "工作日",
+      "weekly": "每周",
+      "summary": {
+        "manual": "仅手动",
+        "hourly": "每小时 :{{minute}} 分",
+        "hourlyNoTime": "每小时",
+        "daily": "每天 {{time}}",
+        "dailyNoTime": "每天",
+        "weekdays": "周一至周五 {{time}}",
+        "weekdaysNoTime": "周一至周五",
+        "weekly": "每{{day}} {{time}}",
+        "weeklyDayOnly": "每{{day}}",
+        "weeklyAt": "每周 {{time}}",
+        "weeklyNoTime": "每周"
+      }
+    },
+    "days": {
+      "sun": "星期日",
+      "mon": "星期一",
+      "tue": "星期二",
+      "wed": "星期三",
+      "thu": "星期四",
+      "fri": "星期五",
+      "sat": "星期六"
+    },
+    "form": {
+      "submitCreate": "创建定时任务",
+      "submitSave": "保存",
+      "cancel": "取消",
+      "validation": {
+        "nameRequired": "请输入名称",
+        "descriptionRequired": "请输入描述",
+        "instructionsRequired": "请输入指令",
+        "folderRequired": "请选择文件夹",
+        "modelRequired": "请选择模型",
+        "permissionRequired": "请选择权限策略",
+        "timeRequired": "请选择时间",
+        "minuteRequired": "请选择分钟",
+        "dowRequired": "请选择日期"
+      }
+    },
+    "sidebar": {
+      "nav": "定时任务"
+    }
+  }
+}

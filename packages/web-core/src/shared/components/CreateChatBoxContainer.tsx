@@ -89,18 +89,6 @@ export function CreateChatBoxContainer({
   const hasSelectedRepos = repos.length > 0;
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
 
-  // Carry a result-oriented request from the global Chaotang dock into the
-  // real project composer. The project page still requires an explicit folder
-  // selection before execution, so this never bypasses the existing safety
-  // boundary or sends automatically.
-  useEffect(() => {
-    if (!hasInitialValue || message.trim()) return;
-    const pendingIntent = sessionStorage.getItem('chaotang.pending-intent');
-    if (!pendingIntent) return;
-    setMessage(pendingIntent);
-    sessionStorage.removeItem('chaotang.pending-intent');
-  }, [hasInitialValue, message, setMessage]);
-
   // Attachment handling - insert markdown and track attachment IDs
   const handleInsertMarkdown = useCallback(
     (markdown: string) => {

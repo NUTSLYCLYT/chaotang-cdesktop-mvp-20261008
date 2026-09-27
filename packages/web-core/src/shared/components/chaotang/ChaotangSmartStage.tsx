@@ -10,9 +10,10 @@ import {
   SparkleIcon,
 } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
+import { useChaotangProvider } from '@/shared/providers/ChaotangProvider';
 import {
   OUTCOME_CASE_DESTINATION,
-  PENDING_OUTCOME_INTENT_KEY,
+  storePendingOutcomeIntent,
 } from './outcomeCaseHandoff';
 
 interface ChaotangSmartStageProps {
@@ -102,10 +103,21 @@ export function ChaotangSmartStage({
   realContent,
 }: ChaotangSmartStageProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [handoffError, setHandoffError] = useState<string>();
+  const { user, authGeneration } = useChaotangProvider();
   const navigate = useNavigate();
 
   const startOutcomeCase = (intent: string) => {
-    sessionStorage.setItem(PENDING_OUTCOME_INTENT_KEY, intent);
+    if (
+      !storePendingOutcomeIntent(() => sessionStorage, intent, {
+        ownerUserId: user?.id ?? null,
+        authGeneration,
+      })
+    ) {
+      setHandoffError('暂时无法带入需求，请复制提纲后到上书房粘贴。');
+      return;
+    }
+    setHandoffError(undefined);
     void navigate(OUTCOME_CASE_DESTINATION);
   };
 
@@ -114,6 +126,11 @@ export function ChaotangSmartStage({
       <div className="relative flex min-h-[470px] items-center justify-center overflow-hidden border border-brand/20 bg-primary/10 px-6 py-8">
         <div className="pointer-events-none absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-brand/55 to-transparent" />
         <div className="relative w-full max-w-[520px]">
+          {handoffError && (
+            <p role="alert" className="mb-base text-sm text-error">
+              {handoffError}
+            </p>
+          )}
           <div className="mb-base flex items-center justify-between border border-brand/25 bg-[#07100c]/92 px-base py-half text-[10px] text-brand shadow-xl">
             <span className="flex items-center gap-half">
               <ScrollIcon className="size-3.5" /> 御屏 · 当前御断
@@ -246,12 +263,28 @@ export function ChaotangSmartStage({
 }
 
 export function ChaotangConversationDock() {
+  const { user, authGeneration } = useChaotangProvider();
+  return (
+    <ChaotangConversationDockSession
+      key={`${user?.id ?? 'anonymous'}:${authGeneration}`}
+    />
+  );
+}
+
+function ChaotangConversationDockSession() {
   const [value, setValue] = useState('');
+  const [handoffError, setHandoffError] = useState<string>();
+  const { user, authGeneration } = useChaotangProvider();
   const navigate = useNavigate();
 
   return (
     <div className="chaotang-conversation-dock absolute bottom-0 left-0 right-0 z-30 border-t border-brand/30 bg-[#050a08]/96 px-double pb-base pt-base shadow-[0_-20px_60px_rgba(0,0,0,0.4)] backdrop-blur-xl">
       <div className="mx-auto max-w-[1380px]">
+        {handoffError && (
+          <p role="alert" className="mb-half text-sm text-error">
+            {handoffError}
+          </p>
+        )}
         <div className="mb-half flex items-center justify-between text-[10px] text-low">
           <span className="flex items-center gap-half text-normal">
             <ChatCircleTextIcon className="size-3.5 text-brand" />
@@ -272,6 +305,7 @@ export function ChaotangConversationDock() {
           <div className="flex min-w-0 flex-1 items-center border border-brand/30 bg-primary/75">
             <input
               value={value}
+              maxLength={4000}
               onChange={(event) => setValue(event.target.value)}
               placeholder="告诉朝堂你想得到什么结果、最担心什么……"
               className="min-w-0 flex-1 bg-transparent px-base py-base text-sm text-normal outline-none placeholder:text-low"
@@ -300,7 +334,16 @@ export function ChaotangConversationDock() {
             disabled={!value.trim()}
             onClick={() => {
               if (!value.trim()) return;
-              sessionStorage.setItem(PENDING_OUTCOME_INTENT_KEY, value.trim());
+              if (
+                !storePendingOutcomeIntent(() => sessionStorage, value, {
+                  ownerUserId: user?.id ?? null,
+                  authGeneration,
+                })
+              ) {
+                setHandoffError('暂时无法带入需求，请保留输入，到上书房粘贴。');
+                return;
+              }
+              setHandoffError(undefined);
               void navigate(OUTCOME_CASE_DESTINATION);
             }}
             title={

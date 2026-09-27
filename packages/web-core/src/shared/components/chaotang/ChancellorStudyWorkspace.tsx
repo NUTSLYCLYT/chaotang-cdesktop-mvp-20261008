@@ -1,6 +1,6 @@
 import { ValidatedDecreeResult } from './CourtWorkspace';
 import { decreeIdempotencyKey } from '@/shared/lib/chaotangFusion';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   CheckCircleIcon,
   ChatCircleTextIcon,
@@ -22,10 +22,10 @@ import { consumePendingOutcomeIntent } from './outcomeCaseHandoff';
 export function ChancellorStudyWorkspace({
   initialObjective = '',
 }: { initialObjective?: string } = {}) {
-  const { user } = useChaotangProvider();
+  const { user, authGeneration } = useChaotangProvider();
   return (
     <ChancellorStudySession
-      key={user?.id ?? 'anonymous'}
+      key={`${user?.id ?? 'anonymous'}:${authGeneration}:${initialObjective}`}
       initialObjective={initialObjective}
     />
   );
@@ -36,8 +36,10 @@ function ChancellorStudySession({
 }: {
   initialObjective: string;
 }) {
-  const { user, health } = useChaotangProvider();
+  const { user, health, authGeneration } = useChaotangProvider();
   const [objective, setObjective] = useState(initialObjective);
+  const [handoffNotice, setHandoffNotice] = useState<string>();
+  const initialized = useRef(false);
   const [cameFromOutcomeCase, setCameFromOutcomeCase] = useState(
     Boolean(initialObjective)
   );
@@ -51,21 +53,30 @@ function ChancellorStudySession({
   const cancel = useCancelDecreeJob();
 
   useEffect(() => {
-    if (!user) return;
+    if (!user || initialized.current) return;
+    initialized.current = true;
+    let handoffDiscarded = false;
     const pendingIntent = initialObjective
       ? undefined
-      : consumePendingOutcomeIntent(sessionStorage);
+      : consumePendingOutcomeIntent(
+          () => sessionStorage,
+          { ownerUserId: user.id, authGeneration },
+          () => {
+            handoffDiscarded = true;
+            setHandoffNotice('未能带入之前的提纲，请重新选择案例或填写目标。');
+          }
+        );
     if (pendingIntent) {
       setObjective(pendingIntent);
       setCameFromOutcomeCase(true);
     }
     // A newly transferred objective must not display an older job as its result.
     // Keep the previous task record intact so opening the ordinary study can resume it.
-    if (!initialObjective && !pendingIntent) {
+    if (!initialObjective && !pendingIntent && !handoffDiscarded) {
       const storedJobId = sessionStorage.getItem(activeJobKey(user.id));
       if (storedJobId) setJobId(storedJobId);
     }
-  }, [user, initialObjective]);
+  }, [user, initialObjective, authGeneration]);
 
   useEffect(() => {
     if (!user || !jobId || !job.data) return;
@@ -118,6 +129,11 @@ function ChancellorStudySession({
 
   return (
     <div className="space-y-double">
+      {handoffNotice && (
+        <p role="alert" className="text-sm text-low">
+          {handoffNotice}
+        </p>
+      )}
       <div className="grid grid-cols-2 border border-brand/20 bg-secondary/85 sm:grid-cols-4">
         <Phase
           label="提出议题"

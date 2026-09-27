@@ -1,11 +1,14 @@
 use std::{
-    fs, io,
+    fs,
     path::{Path, PathBuf},
     process::Stdio,
     time::Duration,
 };
 
 use tokio::{process::Child, time::sleep};
+
+#[path = "sidecar_install.rs"]
+mod sidecar_install;
 
 const HEALTH_URL: &str = "http://127.0.0.1:8000/health";
 const BACKEND_EXECUTABLE: &str = if cfg!(windows) {
@@ -19,6 +22,20 @@ pub async fn ensure_started(
     app_data_dir: Option<PathBuf>,
 ) -> Result<Option<Child>, String> {
     if backend_is_healthy().await {
+        if let (Some(resource_dir), Some(app_data_dir)) = (&resource_dir, &app_data_dir) {
+            if let Some(source) = bundled_backend(resource_dir) {
+                let installed = app_data_dir.join("chaotang-backend-v0.1.5");
+                let matches = tokio::task::spawn_blocking(move || {
+                    sidecar_install::matches_bundle(&source, &installed)
+                })
+                .await
+                .map_err(|error| format!("无法核对正在运行的后端：{error}"))?
+                .map_err(|error| format!("无法核对正在运行的后端文件：{error}"))?;
+                if !matches {
+                    return Err("当前有其他或旧版朝堂后端正在运行。请先退出旧版朝堂，再启动本版本；未改动账户和成果数据。".into());
+                }
+            }
+        }
         tracing::info!("Chaotang backend is already running");
         return Ok(None);
     }
@@ -68,34 +85,32 @@ struct BackendLaunch {
     arguments: Vec<String>,
 }
 
+fn bundled_backend(resource_dir: &Path) -> Option<PathBuf> {
+    [
+        resource_dir.join("resources/chaotang-backend"),
+        resource_dir.join("chaotang-backend"),
+    ]
+    .into_iter()
+    .find(|path| path.join(BACKEND_EXECUTABLE).is_file())
+}
+
 async fn backend_launch(
     resource_dir: Option<PathBuf>,
     app_data_dir: Option<PathBuf>,
 ) -> Result<BackendLaunch, String> {
     if let (Some(resource_dir), Some(app_data_dir)) = (resource_dir, app_data_dir) {
-        let bundled = [
-            resource_dir.join("resources/chaotang-backend"),
-            resource_dir.join("chaotang-backend"),
-        ]
-        .into_iter()
-        .find(|path| path.join(BACKEND_EXECUTABLE).is_file());
+        let bundled = bundled_backend(&resource_dir);
 
         if let Some(source) = bundled {
             let destination = app_data_dir.join("chaotang-backend-v0.1.5");
             let executable = destination.join(BACKEND_EXECUTABLE);
-            if !executable.is_file() {
-                let source_for_copy = source.clone();
-                let destination_for_copy = destination.clone();
-                tokio::task::spawn_blocking(move || {
-                    if destination_for_copy.exists() {
-                        fs::remove_dir_all(&destination_for_copy)?;
-                    }
-                    copy_directory(&source_for_copy, &destination_for_copy)
-                })
-                .await
-                .map_err(|error| format!("朝堂 sidecar 解包任务失败：{error}"))?
-                .map_err(|error| format!("无法准备朝堂 sidecar：{error}"))?;
-            }
+            let destination_for_copy = destination.clone();
+            tokio::task::spawn_blocking(move || {
+                sidecar_install::prepare(&source, &destination_for_copy, BACKEND_EXECUTABLE)
+            })
+            .await
+            .map_err(|error| format!("朝堂 sidecar 解包任务失败：{error}"))?
+            .map_err(|error| format!("无法准备朝堂 sidecar（原数据已保留）：{error}"))?;
             fs::create_dir_all(destination.join("_internal/data/report_artifacts"))
                 .map_err(|error| format!("无法准备朝堂成果目录：{error}"))?;
             return Ok(BackendLaunch {
@@ -131,21 +146,6 @@ async fn backend_launch(
             "8000".into(),
         ],
     })
-}
-
-fn copy_directory(source: &Path, destination: &Path) -> io::Result<()> {
-    fs::create_dir_all(destination)?;
-    for entry in fs::read_dir(source)? {
-        let entry = entry?;
-        let source_path = entry.path();
-        let destination_path = destination.join(entry.file_name());
-        if entry.file_type()?.is_dir() {
-            copy_directory(&source_path, &destination_path)?;
-        } else {
-            fs::copy(source_path, destination_path)?;
-        }
-    }
-    Ok(())
 }
 
 async fn backend_is_healthy() -> bool {

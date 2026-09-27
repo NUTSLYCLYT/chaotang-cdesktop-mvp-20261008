@@ -44,3 +44,33 @@ an installer, prove UI flows, or validate real multi-agent execution. Those are
 separate release gates.
 
 Reference: [PyInstaller usage](https://pyinstaller.org/en/stable/usage.html).
+
+## Cached backend repair and recovery
+
+The native launcher compares bundled code and dependency hashes with the cached
+backend. A missing executable, changed dependency or missing required config
+triggers a staged installation. Existing config contents remain user-owned.
+The current `data` and `_internal/data` trees (including accounts, task stores,
+artifacts and MCP credentials) are copied and checked before switching folders.
+The complete old tree stays in `chaotang-backend-backup-<transaction>` beside the
+installed cache. Unknown legacy files are retained there, not silently imported
+as application code. No database schema migration is performed by this layer.
+
+Before upgrading, close the previous application. If a backend is already
+healthy but its cached code differs, the launcher asks you to exit the old copy
+instead of changing files underneath it. This checks cached files; it does not
+yet attest the executable identity of an unrelated process occupying port 8000.
+
+An active install lock, a pending transaction, changed source data, a link or a
+copy conflict stops installation. Original files remain available. Do not delete
+the lock or pending record while an installer or backend may be running.
+For interrupted recovery, inspect `chaotang-backend-install-pending.json` with
+all app processes stopped: it names the original destination, stage and backup.
+Preserve the stage and any new destination before restoring the named backup.
+Keep the matching code and database snapshot together when reverting a version;
+never restore an old database over newer user work without reviewing the changes.
+
+Validation uses temporary directories and a real frozen backend: register and
+authenticate, stop it, quarantine its executable, run the actual Rust repair,
+check that the database bytes are unchanged, restart and authenticate again.
+This is a repair test, not a cross-version database migration or UI acceptance.

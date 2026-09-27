@@ -68,8 +68,8 @@ button:focus-visible, textarea:focus-visible { outline: 2px solid var(--gold-hi)
 .global-actions .compute-control b { color: #d8eadf; border-color: rgba(113,172,145,.36); background: rgba(113,172,145,.1); }
 .identity-control { display: grid; grid-template-columns: 30px auto; align-items: center; gap: 8px; min-width: 116px; padding: 0 8px 0 5px !important; text-align: left; }
 .avatar { position: relative; display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; font-family: var(--serif); background: radial-gradient(circle at 35% 28%, #fff2c3, #d2a65e 58%, #7a4c20); color: #241a0d; box-shadow: 0 0 0 2px #0a0e0c, 0 0 0 3px rgba(215,179,106,.62), 0 0 18px rgba(215,179,106,.18); }
-.identity-copy { min-width: 0; }
-.global-actions .identity-copy b { display: block; min-width: 0; height: auto; margin: 0; border-radius: 0; color: #f2e6c9; background: transparent; font: 700 11px/1.1 var(--serif); }
+.identity-copy { min-width: 0; max-width: 128px; }
+.global-actions .identity-copy b { display: block; min-width: 0; height: auto; margin: 0; border-radius: 0; color: #f2e6c9; background: transparent; font: 700 11px/1.1 var(--serif); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .identity-copy small { display: block; margin-top: 3px; color: #a89b7f; font-size: 8px; line-height: 1; letter-spacing: .04em; }
 .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 5px; background: #777; box-shadow: 0 0 10px currentColor; }
 .dot.ok { background: var(--jade); color: var(--jade); }.dot.warn { background: var(--warn); color: var(--warn); }.dot.danger { background: var(--danger); color: var(--danger); }

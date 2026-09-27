@@ -26,6 +26,15 @@ function fixture() {
   };
   const send = { disabled: false, addEventListener() {} };
   const avatar = { textContent: '', title: '' };
+  const identityName = { textContent: '昭明君' };
+  const identityStatus = { textContent: '开府之主 · LV.3' };
+  const identityControl = {
+    title: '个人朝堂 · 用户设置',
+    attributes: {},
+    setAttribute(name, value) {
+      this.attributes[name] = value;
+    },
+  };
   const app = { dataset: {} };
   const parent = { postMessage: (message) => sent.push(message) };
   const setTimer = (fn) => {
@@ -45,7 +54,13 @@ function fixture() {
     document: {
       getElementById: (id) =>
         ({ app, promptInput: input, sendButton: send })[id] ?? null,
-      querySelector: (selector) => (selector === '.avatar' ? avatar : null),
+      querySelector: (selector) =>
+        ({
+          '.avatar': avatar,
+          '.identity-copy b': identityName,
+          '.identity-copy small': identityStatus,
+          '.identity-control': identityControl,
+        })[selector] ?? null,
       addEventListener: (type, fn) => documentHandlers.set(type, fn),
     },
     sessionStorage: { getItem: () => null, removeItem() {}, setItem() {} },
@@ -86,6 +101,9 @@ function fixture() {
     input,
     send,
     avatar,
+    identityName,
+    identityStatus,
+    identityControl,
     timers,
     sent,
     inputHandlers,
@@ -104,6 +122,41 @@ test('original study and council navigation opens real workspaces without issuin
     assert.equal(f.sent[0].type, 'chaotang:action');
     assert.equal(f.sent[0].action, action);
   }
+});
+
+test('signed-in identity replaces the sample name and level in the visible account control', () => {
+  const f = fixture();
+  f.account('朝堂测试用户');
+  assert.equal(f.identityName.textContent, '朝堂测试用户');
+  assert.equal(f.identityStatus.textContent, '已登录朝堂账户');
+  assert.equal(f.identityControl.title, '朝堂测试用户 · 账户设置');
+  assert.equal(
+    f.identityControl.attributes['aria-label'],
+    '朝堂测试用户 · 账户设置'
+  );
+});
+
+test('account switching and logout remove the previous visible identity and accessible name', () => {
+  const f = fixture();
+  f.account('account-A');
+  f.account('account-B');
+  assert.equal(f.identityName.textContent, 'account-B');
+  assert.equal(f.identityControl.title, 'account-B · 账户设置');
+  f.account(null);
+  assert.equal(f.identityName.textContent, '未登录');
+  assert.equal(f.identityStatus.textContent, '登录后查看账户');
+  assert.equal(f.identityControl.title, '登录或注册朝堂账户');
+  assert.equal(
+    f.identityControl.attributes['aria-label'],
+    '登录或注册朝堂账户'
+  );
+});
+
+test('an initial anonymous status clears the sample account before any login', () => {
+  const f = fixture();
+  f.account(null);
+  assert.equal(f.identityName.textContent, '未登录');
+  assert.equal(f.identityStatus.textContent, '登录后查看账户');
 });
 
 test('logout immediately removes account draft and resets account display', () => {

@@ -236,6 +236,24 @@
         avatar.textContent = "君";
         avatar.title = "未登录";
       }
+      const identityName = document.querySelector(".identity-copy b");
+      const identityStatus = document.querySelector(".identity-copy small");
+      const identityControl = document.querySelector(".identity-control");
+      const displayName = event.data.authenticated
+        ? event.data.username || "已登录"
+        : "未登录";
+      const accountTitle = event.data.authenticated
+        ? displayName + " · 账户设置"
+        : "登录或注册朝堂账户";
+      if (identityName) identityName.textContent = displayName;
+      if (identityStatus)
+        identityStatus.textContent = event.data.authenticated
+          ? "已登录朝堂账户"
+          : "登录后查看账户";
+      if (identityControl) {
+        identityControl.title = accountTitle;
+        identityControl.setAttribute("aria-label", accountTitle);
+      }
       const truth = document.querySelector(".capability-truth");
       if (truth)
         truth.textContent = event.data.connected

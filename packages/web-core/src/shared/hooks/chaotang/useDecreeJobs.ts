@@ -1,4 +1,5 @@
 import { ownerQueryKey } from '@/shared/lib/chaotangFusion';
+import { validateDecreeJobItems } from '@/shared/components/chaotang/decreeJobReceipt';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   validateHistoryAnnotation,
@@ -21,8 +22,14 @@ export function useDecreeJobs(input: DecreeJobHistoryQuery = {}) {
   };
   return useQuery({
     queryKey: [...ownerQueryKey(user?.id, 'decree-jobs'), criteria],
-    queryFn: async () =>
-      validateHistoryPage(await client.decreeJobs(criteria), criteria),
+    queryFn: async () => {
+      const page = validateHistoryPage(
+        await client.decreeJobs(criteria),
+        criteria
+      );
+      validateDecreeJobItems(page.items);
+      return page;
+    },
     enabled: Boolean(user && health),
     staleTime: 15_000,
     refetchInterval: (query) =>

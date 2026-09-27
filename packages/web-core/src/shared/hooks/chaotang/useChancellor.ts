@@ -1,5 +1,9 @@
 import { ownerQueryKey } from '@/shared/lib/chaotangFusion';
 import { validateDesktopResources } from '@/shared/components/chaotang/desktopResourceContract';
+import {
+  validateDecreeJobReceipt,
+  validateRetryReceipt,
+} from '@/shared/components/chaotang/decreeJobReceipt';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   useChaotangClient,
@@ -49,7 +53,8 @@ export function useDecreeJob(jobId?: string) {
   const { user } = useChaotangProvider();
   return useQuery({
     queryKey: ownerQueryKey(user?.id, 'decree-job', jobId),
-    queryFn: () => client.decreeJob(jobId!),
+    queryFn: async () =>
+      validateDecreeJobReceipt(await client.decreeJob(jobId!), jobId!),
     enabled: Boolean(user && jobId),
     retry: 1,
     refetchInterval: (query) => {
@@ -68,7 +73,8 @@ export function useCancelDecreeJob() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationKey: ['chaotang', user?.id],
-    mutationFn: (jobId: string) => client.cancelDecreeJob(jobId),
+    mutationFn: async (jobId: string) =>
+      validateDecreeJobReceipt(await client.cancelDecreeJob(jobId), jobId),
     onSuccess: async (job) => {
       queryClient.setQueryData(
         ownerQueryKey(user?.id, 'decree-job', job.jobId),
@@ -87,7 +93,8 @@ export function useRetryDecreeJob() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationKey: ['chaotang', user?.id, 'retry-decree-job'],
-    mutationFn: (jobId: string) => client.retryDecreeJob(jobId),
+    mutationFn: async (jobId: string) =>
+      validateRetryReceipt(await client.retryDecreeJob(jobId), jobId),
     onSuccess: async (job) => {
       queryClient.setQueryData(
         ownerQueryKey(user?.id, 'decree-job', job.jobId),

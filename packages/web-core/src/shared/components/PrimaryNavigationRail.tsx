@@ -7,20 +7,15 @@ import {
   PRIMARY_MODULES,
 } from '@/shared/lib/primaryModules';
 import { useChaotangProvider } from '@/shared/providers/ChaotangProvider';
+import { ChaotangAccountForm } from './chaotang/ChaotangAccountForm';
 
 export function PrimaryNavigationRail() {
   const location = useLocation();
   const navigate = useNavigate();
   const activeModule = getPrimaryModuleForPath(location.pathname);
-  const { health, user, authError, login, register, logout } =
-    useChaotangProvider();
+  const { health, user, logout } = useChaotangProvider();
   const [isAccountOpen, setIsAccountOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
-  const [identifier, setIdentifier] = useState('');
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [isAuthenticating, setIsAuthenticating] = useState(false);
   const accountRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -154,97 +149,12 @@ export function PrimaryNavigationRail() {
                 </button>
               </div>
             ) : (
-              <form
-                className="mt-double space-y-base"
-                onSubmit={(event) => {
-                  event.preventDefault();
-                  setIsAuthenticating(true);
-                  const action =
-                    authMode === 'login'
-                      ? login(identifier, password)
-                      : register(username, email, password);
-                  void action
-                    .catch(() => undefined)
-                    .finally(() => {
-                      setIsAuthenticating(false);
-                      setPassword('');
-                    });
-                }}
-              >
-                <div className="flex gap-half">
-                  {(['login', 'register'] as const).map((mode) => (
-                    <button
-                      key={mode}
-                      type="button"
-                      onClick={() => setAuthMode(mode)}
-                      className={cn(
-                        'border px-base py-half text-xs',
-                        authMode === mode
-                          ? 'border-brand/45 bg-brand/10 text-brand'
-                          : 'border-brand/15 text-low'
-                      )}
-                    >
-                      {mode === 'login' ? '登录' : '注册'}
-                    </button>
-                  ))}
-                </div>
-                {authMode === 'login' ? (
-                  <input
-                    required
-                    value={identifier}
-                    onChange={(event) => setIdentifier(event.target.value)}
-                    placeholder="用户名或邮箱"
-                    autoComplete="username"
-                    className="w-full border border-brand/20 bg-primary/65 px-base py-base text-sm text-normal outline-none placeholder:text-low focus:border-brand/50"
-                  />
-                ) : (
-                  <>
-                    <input
-                      required
-                      value={username}
-                      onChange={(event) => setUsername(event.target.value)}
-                      placeholder="用户名"
-                      autoComplete="username"
-                      className="w-full border border-brand/20 bg-primary/65 px-base py-base text-sm text-normal outline-none placeholder:text-low focus:border-brand/50"
-                    />
-                    <input
-                      required
-                      type="email"
-                      value={email}
-                      onChange={(event) => setEmail(event.target.value)}
-                      placeholder="邮箱"
-                      autoComplete="email"
-                      className="w-full border border-brand/20 bg-primary/65 px-base py-base text-sm text-normal outline-none placeholder:text-low focus:border-brand/50"
-                    />
-                  </>
-                )}
-                <input
-                  required
-                  type="password"
-                  value={password}
-                  onChange={(event) => setPassword(event.target.value)}
-                  placeholder="密码"
-                  autoComplete={
-                    authMode === 'login' ? 'current-password' : 'new-password'
-                  }
-                  className="w-full border border-brand/20 bg-primary/65 px-base py-base text-sm text-normal outline-none placeholder:text-low focus:border-brand/50"
+              <div className="mt-double">
+                <ChaotangAccountForm
+                  mode={authMode}
+                  onModeChange={setAuthMode}
                 />
-                {authError && (
-                  <p className="text-xs leading-relaxed text-error">
-                    {authError}
-                  </p>
-                )}
-                <button
-                  disabled={isAuthenticating || !health}
-                  className="w-full border border-brand/40 bg-brand/10 px-base py-base text-xs text-brand transition-colors hover:bg-brand/15 disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                  {isAuthenticating
-                    ? '处理中…'
-                    : authMode === 'login'
-                      ? '登录朝堂'
-                      : '创建账户'}
-                </button>
-              </form>
+              </div>
             )}
           </section>
         )}

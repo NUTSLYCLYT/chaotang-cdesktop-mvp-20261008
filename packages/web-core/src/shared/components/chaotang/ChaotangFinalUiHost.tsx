@@ -13,6 +13,7 @@ import { SkillsWorkspace } from '@/shared/components/chaotang/SkillsWorkspace';
 import { McpWorkspace } from '@/shared/components/chaotang/McpWorkspace';
 import { isTauriApp } from '@/shared/lib/platform';
 import { ChancellorStudyWorkspace } from './ChancellorStudyWorkspace';
+import { ChaotangAccountForm } from './ChaotangAccountForm';
 import { JunjichuCasesWorkspace } from './JunjichuCasesWorkspace';
 import {
   courtBusinessHandoff,
@@ -95,11 +96,9 @@ export function ChaotangFinalUiHost() {
   const [isConsulting, setIsConsulting] = useState(false);
   const busy = useRef(false);
   const writes = useRef<Promise<unknown>>(Promise.resolve());
-  const [identifier, setIdentifier] = useState('');
-  const [password, setPassword] = useState('');
-  const [authPending, setAuthPending] = useState(false);
+  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
   const client = useChaotangClient();
-  const { health, user, login, logout, authError } = useChaotangProvider();
+  const { health, user, logout } = useChaotangProvider();
   const currentAccount = useRef(user?.id);
   currentAccount.current = user?.id;
 
@@ -446,41 +445,12 @@ export function ChaotangFinalUiHost() {
                   </button>
                 </div>
               ) : (
-                <form
-                  className="space-y-4 border border-[#d7b36a]/25 bg-white/[0.02] p-5"
-                  onSubmit={(event) => {
-                    event.preventDefault();
-                    setAuthPending(true);
-                    void login(identifier, password).finally(() =>
-                      setAuthPending(false)
-                    );
-                  }}
-                >
-                  <input
-                    required
-                    value={identifier}
-                    onChange={(event) => setIdentifier(event.target.value)}
-                    placeholder="用户名或邮箱"
-                    className="w-full border border-[#d7b36a]/25 bg-black/25 px-4 py-3 outline-none focus:border-[#d7b36a]"
+                <div className="border border-[#d7b36a]/25 bg-white/[0.02] p-5">
+                  <ChaotangAccountForm
+                    mode={authMode}
+                    onModeChange={setAuthMode}
                   />
-                  <input
-                    required
-                    type="password"
-                    value={password}
-                    onChange={(event) => setPassword(event.target.value)}
-                    placeholder="密码"
-                    className="w-full border border-[#d7b36a]/25 bg-black/25 px-4 py-3 outline-none focus:border-[#d7b36a]"
-                  />
-                  {authError && (
-                    <p className="text-sm text-red-400">{authError}</p>
-                  )}
-                  <button
-                    disabled={authPending}
-                    className="border border-[#d7b36a]/50 bg-[#d7b36a]/10 px-6 py-3 text-[#f2d99b] disabled:opacity-50"
-                  >
-                    {authPending ? '登录中…' : '登录朝堂'}
-                  </button>
-                </form>
+                </div>
               )
             ) : businessPanel === 'models' ? (
               <ModelProvidersWorkspace />

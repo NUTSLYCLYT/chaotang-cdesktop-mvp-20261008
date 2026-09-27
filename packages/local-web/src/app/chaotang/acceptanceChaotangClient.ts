@@ -24,6 +24,7 @@ import type { RuntimeRehearsalClient } from '@/shared/components/chaotang/hanlin
 // Only fixed, locally authored copy is shown. Backend messages can contain secrets.
 async function responseError(response: Response): Promise<Error> {
   const messages: Record<string, string> = {
+    AUTH_STORAGE_UNAVAILABLE: '账户服务暂时不可用，请稍后重试',
     config_unavailable: '模型配置不可用，请检查服务配置',
     model_unavailable: '模型服务未能返回有效结果，请检查服务后再重试',
     provider_budget_exceeded: '模型请求预算已用完，请调整预算后再继续',
@@ -75,8 +76,7 @@ function mapResponse(value: unknown): unknown {
 function normalizeShiguanArchives(value: unknown): ShiguanArchive[] {
   if (!Array.isArray(value)) throw new Error('史馆档案响应无效');
   return value.map((item) => {
-    if (!item || typeof item !== 'object')
-      throw new Error('史馆档案响应无效');
+    if (!item || typeof item !== 'object') throw new Error('史馆档案响应无效');
     const record = item as Record<string, unknown>;
     // The HTTP backend calls this field `type`; the native command serializes
     // the same domain field as `archiveType`. Keep the provider contract stable

@@ -1,6 +1,64 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createAcceptanceChaotangClient } from './acceptanceChaotangClient.test-support.mjs';
+
+test('account storage outage gives recovery guidance without losing an existing session', async () => {
+  let token = 'existing-session';
+  const client = createAcceptanceChaotangClient(
+    {},
+    async () =>
+      new Response(
+        JSON.stringify({
+          code: 'AUTH_STORAGE_UNAVAILABLE',
+          message: 'private-database-path-and-error',
+        }),
+        { status: 503 }
+      ),
+    {
+      getItem: () => token,
+      setItem: (_, value) => {
+        token = value;
+      },
+      removeItem: () => {
+        token = null;
+      },
+    }
+  );
+  await assert.rejects(
+    () => client.currentUser(),
+    (error) => {
+      assert.equal(error.message, '账户服务暂时不可用，请稍后重试（HTTP 503）');
+      assert.doesNotMatch(error.message, /private-database/);
+      return true;
+    }
+  );
+  assert.equal(token, 'existing-session');
+});
+
+test('authentication rejection still expires the session even with a storage error code', async () => {
+  let token = 'expired-session';
+  const client = createAcceptanceChaotangClient(
+    {},
+    async () =>
+      new Response(JSON.stringify({ code: 'AUTH_STORAGE_UNAVAILABLE' }), {
+        status: 401,
+      }),
+    {
+      getItem: () => token,
+      setItem: (_, value) => {
+        token = value;
+      },
+      removeItem: () => {
+        token = null;
+      },
+    }
+  );
+  await assert.rejects(
+    () => client.currentUser(),
+    /朝堂会话已失效，请重新登录/
+  );
+  assert.equal(token, null);
+});
 test('real HTTP adapter maps job metadata but preserves report keys and sends authority header', async () => {
   const requests = [];
   let token = null;

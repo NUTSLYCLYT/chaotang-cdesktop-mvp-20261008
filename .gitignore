@@ -11,6 +11,10 @@ yarn-error.log*
 
 # Build outputs
 /dist
+
+# Generated backend binaries; build from a recorded backend commit, never commit.
+/crates/tauri-app/resources/chaotang-backend/
+/scripts/__pycache__/
 /build
 bindings/
 

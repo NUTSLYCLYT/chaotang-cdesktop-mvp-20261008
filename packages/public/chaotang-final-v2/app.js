@@ -1902,6 +1902,23 @@
       showToast("已进入军机处本地演示会办；没有调用模型、部门或外部服务。");
     });
     actions.append(confirm);
+    if (window.parent !== window) {
+      const prepare = document.createElement("button");
+      prepare.type = "button";
+      prepare.className = "primary";
+      prepare.textContent = "转入真实办理";
+      prepare.addEventListener("click", () => {
+        const objective = taskPassport?.userInput?.trim();
+        if (!objective || objective.length > 4000) {
+          showToast("请填写 1 至 4000 字的目标，再转入真实上书房。");
+          return;
+        }
+        window.parent.postMessage({ type: "chaotang:prepare-decree", prompt: objective }, window.location.origin);
+        drawer.close();
+        showToast("已请求打开真实上书房；仍需登录、确认理解与拟旨后才能正式下旨。");
+      });
+      actions.append(prepare);
+    }
     body.append(actions);
     if (!drawer.open) drawer.showModal();
   }

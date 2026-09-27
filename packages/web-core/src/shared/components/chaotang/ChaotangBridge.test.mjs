@@ -15,6 +15,7 @@ const source = readFileSync(
 
 function fixture() {
   const handlers = new Map();
+  const documentHandlers = new Map();
   const inputHandlers = new Map();
   const timers = new Map();
   const sent = [];
@@ -45,7 +46,7 @@ function fixture() {
       getElementById: (id) =>
         ({ app, promptInput: input, sendButton: send })[id] ?? null,
       querySelector: (selector) => (selector === '.avatar' ? avatar : null),
-      addEventListener() {},
+      addEventListener: (type, fn) => documentHandlers.set(type, fn),
     },
     sessionStorage: { getItem: () => null, removeItem() {}, setItem() {} },
     crypto: { randomUUID },
@@ -72,8 +73,38 @@ function fixture() {
         sessions: { 'synthetic-session': { page: 'A01', draft } },
       }),
     });
-  return { account, load, input, send, avatar, timers, sent, inputHandlers };
+  const clickPage = (page) =>
+    documentHandlers.get('click')({
+      target: {
+        closest: (selector) =>
+          selector === '[data-page]' ? { dataset: { page } } : null,
+      },
+    });
+  return {
+    account,
+    load,
+    input,
+    send,
+    avatar,
+    timers,
+    sent,
+    inputHandlers,
+    clickPage,
+  };
 }
+
+test('original study and council navigation opens real workspaces without issuing a decree', () => {
+  for (const [page, action] of [
+    ['A02', 'study'],
+    ['A03', 'cases'],
+  ]) {
+    const f = fixture();
+    f.clickPage(page);
+    assert.equal(f.sent.length, 1);
+    assert.equal(f.sent[0].type, 'chaotang:action');
+    assert.equal(f.sent[0].action, action);
+  }
+});
 
 test('logout immediately removes account draft and resets account display', () => {
   const f = fixture();

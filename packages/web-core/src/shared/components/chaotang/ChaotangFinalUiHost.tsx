@@ -12,6 +12,12 @@ import { ModelProvidersWorkspace } from '@/shared/components/chaotang/ModelProvi
 import { SkillsWorkspace } from '@/shared/components/chaotang/SkillsWorkspace';
 import { McpWorkspace } from '@/shared/components/chaotang/McpWorkspace';
 import { isTauriApp } from '@/shared/lib/platform';
+import { ChancellorStudyWorkspace } from './ChancellorStudyWorkspace';
+import { JunjichuCasesWorkspace } from './JunjichuCasesWorkspace';
+import {
+  courtBusinessHandoff,
+  courtPanelFromRoute,
+} from './courtBusinessHandoff';
 
 const ROUTE_TO_PAGE: Record<string, string> = {
   '/today': 'A01',
@@ -79,8 +85,13 @@ export function ChaotangFinalUiHost() {
   const navigate = useNavigate();
   const [loaded, setLoaded] = useState(false);
   const [businessPanel, setBusinessPanel] = useState<
-    'account' | 'models' | 'skills' | 'mcp' | null
-  >(null);
+    'account' | 'models' | 'skills' | 'mcp' | 'study' | 'cases' | null
+  >(() => courtPanelFromRoute(location.pathname, location.hash) ?? null);
+  const [handoff, setHandoff] = useState<{
+    owner: string;
+    objective: string;
+    id: string;
+  }>();
   const [isConsulting, setIsConsulting] = useState(false);
   const busy = useRef(false);
   const writes = useRef<Promise<unknown>>(Promise.resolve());
@@ -92,6 +103,15 @@ export function ChaotangFinalUiHost() {
   const currentAccount = useRef(user?.id);
   currentAccount.current = user?.id;
 
+  useEffect(() => {
+    setHandoff(undefined);
+  }, [user?.id]);
+
+  useEffect(() => {
+    const panel = courtPanelFromRoute(location.pathname, location.hash);
+    if (panel) setBusinessPanel(panel);
+  }, [location.pathname, location.hash]);
+
   const postToShell = (message: Record<string, unknown>) => {
     frameRef.current?.contentWindow?.postMessage(
       message,
@@ -102,6 +122,7 @@ export function ChaotangFinalUiHost() {
   useEffect(() => {
     const receive = (event: MessageEvent) => {
       if (event.source !== frameRef.current?.contentWindow) return;
+      if (event.origin !== window.location.origin) return;
       const data = event.data as {
         type?: string;
         route?: string;
@@ -113,6 +134,18 @@ export function ChaotangFinalUiHost() {
         messages?: ChancellorConsultMessage[];
         doubleClick?: boolean;
       } | null;
+      const transfer = courtBusinessHandoff(data, user?.id);
+      if (transfer) {
+        if ('objective' in transfer && transfer.objective && transfer.owner) {
+          setHandoff({
+            owner: transfer.owner,
+            objective: transfer.objective,
+            id: crypto.randomUUID(),
+          });
+        }
+        setBusinessPanel(transfer.panel);
+        return;
+      }
       if (data?.type === 'chaotang:store-load') {
         if (!user) {
           postToShell({ type: 'chaotang:store', authenticated: false });
@@ -340,20 +373,26 @@ export function ChaotangFinalUiHost() {
       />
       {businessPanel && (
         <div className="absolute inset-0 z-50 flex justify-end bg-black/60 backdrop-blur-sm">
-          <section className="h-full w-[min(760px,92vw)] overflow-y-auto border-l border-[#d7b36a]/35 bg-[#07100c] p-6 text-[#efe5ce] shadow-2xl">
+          <section
+            className={`h-full ${businessPanel === 'study' || businessPanel === 'cases' ? 'w-[min(1200px,96vw)]' : 'w-[min(760px,92vw)]'} overflow-y-auto border-l border-[#d7b36a]/35 bg-[#07100c] p-6 text-[#efe5ce] shadow-2xl`}
+          >
             <header className="mb-6 flex items-center justify-between border-b border-[#d7b36a]/20 pb-4">
               <div>
                 <p className="text-[10px] tracking-[0.22em] text-[#d7b36a]">
-                  LIVE · 真实客户端能力
+                  状态以真实服务回执为准
                 </p>
                 <h2 className="mt-2 font-serif text-2xl">
-                  {businessPanel === 'account'
-                    ? '朝堂账户'
-                    : businessPanel === 'models'
-                      ? '模型服务'
-                      : businessPanel === 'skills'
-                        ? 'Skills 目录'
-                        : 'MCP 工具目录'}
+                  {businessPanel === 'study'
+                    ? '上书房 · 拟旨与办理'
+                    : businessPanel === 'cases'
+                      ? '军机处 · 真实案卷'
+                      : businessPanel === 'account'
+                        ? '朝堂账户'
+                        : businessPanel === 'models'
+                          ? '模型服务'
+                          : businessPanel === 'skills'
+                            ? 'Skills 目录'
+                            : 'MCP 工具目录'}
                 </h2>
               </div>
               <button
@@ -365,7 +404,34 @@ export function ChaotangFinalUiHost() {
                 <XIcon className="size-5" />
               </button>
             </header>
-            {businessPanel === 'account' ? (
+            {businessPanel === 'study' || businessPanel === 'cases' ? (
+              <>
+                <p className="mb-4 text-sm text-[#aaa99f]">
+                  进入页面不会自动下旨。任务和部门状态仅以真实回执为准。
+                </p>
+                {!user && (
+                  <button
+                    type="button"
+                    className="mb-4 border border-[#d7b36a]/35 px-5 py-2 text-[#d7b36a]"
+                    onClick={() => setBusinessPanel('account')}
+                  >
+                    登录朝堂账户
+                  </button>
+                )}
+                {businessPanel === 'study' ? (
+                  <ChancellorStudyWorkspace
+                    key={handoff?.owner === user?.id ? handoff?.id : 'manual'}
+                    initialObjective={
+                      handoff?.owner === user?.id
+                        ? handoff?.objective
+                        : undefined
+                    }
+                  />
+                ) : (
+                  <JunjichuCasesWorkspace key={user?.id ?? 'anonymous'} />
+                )}
+              </>
+            ) : businessPanel === 'account' ? (
               user ? (
                 <div className="border border-[#d7b36a]/25 bg-white/[0.02] p-5">
                   <p className="text-sm text-[#aaa99f]">当前已登录</p>

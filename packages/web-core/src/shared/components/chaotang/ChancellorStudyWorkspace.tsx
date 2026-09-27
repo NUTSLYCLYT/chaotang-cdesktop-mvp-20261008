@@ -19,15 +19,28 @@ import { useChaotangProvider } from '@/shared/providers/ChaotangProvider';
 import { ChaotangButton, ChaotangPanel } from './ChaotangPrimitives';
 import { consumePendingOutcomeIntent } from './outcomeCaseHandoff';
 
-export function ChancellorStudyWorkspace() {
+export function ChancellorStudyWorkspace({
+  initialObjective = '',
+}: { initialObjective?: string } = {}) {
   const { user } = useChaotangProvider();
-  return <ChancellorStudySession key={user?.id ?? 'anonymous'} />;
+  return (
+    <ChancellorStudySession
+      key={user?.id ?? 'anonymous'}
+      initialObjective={initialObjective}
+    />
+  );
 }
 
-function ChancellorStudySession() {
+function ChancellorStudySession({
+  initialObjective,
+}: {
+  initialObjective: string;
+}) {
   const { user, health } = useChaotangProvider();
-  const [objective, setObjective] = useState('');
-  const [cameFromOutcomeCase, setCameFromOutcomeCase] = useState(false);
+  const [objective, setObjective] = useState(initialObjective);
+  const [cameFromOutcomeCase, setCameFromOutcomeCase] = useState(
+    Boolean(initialObjective)
+  );
   const [draftVersion, setDraftVersion] = useState(1);
   const [jobId, setJobId] = useState<string>();
   const [understandingConfirmed, setUnderstandingConfirmed] = useState(false);
@@ -39,14 +52,20 @@ function ChancellorStudySession() {
 
   useEffect(() => {
     if (!user) return;
-    const pendingIntent = consumePendingOutcomeIntent(sessionStorage);
+    const pendingIntent = initialObjective
+      ? undefined
+      : consumePendingOutcomeIntent(sessionStorage);
     if (pendingIntent) {
       setObjective(pendingIntent);
       setCameFromOutcomeCase(true);
     }
-    const storedJobId = sessionStorage.getItem(activeJobKey(user.id));
-    if (storedJobId) setJobId(storedJobId);
-  }, [user]);
+    // A newly transferred objective must not display an older job as its result.
+    // Keep the previous task record intact so opening the ordinary study can resume it.
+    if (!initialObjective && !pendingIntent) {
+      const storedJobId = sessionStorage.getItem(activeJobKey(user.id));
+      if (storedJobId) setJobId(storedJobId);
+    }
+  }, [user, initialObjective]);
 
   useEffect(() => {
     if (!user || !jobId || !job.data) return;

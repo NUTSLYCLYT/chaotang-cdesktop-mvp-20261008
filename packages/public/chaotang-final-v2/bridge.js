@@ -400,8 +400,14 @@
           if (records[selected[page]]?.length) renderHistory();
         }
       }
-      // A03 is the approved business page, not the legacy coding-workspace router.
-      if (page && page !== "A03" && pageRoutes[page]) {
+      // Open the existing business components inside the original court shell.
+      // Navigation itself does not create a job or call a model.
+      if (page === "A02" || page === "A03") {
+        post({
+          type: "chaotang:action",
+          action: page === "A02" ? "study" : "cases",
+        });
+      } else if (page && pageRoutes[page]) {
         window.parent.postMessage(
           { type: "chaotang:navigate", route: pageRoutes[page] },
           window.location.origin,

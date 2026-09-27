@@ -17,6 +17,12 @@ import { ChaotangButton, ChaotangPanel } from './ChaotangPrimitives';
 import { consumePendingOutcomeIntent } from './outcomeCaseHandoff';
 import { StudyTaskProgress } from './StudyTaskProgress';
 import { submitStudyDecree } from './studySubmission';
+import {
+  confirmStudyIntent,
+  isStudyIntentCurrent,
+  prepareConfirmedStudyDraft,
+  type ConfirmedStudyIntent,
+} from './studyIntentConfirmation';
 
 export function ChancellorStudyWorkspace({
   initialObjective = '',
@@ -48,12 +54,53 @@ function ChancellorStudySession({
   );
   const [draftVersion, setDraftVersion] = useState(1);
   const [jobId, setJobId] = useState<string>();
-  const [understandingConfirmed, setUnderstandingConfirmed] = useState(false);
+  const [confirmedIntent, setConfirmedIntent] =
+    useState<ConfirmedStudyIntent | null>(null);
+  const [draftIntent, setDraftIntent] = useState<ConfirmedStudyIntent | null>(
+    null
+  );
+  const contextGeneration = useRef(0);
+  const consultationGeneration = useRef(0);
+  const authorizationEpoch = useRef(0);
+  const renderedEpoch = authorizationEpoch.current;
   const consult = useChancellorConsult();
   const draft = useChancellorDraft();
   const issue = useIssueChancellorDecree();
   const job = useDecreeJob(jobId);
   const cancel = useCancelDecreeJob();
+  const currentIntent = {
+    ownerId: user?.id ?? '',
+    normalizedOriginalGoal: objective,
+    exactLatestChancellorRestatement: consult.data?.reply ?? '',
+    consultationGeneration: consultationGeneration.current,
+    contextGeneration: contextGeneration.current,
+  };
+  const understandingConfirmed = isStudyIntentCurrent(
+    confirmedIntent,
+    currentIntent
+  );
+  const draftIsCurrent =
+    understandingConfirmed && draftIntent === confirmedIntent;
+
+  const invalidateUnderstanding = () => {
+    ++authorizationEpoch.current;
+    setConfirmedIntent(null);
+    setDraftIntent(null);
+    draft.reset();
+    issue.reset();
+    setSubmissionNotice(undefined);
+  };
+
+  useEffect(() => {
+    if (confirmedIntent && !understandingConfirmed) {
+      ++authorizationEpoch.current;
+      setConfirmedIntent(null);
+      setDraftIntent(null);
+      draft.reset();
+      issue.reset();
+      setSubmissionNotice('目标或丞相理解已变化，请重新确认后拟旨。');
+    }
+  }, [confirmedIntent, understandingConfirmed, draft, issue]);
 
   useEffect(() => {
     mounted.current = true;
@@ -113,25 +160,53 @@ function ChancellorStudySession({
     );
   }
 
-  const ready = draft.data?.status === 'DRAFT_READY' && draft.data.decreeText;
+  const ready =
+    draftIsCurrent &&
+    draft.data?.status === 'DRAFT_READY' &&
+    draft.data.decreeText;
   const error =
     consult.error?.message ?? draft.error?.message ?? issue.error?.message;
   const submitting = isSubmitting || issue.isPending;
 
   const createDraft = () => {
-    if (!understandingConfirmed || submissionInFlight.current) return;
+    if (
+      !understandingConfirmed ||
+      submissionInFlight.current ||
+      consult.isPending ||
+      draft.isPending ||
+      renderedEpoch !== authorizationEpoch.current
+    )
+      return;
+    const payload = prepareConfirmedStudyDraft(
+      confirmedIntent,
+      currentIntent,
+      draftVersion
+    );
+    if (!payload) {
+      setSubmissionNotice(
+        '请确认当前理解；目标与确认理解合计（含标记）不得超过 4000 字，请精简后重新咨询。'
+      );
+      return;
+    }
+    setSubmissionNotice(undefined);
     draft.reset();
     issue.reset();
     cancel.reset();
     setJobId(undefined);
-    draft.mutate({
-      messages: [{ role: 'user', content: objective.trim() }],
-      version: draftVersion,
-    });
+    setDraftIntent(confirmedIntent);
+    draft.mutate(payload);
   };
 
   const issueDraft = async () => {
-    if (!ready || !draft.data || jobId || submissionInFlight.current) return;
+    if (
+      !ready ||
+      !draft.data ||
+      jobId ||
+      submissionInFlight.current ||
+      renderedEpoch !== authorizationEpoch.current
+    )
+      return;
+    const submittedVersion = draft.data.version;
     submissionInFlight.current = true;
     setIsSubmitting(true);
     setSubmissionNotice(undefined);
@@ -144,7 +219,8 @@ function ChancellorStudySession({
           draftFingerprint: draft.data.fingerprint,
         },
         issue: (input) => issue.mutateAsync(input),
-        isCurrent: () => mounted.current,
+        isCurrent: () =>
+          mounted.current && renderedEpoch === authorizationEpoch.current,
         remember: (acceptedJobId) =>
           sessionStorage.setItem(activeJobKey(user.id), acceptedJobId),
       });
@@ -156,7 +232,7 @@ function ChancellorStudySession({
       } else {
         cancel.reset();
         setJobId(outcome.jobId);
-        setDraftVersion(draft.data.version + 1);
+        setDraftVersion(submittedVersion + 1);
         if (!outcome.remembered) {
           setHandoffNotice(
             '任务已受理，但未能保存本地记录。离开后可到军机处查看。'
@@ -189,12 +265,12 @@ function ChancellorStudySession({
         />
         <Phase
           label="形成拟旨"
-          active={understandingConfirmed && !draft.data}
-          complete={Boolean(draft.data)}
+          active={understandingConfirmed && !draftIsCurrent}
+          complete={Boolean(draftIsCurrent && draft.data)}
         />
         <Phase
           label="预览下旨"
-          active={Boolean(draft.data && !jobId)}
+          active={Boolean(draftIsCurrent && draft.data && !jobId)}
           complete={Boolean(jobId)}
         />
       </div>
@@ -223,11 +299,9 @@ function ChancellorStudySession({
           onChange={(event) => {
             setObjective(event.target.value);
             setCameFromOutcomeCase(false);
-            setUnderstandingConfirmed(false);
+            ++contextGeneration.current;
+            invalidateUnderstanding();
             consult.reset();
-            draft.reset();
-            issue.reset();
-            setSubmissionNotice(undefined);
           }}
           placeholder="说明目标、范围、已有材料、限制条件和期望成果…"
           className="mt-double w-full resize-y border border-brand/20 bg-primary/60 p-base text-sm leading-7 text-normal outline-none placeholder:text-low/60 focus:border-brand/45"
@@ -247,8 +321,21 @@ function ChancellorStudySession({
             }
             onClick={() => {
               if (submissionInFlight.current) return;
-              setUnderstandingConfirmed(false);
-              draft.reset();
+              if (
+                consult.isPending ||
+                draft.isPending ||
+                renderedEpoch !== authorizationEpoch.current
+              )
+                return;
+              if (
+                !objective.trim() ||
+                Array.from(objective.trim()).length > 4000
+              ) {
+                setSubmissionNotice('目标需为 1–4000 字，请调整后咨询。');
+                return;
+              }
+              ++consultationGeneration.current;
+              invalidateUnderstanding();
               consult.mutate([{ role: 'user', content: objective.trim() }]);
             }}
           >
@@ -301,23 +388,68 @@ function ChancellorStudySession({
             </p>
             <div className="mt-double border-t border-[#9b8140]/25 pt-double">
               {understandingConfirmed ? (
-                <p className="flex items-center gap-base text-sm text-[#516438]">
-                  <CheckCircleIcon className="size-5" weight="duotone" />
-                  理解已确认，可以形成拟旨。
-                </p>
+                <div className="flex flex-wrap items-center gap-base">
+                  <p className="flex items-center gap-base text-sm text-[#516438]">
+                    <CheckCircleIcon className="size-5" weight="duotone" />
+                    理解已确认，可以形成拟旨。
+                  </p>
+                  <button
+                    type="button"
+                    disabled={
+                      consult.isPending || draft.isPending || submitting
+                    }
+                    onClick={() => {
+                      if (
+                        submissionInFlight.current ||
+                        renderedEpoch !== authorizationEpoch.current
+                      )
+                        return;
+                      invalidateUnderstanding();
+                    }}
+                    className="border border-[#9b8140]/40 px-base py-base text-xs text-[#665323] hover:bg-white/30 disabled:opacity-45"
+                  >
+                    重新确认理解
+                  </button>
+                </div>
               ) : (
                 <div className="flex flex-wrap gap-base">
                   <button
                     type="button"
-                    onClick={() => setUnderstandingConfirmed(true)}
+                    disabled={
+                      consult.isPending || draft.isPending || submitting
+                    }
+                    onClick={() => {
+                      if (
+                        consult.isPending ||
+                        draft.isPending ||
+                        submissionInFlight.current ||
+                        renderedEpoch !== authorizationEpoch.current
+                      )
+                        return;
+                      const confirmed = confirmStudyIntent(
+                        currentIntent,
+                        currentIntent
+                      );
+                      setConfirmedIntent(confirmed);
+                      if (!confirmed)
+                        setSubmissionNotice('当前理解无法确认，请重新咨询。');
+                    }}
                     className="border border-[#8f6c22] bg-[#d8bd69] px-double py-base text-sm font-semibold text-[#282014] hover:bg-[#e2ca7e]"
                   >
                     确认理解无误
                   </button>
                   <button
                     type="button"
+                    disabled={
+                      consult.isPending || draft.isPending || submitting
+                    }
                     onClick={() => {
-                      setUnderstandingConfirmed(false);
+                      if (
+                        submissionInFlight.current ||
+                        renderedEpoch !== authorizationEpoch.current
+                      )
+                        return;
+                      invalidateUnderstanding();
                       consult.reset();
                     }}
                     className="border border-[#9b8140]/40 px-base py-base text-xs text-[#665323] hover:bg-white/30"
@@ -331,7 +463,7 @@ function ChancellorStudySession({
         </section>
       )}
 
-      {draft.data && (
+      {draft.data && draftIsCurrent && (
         <section className="border border-[#bda65d]/55 bg-[#e9e2cc] p-1 text-[#272116] shadow-[0_18px_55px_rgba(0,0,0,0.35)]">
           <div className="border border-[#9b8140]/35 bg-[linear-gradient(135deg,#eee9d9,#dcd3bb)] p-double sm:p-8">
             <div className="flex flex-wrap justify-between gap-base">

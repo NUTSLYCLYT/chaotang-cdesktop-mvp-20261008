@@ -1,12 +1,9 @@
-import { ValidatedDecreeResult } from './CourtWorkspace';
-import { decreeIdempotencyKey } from '@/shared/lib/chaotangFusion';
 import { useEffect, useRef, useState } from 'react';
 import {
   CheckCircleIcon,
   ChatCircleTextIcon,
   PaperPlaneTiltIcon,
   ScrollIcon,
-  ShieldCheckIcon,
 } from '@phosphor-icons/react';
 import {
   useCancelDecreeJob,
@@ -18,6 +15,8 @@ import {
 import { useChaotangProvider } from '@/shared/providers/ChaotangProvider';
 import { ChaotangButton, ChaotangPanel } from './ChaotangPrimitives';
 import { consumePendingOutcomeIntent } from './outcomeCaseHandoff';
+import { StudyTaskProgress } from './StudyTaskProgress';
+import { submitStudyDecree } from './studySubmission';
 
 export function ChancellorStudyWorkspace({
   initialObjective = '',
@@ -39,6 +38,10 @@ function ChancellorStudySession({
   const { user, health, authGeneration } = useChaotangProvider();
   const [objective, setObjective] = useState(initialObjective);
   const [handoffNotice, setHandoffNotice] = useState<string>();
+  const [submissionNotice, setSubmissionNotice] = useState<string>();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const submissionInFlight = useRef(false);
+  const mounted = useRef(true);
   const initialized = useRef(false);
   const [cameFromOutcomeCase, setCameFromOutcomeCase] = useState(
     Boolean(initialObjective)
@@ -51,6 +54,13 @@ function ChancellorStudySession({
   const issue = useIssueChancellorDecree();
   const job = useDecreeJob(jobId);
   const cancel = useCancelDecreeJob();
+
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (!user || initialized.current) return;
@@ -73,15 +83,25 @@ function ChancellorStudySession({
     // A newly transferred objective must not display an older job as its result.
     // Keep the previous task record intact so opening the ordinary study can resume it.
     if (!initialObjective && !pendingIntent && !handoffDiscarded) {
-      const storedJobId = sessionStorage.getItem(activeJobKey(user.id));
-      if (storedJobId) setJobId(storedJobId);
+      try {
+        const storedJobId = sessionStorage.getItem(activeJobKey(user.id));
+        if (storedJobId) setJobId(storedJobId);
+      } catch {
+        setHandoffNotice('无法读取本地任务记录，可到军机处查看已有任务。');
+      }
     }
   }, [user, initialObjective, authGeneration]);
 
   useEffect(() => {
-    if (!user || !jobId || !job.data) return;
+    if (!user || !jobId || !job.data || job.data.jobId !== jobId) return;
     if (['SUCCEEDED', 'FAILED', 'CANCELLED'].includes(job.data.state)) {
-      sessionStorage.removeItem(activeJobKey(user.id));
+      try {
+        sessionStorage.removeItem(activeJobKey(user.id));
+      } catch {
+        setHandoffNotice(
+          '本地任务记录未能清理，任务实际状态仍以后端回执为准。'
+        );
+      }
     }
   }, [job.data, jobId, user]);
 
@@ -95,15 +115,14 @@ function ChancellorStudySession({
 
   const ready = draft.data?.status === 'DRAFT_READY' && draft.data.decreeText;
   const error =
-    consult.error?.message ??
-    draft.error?.message ??
-    issue.error?.message ??
-    job.error?.message;
+    consult.error?.message ?? draft.error?.message ?? issue.error?.message;
+  const submitting = isSubmitting || issue.isPending;
 
   const createDraft = () => {
-    if (!understandingConfirmed) return;
+    if (!understandingConfirmed || submissionInFlight.current) return;
     draft.reset();
     issue.reset();
+    cancel.reset();
     setJobId(undefined);
     draft.mutate({
       messages: [{ role: 'user', content: objective.trim() }],
@@ -112,19 +131,42 @@ function ChancellorStudySession({
   };
 
   const issueDraft = async () => {
-    if (!ready || !draft.data) return;
-    const accepted = await issue.mutateAsync({
-      decreeText: draft.data.decreeText!,
-      draftVersion: draft.data.version,
-      draftFingerprint: draft.data.fingerprint,
-      idempotencyKey: await decreeIdempotencyKey(
-        user.id,
-        draft.data.fingerprint
-      ),
-    });
-    setJobId(accepted.jobId);
-    sessionStorage.setItem(activeJobKey(user.id), accepted.jobId);
-    setDraftVersion(draft.data.version + 1);
+    if (!ready || !draft.data || jobId || submissionInFlight.current) return;
+    submissionInFlight.current = true;
+    setIsSubmitting(true);
+    setSubmissionNotice(undefined);
+    try {
+      const outcome = await submitStudyDecree({
+        ownerUserId: user.id,
+        draft: {
+          decreeText: draft.data.decreeText!,
+          draftVersion: draft.data.version,
+          draftFingerprint: draft.data.fingerprint,
+        },
+        issue: (input) => issue.mutateAsync(input),
+        isCurrent: () => mounted.current,
+        remember: (acceptedJobId) =>
+          sessionStorage.setItem(activeJobKey(user.id), acceptedJobId),
+      });
+      if (!mounted.current || outcome.status === 'left-session') return;
+      if (outcome.status === 'unconfirmed') {
+        setSubmissionNotice(
+          '未能确认受理结果，请先到军机处查看。若需重试，请保留本次拟旨，避免重复办理。'
+        );
+      } else {
+        cancel.reset();
+        setJobId(outcome.jobId);
+        setDraftVersion(draft.data.version + 1);
+        if (!outcome.remembered) {
+          setHandoffNotice(
+            '任务已受理，但未能保存本地记录。离开后可到军机处查看。'
+          );
+        }
+      }
+    } finally {
+      submissionInFlight.current = false;
+      if (mounted.current) setIsSubmitting(false);
+    }
   };
 
   return (
@@ -176,7 +218,7 @@ function ChancellorStudySession({
         <textarea
           rows={5}
           maxLength={4000}
-          disabled={consult.isPending || draft.isPending || issue.isPending}
+          disabled={consult.isPending || draft.isPending || submitting}
           value={objective}
           onChange={(event) => {
             setObjective(event.target.value);
@@ -185,6 +227,7 @@ function ChancellorStudySession({
             consult.reset();
             draft.reset();
             issue.reset();
+            setSubmissionNotice(undefined);
           }}
           placeholder="说明目标、范围、已有材料、限制条件和期望成果…"
           className="mt-double w-full resize-y border border-brand/20 bg-primary/60 p-base text-sm leading-7 text-normal outline-none placeholder:text-low/60 focus:border-brand/45"
@@ -196,8 +239,14 @@ function ChancellorStudySession({
         )}
         <div className="mt-base flex flex-wrap gap-base">
           <ChaotangButton
-            disabled={!objective.trim() || consult.isPending || draft.isPending}
+            disabled={
+              !objective.trim() ||
+              consult.isPending ||
+              draft.isPending ||
+              submitting
+            }
             onClick={() => {
+              if (submissionInFlight.current) return;
               setUnderstandingConfirmed(false);
               draft.reset();
               consult.mutate([{ role: 'user', content: objective.trim() }]);
@@ -209,7 +258,10 @@ function ChancellorStudySession({
           <ChaotangButton
             variant="primary"
             disabled={
-              !understandingConfirmed || consult.isPending || draft.isPending
+              !understandingConfirmed ||
+              consult.isPending ||
+              draft.isPending ||
+              submitting
             }
             onClick={createDraft}
           >
@@ -222,8 +274,16 @@ function ChancellorStudySession({
           </ChaotangButton>
         </div>
         {error && (
-          <p className="mt-base border border-error/25 bg-error/5 p-base text-xs text-error">
+          <p
+            role="alert"
+            className="mt-base border border-error/25 bg-error/5 p-base text-xs text-error"
+          >
             {error}
+          </p>
+        )}
+        {submissionNotice && (
+          <p role="alert" className="mt-base text-xs text-error">
+            {submissionNotice}
           </p>
         )}
       </ChaotangPanel>
@@ -318,11 +378,11 @@ function ChancellorStudySession({
             <ChaotangButton
               className="mt-double"
               variant="primary"
-              disabled={!ready || issue.isPending || Boolean(jobId)}
+              disabled={!ready || submitting || Boolean(jobId)}
               onClick={() => void issueDraft()}
             >
               <PaperPlaneTiltIcon className="size-4" />
-              {issue.isPending
+              {submitting
                 ? '正在受理…'
                 : ready
                   ? '正式下旨'
@@ -333,39 +393,16 @@ function ChancellorStudySession({
       )}
 
       {jobId && (
-        <ChaotangPanel className="p-double">
-          <div className="flex items-center gap-base">
-            <ShieldCheckIcon className="size-5 text-brand" weight="duotone" />
-            <h3 className="chaotang-title text-xl text-high">旨意任务</h3>
-          </div>
-          <div className="mt-double grid gap-base sm:grid-cols-4">
-            <Metric label="Job ID" value={jobId} mono />
-            <Metric label="公开状态" value={job.data?.state ?? 'QUEUED'} />
-            <Metric label="内部阶段" value={job.data?.stage ?? 'QUEUED'} />
-            <Metric
-              label="模型请求"
-              value={String(job.data?.providerRequestCount ?? 0)}
-            />
-          </div>
-          {job.data?.error && (
-            <p className="mt-base border border-error/25 bg-error/5 p-base text-xs text-error">
-              {job.data.error.code} · {job.data.error.stage} ·{' '}
-              {job.data.error.category}
-            </p>
-          )}
-          {job.data?.result && (
-            <ValidatedDecreeResult value={job.data.result} />
-          )}
-          {job.data && ['QUEUED', 'RUNNING'].includes(job.data.state) && (
-            <ChaotangButton
-              className="mt-base"
-              disabled={cancel.isPending || job.data.cancelRequested}
-              onClick={() => cancel.mutate(jobId)}
-            >
-              {job.data.cancelRequested ? '已请求取消' : '请求取消'}
-            </ChaotangButton>
-          )}
-        </ChaotangPanel>
+        <StudyTaskProgress
+          jobId={jobId}
+          job={job.data}
+          readError={job.error?.message}
+          cancelError={cancel.error?.message}
+          isFetching={job.isFetching}
+          isCancelling={cancel.isPending}
+          onRefresh={() => void job.refetch()}
+          onCancel={() => cancel.mutate(jobId)}
+        />
       )}
     </div>
   );
@@ -408,26 +445,5 @@ function DraftList({ title, items }: { title: string; items: string[] }) {
         <p className="mt-base text-xs text-low">无</p>
       )}
     </section>
-  );
-}
-
-function Metric({
-  label,
-  value,
-  mono = false,
-}: {
-  label: string;
-  value: string;
-  mono?: boolean;
-}) {
-  return (
-    <div className="min-w-0 border border-brand/15 bg-primary/35 p-base">
-      <p className="text-[9px] text-low">{label}</p>
-      <p
-        className={`mt-half truncate text-xs text-normal ${mono ? 'font-mono' : ''}`}
-      >
-        {value}
-      </p>
-    </div>
   );
 }

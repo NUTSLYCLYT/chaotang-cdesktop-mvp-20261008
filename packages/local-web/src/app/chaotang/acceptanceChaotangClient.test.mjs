@@ -2,6 +2,47 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createAcceptanceChaotangClient } from './acceptanceChaotangClient.test-support.mjs';
 
+test('a delayed logout does not remove a newer session from shared storage', async () => {
+  let token = 'old-session';
+  let release;
+  const response = new Promise((resolve) => {
+    release = resolve;
+  });
+  const client = createAcceptanceChaotangClient({}, () => response, {
+    getItem: () => token,
+    setItem: (_, value) => {
+      token = value;
+    },
+    removeItem: () => {
+      token = null;
+    },
+  });
+  const pending = client.logout();
+  token = 'new-session';
+  release(new Response(null, { status: 204 }));
+  await pending;
+  assert.equal(token, 'new-session');
+});
+
+test('failed logout clears its local session but reports failed revocation', async () => {
+  let token = 'old-session';
+  const client = createAcceptanceChaotangClient(
+    {},
+    async () => new Response(null, { status: 503 }),
+    {
+      getItem: () => token,
+      setItem: (_, value) => {
+        token = value;
+      },
+      removeItem: () => {
+        token = null;
+      },
+    }
+  );
+  await assert.rejects(client.logout(), /HTTP 503/);
+  assert.equal(token, null);
+});
+
 test('account storage outage gives recovery guidance without losing an existing session', async () => {
   let token = 'existing-session';
   const client = createAcceptanceChaotangClient(

@@ -13,7 +13,7 @@ export function ChaotangAccountForm({
   mode: AccountMode;
   onModeChange: (mode: AccountMode) => void;
 }) {
-  const { login, register } = useChaotangProvider();
+  const { login, register, logoutNotice, isLoggingOut } = useChaotangProvider();
   const id = useId();
   const [identifier, setIdentifier] = useState('');
   const [username, setUsername] = useState('');
@@ -26,11 +26,11 @@ export function ChaotangAccountForm({
   return (
     <form
       aria-label={mode === 'login' ? '登录朝堂账户' : '注册朝堂账户'}
-      aria-busy={pending}
+      aria-busy={pending || isLoggingOut}
       className="space-y-4 text-sm text-[#eee7d4]"
       onSubmit={(event) => {
         event.preventDefault();
-        if (submit.current.isPending()) return;
+        if (submit.current.isPending() || isLoggingOut) return;
         setPending(true);
         setError(undefined);
         const request =
@@ -52,12 +52,22 @@ export function ChaotangAccountForm({
           });
       }}
     >
+      {isLoggingOut && (
+        <p role="status" className="text-sm text-[#aaa99f]">
+          正在退出账户并确认会话状态…
+        </p>
+      )}
+      {logoutNotice && (
+        <p role="alert" className="text-sm text-red-400">
+          {logoutNotice}
+        </p>
+      )}
       <div className="flex flex-wrap gap-2" aria-label="账户办理方式">
         {(['login', 'register'] as const).map((choice) => (
           <button
             key={choice}
             type="button"
-            disabled={pending}
+            disabled={pending || isLoggingOut}
             aria-pressed={mode === choice}
             onClick={() => {
               setPassword('');
@@ -82,7 +92,7 @@ export function ChaotangAccountForm({
             name="identifier"
             required
             maxLength={254}
-            disabled={pending}
+            disabled={pending || isLoggingOut}
             autoComplete="username"
             value={identifier}
             onChange={(event) => setIdentifier(event.target.value)}
@@ -98,7 +108,7 @@ export function ChaotangAccountForm({
               name="username"
               required
               maxLength={254}
-              disabled={pending}
+              disabled={pending || isLoggingOut}
               autoComplete="username"
               value={username}
               onChange={(event) => setUsername(event.target.value)}
@@ -113,7 +123,7 @@ export function ChaotangAccountForm({
               required
               type="email"
               maxLength={254}
-              disabled={pending}
+              disabled={pending || isLoggingOut}
               autoComplete="email"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
@@ -131,7 +141,7 @@ export function ChaotangAccountForm({
           type="password"
           minLength={mode === 'register' ? 6 : undefined}
           maxLength={1024}
-          disabled={pending}
+          disabled={pending || isLoggingOut}
           autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
           aria-describedby={
             mode === 'register' ? `${id}-password-hint` : undefined
@@ -153,7 +163,7 @@ export function ChaotangAccountForm({
       )}
       <button
         type="submit"
-        disabled={pending}
+        disabled={pending || isLoggingOut}
         className="w-full border border-[#d7b36a]/50 bg-[#d7b36a]/10 px-4 py-3 text-[#f2d99b] disabled:cursor-wait disabled:opacity-50"
       >
         {pending

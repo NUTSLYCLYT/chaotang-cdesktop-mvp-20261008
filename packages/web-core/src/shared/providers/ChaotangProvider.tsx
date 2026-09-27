@@ -927,6 +927,8 @@ interface ChaotangProviderValue {
   health: ChaotangHealth | null;
   error: string | null;
   authError: string | null;
+  logoutNotice: string | null;
+  isLoggingOut: boolean;
   isChecking: boolean;
   authGeneration: number;
   refresh(): Promise<void>;
@@ -940,6 +942,8 @@ const ChaotangContext = createContext<ChaotangProviderValue>({
   health: null,
   error: '朝堂 Provider 未注入',
   authError: null,
+  logoutNotice: null,
+  isLoggingOut: false,
   isChecking: false,
   authGeneration: 0,
   refresh: async () => undefined,
@@ -976,6 +980,8 @@ export function ChaotangProvider({
   const [health, setHealth] = useState<ChaotangHealth | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [authError, setAuthError] = useState<string | null>(null);
+  const [logoutNotice, setLogoutNotice] = useState<string | null>(null);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isChecking, setIsChecking] = useState(true);
   const [authGenerationValue, setAuthGenerationValue] = useState(0);
   const [user, setUser] = useState<ChaotangUser | null>(null);
@@ -1006,6 +1012,8 @@ export function ChaotangProvider({
 
   const login = useCallback(
     async (identifier: string, password: string) => {
+      setLogoutNotice(null);
+      setIsLoggingOut(false);
       const generation = ++authGeneration.current;
       setAuthGenerationValue(generation);
       ++refreshSequence.current;
@@ -1029,6 +1037,8 @@ export function ChaotangProvider({
   );
   const register = useCallback(
     async (username: string, email: string, password: string) => {
+      setLogoutNotice(null);
+      setIsLoggingOut(false);
       const generation = ++authGeneration.current;
       setAuthGenerationValue(generation);
       ++refreshSequence.current;
@@ -1056,16 +1066,29 @@ export function ChaotangProvider({
     ++refreshSequence.current;
     setIsChecking(false);
     setError(null);
+    setAuthError(null);
+    setLogoutNotice(null);
+    setIsLoggingOut(true);
     setUser(null);
     try {
       await authQueue.current.run(async () => {
-        await clearAccountCache();
-        return client.logout();
+        try {
+          await clearAccountCache();
+        } finally {
+          // Cache cleanup failure must not prevent revoking the server session.
+          await client.logout();
+        }
       });
+    } catch {
+      const notice =
+        '退出未能完整确认，服务端会话或本机凭据可能尚未清除。请检查连接并核对账户状态，在确认前不要将设备交给其他人。';
+      if (generation === authGeneration.current) setLogoutNotice(notice);
+      throw new Error(notice);
     } finally {
       if (generation === authGeneration.current) {
         setUser(null);
         setAuthError(null);
+        setIsLoggingOut(false);
       }
     }
   }, [client, clearAccountCache]);
@@ -1090,6 +1113,8 @@ export function ChaotangProvider({
       health,
       error,
       authError,
+      logoutNotice,
+      isLoggingOut,
       isChecking,
       authGeneration: authGenerationValue,
       refresh,
@@ -1100,6 +1125,8 @@ export function ChaotangProvider({
     }),
     [
       authError,
+      logoutNotice,
+      isLoggingOut,
       error,
       health,
       isChecking,

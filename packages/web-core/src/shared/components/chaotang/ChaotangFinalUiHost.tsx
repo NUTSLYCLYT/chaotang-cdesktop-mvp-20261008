@@ -438,7 +438,7 @@ export function ChaotangFinalUiHost() {
                   <p className="mt-1 text-sm text-[#aaa99f]">{user.email}</p>
                   <button
                     type="button"
-                    onClick={() => void logout()}
+                    onClick={() => void logout().catch(() => undefined)}
                     className="mt-6 border border-[#d7b36a]/35 px-5 py-2 text-[#d7b36a]"
                   >
                     退出登录

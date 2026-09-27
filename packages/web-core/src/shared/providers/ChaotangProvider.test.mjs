@@ -108,7 +108,7 @@ function harness() {
     return ChaotangProvider({ client, children: null }).props.children.props
       .value;
   };
-  return { render, healthRequests, userRequests };
+  return { render, healthRequests, userRequests, client, query };
 }
 const healthA = {
   status: 'ok',
@@ -117,6 +117,68 @@ const healthA = {
   baseUrl: 'http://test.invalid',
 };
 const healthB = { ...healthA, version: 'B' };
+
+test('logout failure stays visible after the account content is hidden', async () => {
+  const h = harness();
+  try {
+    await h.render().login('A', 'synthetic');
+    const result = deferred();
+    h.client.logout = () => result.promise;
+    const pending = h.render().logout();
+    assert.equal(h.render().user, null);
+    assert.equal(h.render().isLoggingOut, true);
+    result.reject(new Error('private server failure'));
+    await assert.rejects(pending, /退出未能完整确认/);
+    assert.equal(h.render().isLoggingOut, false);
+    assert.match(h.render().logoutNotice, /退出未能完整确认/);
+    assert.doesNotMatch(h.render().logoutNotice, /private server/);
+    await h.render().login('B', 'synthetic');
+    assert.equal(h.render().logoutNotice, null);
+    assert.equal(h.render().user.id, 'B');
+  } finally {
+    delete globalThis.__providerHarness;
+  }
+});
+
+test('failed cache cleanup does not skip server session revocation', async () => {
+  const h = harness();
+  try {
+    await h.render().login('A', 'synthetic');
+    let revoked = false;
+    h.query.cancelQueries = async () => {
+      throw new Error('cache cleanup failed');
+    };
+    h.client.logout = async () => {
+      revoked = true;
+    };
+    await assert.rejects(h.render().logout(), /退出未能完整确认/);
+    assert.equal(revoked, true);
+    assert.equal(h.render().user, null);
+    assert.equal(h.render().isLoggingOut, false);
+  } finally {
+    delete globalThis.__providerHarness;
+  }
+});
+
+test('late logout failure cannot add a warning to a newer account', async () => {
+  const h = harness();
+  try {
+    await h.render().login('A', 'synthetic');
+    const result = deferred();
+    h.client.logout = () => result.promise;
+    const old = h.render().logout();
+    const oldRejected = assert.rejects(old, /退出未能完整确认/);
+    const next = h.render().login('B', 'synthetic');
+    result.reject(new Error('old logout failed'));
+    await oldRejected;
+    await next;
+    assert.equal(h.render().user.id, 'B');
+    assert.equal(h.render().logoutNotice, null);
+    assert.equal(h.render().isLoggingOut, false);
+  } finally {
+    delete globalThis.__providerHarness;
+  }
+});
 
 test('a rejected old-account refresh cannot mark the newly authenticated owner offline', async () => {
   const h = harness();

@@ -103,8 +103,16 @@ export function CourtWorkspace({
   selectedJobId?: string;
   onSelectJob: (id?: string, replace?: boolean) => void;
 }) {
-  const { user, health, login, logout, authError, error } =
-    useChaotangProvider();
+  const {
+    user,
+    health,
+    login,
+    logout,
+    authError,
+    error,
+    logoutNotice,
+    isLoggingOut,
+  } = useChaotangProvider();
   const previousOwner = useRef<string>();
   const [historyView, setHistoryView] = useState<{
     owner?: string;
@@ -159,6 +167,7 @@ export function CourtWorkspace({
           className="max-w-md space-y-base p-double"
           onSubmit={(event) => {
             event.preventDefault();
+            if (isLoggingOut) return;
             setPending(true);
             void login(identifier, password)
               .then(() => setPassword(''))
@@ -167,6 +176,12 @@ export function CourtWorkspace({
           }}
         >
           <h2 className="text-lg">登录朝堂账户</h2>
+          {isLoggingOut && <p role="status">正在退出账户并确认会话状态…</p>}
+          {logoutNotice && (
+            <p role="alert" className="text-error">
+              {logoutNotice}
+            </p>
+          )}
           <label className="block">
             用户名或邮箱
             <input
@@ -193,7 +208,10 @@ export function CourtWorkspace({
               {authError}
             </p>
           )}
-          <button disabled={pending || !health} className={button}>
+          <button
+            disabled={pending || isLoggingOut || !health}
+            className={button}
+          >
             {pending ? '登录中…' : '登录'}
           </button>
         </form>

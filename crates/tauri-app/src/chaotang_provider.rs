@@ -1612,7 +1612,10 @@ impl ChaotangProviderState {
             .await
             .map_err(|_| "本机会话已清除，但后端暂时无法确认退出".to_string());
         clear_result?;
-        remote_result?;
+        let response = remote_result?;
+        if !response.status().is_success() {
+            return Err("本机会话已清除，但后端未确认退出，请检查连接并核对账户状态".into());
+        }
         Ok(())
     }
 
@@ -3855,6 +3858,40 @@ mod tests {
                 Some("new-session"),
                 "{mode}"
             );
+        }
+    }
+
+    #[tokio::test]
+    async fn logout_requires_a_successful_http_receipt() {
+        for (status, accepted) in [
+            ("200 OK", true),
+            ("204 No Content", true),
+            ("401 Unauthorized", false),
+            ("403 Forbidden", false),
+            ("500 Internal Server Error", false),
+            ("503 Service Unavailable", false),
+        ] {
+            let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+            let address = listener.local_addr().unwrap();
+            let server = tokio::spawn(async move {
+                let mut request = read_test_request(&listener).await;
+                send_test_response(&mut request, status, "").await;
+            });
+            let state = ChaotangProviderState {
+                auth_generation: Arc::new(AtomicU64::new(0)),
+                owner_runtime: Arc::new(crate::fusion_owner_runtime::OwnerRuntime::default()),
+                session_store: crate::session_store::SessionStore::disabled(),
+                client: reqwest::Client::builder().no_proxy().build().unwrap(),
+                base_url: format!("http://{address}"),
+                session_id: Arc::new(tokio::sync::RwLock::new(Some("test-session".into()))),
+            };
+            let result = state.logout().await;
+            assert_eq!(result.is_ok(), accepted, "{status}");
+            if !accepted {
+                assert!(result.unwrap_err().contains("后端未确认退出"));
+            }
+            assert!(state.session_id.read().await.is_none(), "{status}");
+            server.await.unwrap();
         }
     }
 

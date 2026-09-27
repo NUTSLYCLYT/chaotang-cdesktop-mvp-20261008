@@ -282,10 +282,12 @@ export function createAcceptanceChaotangClient(
       return request<ChaotangUser>('/api/v1/auth/me');
     },
     logout: async () => {
+      const token = storage.getItem(sessionKey);
       try {
         await request('/api/v1/auth/logout', {});
       } finally {
-        storage.removeItem(sessionKey);
+        if (storage.getItem(sessionKey) === token)
+          storage.removeItem(sessionKey);
       }
     },
     chancellorConsult: (messages) =>

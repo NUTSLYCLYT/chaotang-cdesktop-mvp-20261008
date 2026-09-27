@@ -142,7 +142,7 @@ export function PrimaryNavigationRail() {
                 </div>
                 <button
                   type="button"
-                  onClick={() => void logout()}
+                  onClick={() => void logout().catch(() => undefined)}
                   className="w-full border border-brand/25 px-base py-base text-xs text-brand transition-colors hover:bg-brand/10"
                 >
                   退出朝堂账户

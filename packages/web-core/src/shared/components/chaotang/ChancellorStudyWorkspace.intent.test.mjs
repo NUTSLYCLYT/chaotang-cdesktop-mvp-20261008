@@ -29,7 +29,7 @@ const compiled = await build({
         b.onLoad({ filter: /.*/, namespace: 'controlled' }, ({ path }) => ({
           contents:
             path === 'react/jsx-runtime'
-              ? 'export const jsx=(type,props,key)=>({type,props,key});export const jsxs=jsx;'
+              ? 'export const jsx=(type,props,key)=>({type,props,key});export const jsxs=jsx;export const Fragment=Symbol();'
               : path === 'react'
                 ? 'export const useState=v=>globalThis.__studyHarness.state(v);export const useRef=v=>globalThis.__studyHarness.ref(v);export const useEffect=(f,d)=>globalThis.__studyHarness.effect(f,d);'
                 : path.includes('ChaotangProvider')
@@ -56,11 +56,18 @@ const originalStorage = Object.getOwnPropertyDescriptor(
   globalThis,
   'sessionStorage'
 );
+const originalLocalStorage = Object.getOwnPropertyDescriptor(
+  globalThis,
+  'localStorage'
+);
 afterEach(() => {
   delete globalThis.__studyHarness;
   if (originalStorage)
     Object.defineProperty(globalThis, 'sessionStorage', originalStorage);
   else delete globalThis.sessionStorage;
+  if (originalLocalStorage)
+    Object.defineProperty(globalThis, 'localStorage', originalLocalStorage);
+  else delete globalThis.localStorage;
 });
 
 function nodes(tree) {
@@ -133,6 +140,25 @@ function setup() {
   h.draft = mutation('draft');
   h.issue = mutation('issue');
   globalThis.__studyHarness = h;
+  h.savedValues = new Map();
+  Object.defineProperty(globalThis, 'localStorage', {
+    configurable: true,
+    value: {
+      getItem: (key) => h.savedValues.get(key) ?? null,
+      setItem: (key, value) => {
+        if (h.failSave) throw new Error('quota');
+        h.savedValues.set(key, value);
+      },
+      removeItem: (key) => h.savedValues.delete(key),
+    },
+  });
+  h.reopen = () => {
+    stores.clear();
+    h.consult.reset();
+    h.draft.reset();
+    h.issue.reset();
+    return h.render();
+  };
   const values = new Map();
   Object.defineProperty(globalThis, 'sessionStorage', {
     configurable: true,
@@ -262,4 +288,72 @@ test('the same ready intent issues once under synchronous double click', async (
   click();
   await new Promise((resolve) => setImmediate(resolve));
   assert.equal(h.calls.filter((c) => c[0] === 'issue').length, 1);
+});
+
+test('an explicitly saved objective survives reopening without restoring execution authority', () => {
+  const h = setup();
+  h.prepare();
+  h.button('保存需求').props.onClick();
+  assert.equal(h.savedValues.size, 1);
+  const record = JSON.parse([...h.savedValues.values()][0]);
+  assert.equal(record.objective, '原始目标');
+  assert.equal('fingerprint' in record, false);
+  const callsBefore = h.calls.length;
+  h.reopen();
+  assert.equal(h.find('textarea').props.value, '');
+  h.button('恢复已存需求').props.onClick();
+  assert.equal(h.find('textarea').props.value, '原始目标');
+  assert.equal(h.button('正式下旨'), undefined);
+  assert.equal(h.button('请先确认理解').props.disabled, true);
+  assert.equal(h.calls.length, callsBefore);
+});
+
+test('restoring saved text asks before replacing unsaved work and invalidates old confirmation', () => {
+  const h = setup();
+  h.goal('已存需求');
+  h.button('保存需求').props.onClick();
+  h.prepare();
+  h.button('恢复已存需求').props.onClick();
+  assert.equal(h.find('textarea').props.value, '原始目标');
+  h.button('保留当前内容').props.onClick();
+  assert.equal(h.find('textarea').props.value, '原始目标');
+  h.button('恢复已存需求').props.onClick();
+  h.button('用已存需求替换').props.onClick();
+  assert.equal(h.find('textarea').props.value, '已存需求');
+  assert.equal(h.button('正式下旨'), undefined);
+  assert.equal(h.button('请先确认理解').props.disabled, true);
+});
+
+test('switching accounts hides another account saved objective', () => {
+  const h = setup();
+  h.goal('A 的资料');
+  h.button('保存需求').props.onClick();
+  h.provider.user = { id: 'owner-b', username: 'B' };
+  h.provider.authGeneration++;
+  h.reopen();
+  assert.equal(h.button('恢复已存需求'), undefined);
+  assert.equal(h.find('textarea').props.value, '');
+  assert.equal(h.savedValues.size, 1);
+});
+
+test('save failure retains the earlier saved copy and the current editor', () => {
+  const h = setup();
+  h.goal('旧版');
+  h.button('保存需求').props.onClick();
+  const saved = [...h.savedValues.values()][0];
+  h.goal('未保存的修改');
+  h.failSave = true;
+  h.button('保存需求').props.onClick();
+  assert.equal([...h.savedValues.values()][0], saved);
+  assert.equal(h.find('textarea').props.value, '未保存的修改');
+  assert.match(textOf(h.render()), /未能保存/);
+});
+
+test('removing the saved copy keeps the visible objective available to save again', () => {
+  const h = setup();
+  h.goal('可继续编辑的需求');
+  h.button('保存需求').props.onClick();
+  h.button('移除已存副本').props.onClick();
+  assert.equal(h.savedValues.size, 0);
+  assert.equal(h.find('textarea').props.value, '可继续编辑的需求');
 });

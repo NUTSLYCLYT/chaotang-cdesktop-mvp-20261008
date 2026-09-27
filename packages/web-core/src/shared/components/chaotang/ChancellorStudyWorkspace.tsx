@@ -23,6 +23,12 @@ import {
   prepareConfirmedStudyDraft,
   type ConfirmedStudyIntent,
 } from './studyIntentConfirmation';
+import {
+  readStudyObjective,
+  saveStudyObjective,
+  removeStudyObjective,
+  type SavedStudyObjective,
+} from './studyObjectiveDraft';
 
 export function ChancellorStudyWorkspace({
   initialObjective = '',
@@ -45,6 +51,10 @@ function ChancellorStudySession({
   const [objective, setObjective] = useState(initialObjective);
   const [handoffNotice, setHandoffNotice] = useState<string>();
   const [submissionNotice, setSubmissionNotice] = useState<string>();
+  const [savedObjective, setSavedObjective] = useState<SavedStudyObjective>();
+  const [savedObjectiveNotice, setSavedObjectiveNotice] = useState<string>();
+  const [savedObjectiveError, setSavedObjectiveError] = useState(false);
+  const [restorePending, setRestorePending] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const submissionInFlight = useRef(false);
   const mounted = useRef(true);
@@ -112,6 +122,15 @@ function ChancellorStudySession({
   useEffect(() => {
     if (!user || initialized.current) return;
     initialized.current = true;
+    const saved = readStudyObjective(() => localStorage, user.id);
+    if (saved.status === 'found') {
+      setSavedObjective(saved.draft);
+    } else if (saved.status !== 'empty') {
+      setSavedObjectiveError(true);
+      setSavedObjectiveNotice(
+        '未能读取本机已存需求。你仍可编辑；请保留一份副本后再离开。'
+      );
+    }
     let handoffDiscarded = false;
     const pendingIntent = initialObjective
       ? undefined
@@ -167,6 +186,28 @@ function ChancellorStudySession({
   const error =
     consult.error?.message ?? draft.error?.message ?? issue.error?.message;
   const submitting = isSubmitting || issue.isPending;
+  const objectiveBusy = consult.isPending || draft.isPending || submitting;
+  const canUseSavedObjective = () =>
+    mounted.current &&
+    !objectiveBusy &&
+    !submissionInFlight.current &&
+    renderedEpoch === authorizationEpoch.current;
+
+  const restoreObjective = () => {
+    if (!savedObjective || !canUseSavedObjective()) return;
+    ++contextGeneration.current;
+    invalidateUnderstanding();
+    consult.reset();
+    cancel.reset();
+    setObjective(savedObjective.objective);
+    setCameFromOutcomeCase(false);
+    setJobId(undefined);
+    setRestorePending(false);
+    setSavedObjectiveError(false);
+    setSavedObjectiveNotice(
+      '已恢复需求文本，请重新咨询丞相并确认理解。尚未创建任务。'
+    );
+  };
 
   const createDraft = () => {
     if (
@@ -298,6 +339,7 @@ function ChancellorStudySession({
           value={objective}
           onChange={(event) => {
             setObjective(event.target.value);
+            setRestorePending(false);
             setCameFromOutcomeCase(false);
             ++contextGeneration.current;
             invalidateUnderstanding();
@@ -311,6 +353,115 @@ function ChancellorStudySession({
             已带入案例提纲，可直接修改。此处仍是商议草稿；只有你确认并正式下旨后才会创建任务。
           </p>
         )}
+        <div
+          className="mt-base border border-brand/15 bg-primary/35 p-base"
+          aria-label="本机需求草稿"
+        >
+          <div className="flex flex-wrap items-center gap-base">
+            <ChaotangButton
+              disabled={objectiveBusy || !objective.trim()}
+              onClick={() => {
+                if (!canUseSavedObjective()) return;
+                const saved = saveStudyObjective(
+                  () => localStorage,
+                  user.id,
+                  objective
+                );
+                setRestorePending(false);
+                setSavedObjectiveError(!saved);
+                if (saved) {
+                  setSavedObjective(saved);
+                  setSavedObjectiveNotice(
+                    '需求已保存到当前设备；不会自动办理。'
+                  );
+                } else {
+                  setSavedObjectiveNotice(
+                    '未能保存需求，当前内容仍在编辑框中。请复制留存后再离开。'
+                  );
+                }
+              }}
+            >
+              保存需求
+            </ChaotangButton>
+            {savedObjective && (
+              <>
+                <ChaotangButton
+                  disabled={objectiveBusy}
+                  onClick={() => {
+                    if (!canUseSavedObjective()) return;
+                    if (objective && objective !== savedObjective.objective)
+                      setRestorePending(true);
+                    else restoreObjective();
+                  }}
+                >
+                  恢复已存需求
+                </ChaotangButton>
+                <ChaotangButton
+                  variant="ghost"
+                  disabled={objectiveBusy}
+                  onClick={() => {
+                    if (!canUseSavedObjective()) return;
+                    const removed = removeStudyObjective(
+                      () => localStorage,
+                      user.id
+                    );
+                    setSavedObjectiveError(!removed);
+                    if (removed) {
+                      setSavedObjective(undefined);
+                      setRestorePending(false);
+                      setSavedObjectiveNotice(
+                        '已移除本机保存的副本，当前编辑内容仍保留。'
+                      );
+                    } else
+                      setSavedObjectiveNotice('未能移除已存副本，请稍后重试。');
+                  }}
+                >
+                  移除已存副本
+                </ChaotangButton>
+              </>
+            )}
+          </div>
+          <p className="mt-base text-xs text-low">
+            仅保存在当前设备、当前朝堂账户下。恢复后需重新确认，不会自动下旨。
+            {savedObjective &&
+              (savedObjective.objective === objective
+                ? ' 当前内容已保存。'
+                : ' 当前内容与已存副本不同。')}
+          </p>
+          {savedObjectiveNotice && (
+            <p
+              role={savedObjectiveError ? 'alert' : 'status'}
+              className={`mt-base text-xs ${savedObjectiveError ? 'text-error' : 'text-low'}`}
+            >
+              {savedObjectiveNotice}
+            </p>
+          )}
+          {restorePending && (
+            <div
+              className="mt-base space-y-base border-l-2 border-brand/50 pl-base"
+              role="group"
+              aria-label="确认恢复需求"
+            >
+              <p className="text-xs text-low">
+                恢复会替换当前未保存的内容，并清除当前理解确认和拟旨。
+              </p>
+              <div className="flex flex-wrap gap-base">
+                <ChaotangButton
+                  disabled={objectiveBusy}
+                  onClick={restoreObjective}
+                >
+                  用已存需求替换
+                </ChaotangButton>
+                <ChaotangButton
+                  variant="ghost"
+                  onClick={() => setRestorePending(false)}
+                >
+                  保留当前内容
+                </ChaotangButton>
+              </div>
+            </div>
+          )}
+        </div>
         <div className="mt-base flex flex-wrap gap-base">
           <ChaotangButton
             disabled={

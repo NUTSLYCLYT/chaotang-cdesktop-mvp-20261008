@@ -18,13 +18,13 @@ describe('original court business handoff', () => {
       )
     ).toEqual({ panel: 'study', owner: 'owner-A', objective: '调研仓库' });
   });
-  it('asks anonymous users to log in without retaining their input as another account task', () => {
+  it('returns anonymous input for explicit post-login confirmation, without creating a task', () => {
     expect(
       courtBusinessHandoff({
         type: 'chaotang:prepare-decree',
         prompt: '调研仓库',
       })
-    ).toEqual({ panel: 'account' });
+    ).toEqual({ panel: 'account', pendingObjective: '调研仓库' });
   });
   it('rejects malformed, empty, oversized or unrelated input', () => {
     for (const value of [

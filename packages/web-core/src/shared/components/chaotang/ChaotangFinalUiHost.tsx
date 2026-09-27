@@ -93,6 +93,13 @@ export function ChaotangFinalUiHost() {
     objective: string;
     id: string;
   }>();
+  const [pendingIntent, setPendingIntent] = useState<{
+    objective: string;
+    owner?: string;
+    generation?: number;
+  }>();
+  const pendingIntentRef = useRef(pendingIntent);
+  pendingIntentRef.current = pendingIntent;
   const [isConsulting, setIsConsulting] = useState(false);
   const busy = useRef(false);
   const writes = useRef<Promise<unknown>>(Promise.resolve());
@@ -114,7 +121,18 @@ export function ChaotangFinalUiHost() {
 
   useEffect(() => {
     setHandoff(undefined);
-  }, [user?.id]);
+    const pending = pendingIntentRef.current;
+    if (!pending) return;
+    const next = pending.owner
+      ? pending.owner === user?.id && pending.generation === authGeneration
+        ? pending
+        : undefined
+      : user?.id
+        ? { ...pending, owner: user.id, generation: authGeneration }
+        : pending;
+    pendingIntentRef.current = next;
+    setPendingIntent(next);
+  }, [user?.id, authGeneration]);
 
   useEffect(() => {
     const panel = courtPanelFromRoute(location.pathname, location.hash);
@@ -145,6 +163,13 @@ export function ChaotangFinalUiHost() {
       } | null;
       const transfer = courtBusinessHandoff(data, user?.id);
       if (transfer) {
+        const pending =
+          'pendingObjective' in transfer &&
+          typeof transfer.pendingObjective === 'string'
+            ? { objective: transfer.pendingObjective }
+            : undefined;
+        pendingIntentRef.current = pending;
+        setPendingIntent(pending);
         if ('objective' in transfer && transfer.objective && transfer.owner) {
           setHandoff({
             owner: transfer.owner,
@@ -417,7 +442,11 @@ export function ChaotangFinalUiHost() {
               </div>
               <button
                 type="button"
-                onClick={() => setBusinessPanel(null)}
+                onClick={() => {
+                  pendingIntentRef.current = undefined;
+                  setPendingIntent(undefined);
+                  setBusinessPanel(null);
+                }}
                 className="border border-[#d7b36a]/30 p-2 text-[#d7b36a]"
                 aria-label="关闭"
               >
@@ -452,27 +481,90 @@ export function ChaotangFinalUiHost() {
                 )}
               </>
             ) : businessPanel === 'account' ? (
-              user ? (
-                <div className="border border-[#d7b36a]/25 bg-white/[0.02] p-5">
-                  <p className="text-sm text-[#aaa99f]">当前已登录</p>
-                  <p className="mt-2 font-serif text-xl">{user.username}</p>
-                  <p className="mt-1 text-sm text-[#aaa99f]">{user.email}</p>
-                  <button
-                    type="button"
-                    onClick={() => void logout().catch(() => undefined)}
-                    className="mt-6 border border-[#d7b36a]/35 px-5 py-2 text-[#d7b36a]"
-                  >
-                    退出登录
-                  </button>
-                </div>
-              ) : (
-                <div className="border border-[#d7b36a]/25 bg-white/[0.02] p-5">
-                  <ChaotangAccountForm
-                    mode={authMode}
-                    onModeChange={setAuthMode}
-                  />
-                </div>
-              )
+              <>
+                {pendingIntent &&
+                  (!pendingIntent.owner ||
+                    (pendingIntent.owner === user?.id &&
+                      pendingIntent.generation === authGeneration)) && (
+                    <aside
+                      className="mb-4 border border-[#d7b36a]/25 bg-[#d7b36a]/5 p-4"
+                      aria-label="本次待办理需求"
+                    >
+                      <p role="status" className="text-sm text-[#d7b36a]">
+                        {user
+                          ? '登录成功，请确认是否继续这次需求。'
+                          : '已临时保留本次需求，登录后可继续。'}
+                      </p>
+                      <p className="mt-2 max-h-36 overflow-y-auto whitespace-pre-wrap break-words text-sm text-[#efe5ce]">
+                        {pendingIntent.objective}
+                      </p>
+                      <p className="mt-2 text-xs text-[#aaa99f]">
+                        仅带入可编辑草稿，不会自动下旨或调用模型。关闭此面板或刷新页面会清除本次暂存。
+                      </p>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {user &&
+                          pendingIntent.owner === user.id &&
+                          pendingIntent.generation === authGeneration && (
+                            <button
+                              type="button"
+                              className="border border-[#d7b36a]/50 bg-[#d7b36a]/10 px-4 py-2 text-sm text-[#f2d99b]"
+                              onClick={() => {
+                                if (
+                                  pendingIntentRef.current !== pendingIntent ||
+                                  currentAccount.current !==
+                                    pendingIntent.owner ||
+                                  currentGeneration.current !==
+                                    pendingIntent.generation
+                                )
+                                  return;
+                                setHandoff({
+                                  owner: user.id,
+                                  objective: pendingIntent.objective,
+                                  id: crypto.randomUUID(),
+                                });
+                                pendingIntentRef.current = undefined;
+                                setPendingIntent(undefined);
+                                setBusinessPanel('study');
+                              }}
+                            >
+                              带入上书房
+                            </button>
+                          )}
+                        <button
+                          type="button"
+                          className="border border-[#d7b36a]/20 px-4 py-2 text-sm text-[#aaa99f]"
+                          onClick={() => {
+                            pendingIntentRef.current = undefined;
+                            setPendingIntent(undefined);
+                          }}
+                        >
+                          放弃这次需求
+                        </button>
+                      </div>
+                    </aside>
+                  )}
+                {user ? (
+                  <div className="border border-[#d7b36a]/25 bg-white/[0.02] p-5">
+                    <p className="text-sm text-[#aaa99f]">当前已登录</p>
+                    <p className="mt-2 font-serif text-xl">{user.username}</p>
+                    <p className="mt-1 text-sm text-[#aaa99f]">{user.email}</p>
+                    <button
+                      type="button"
+                      onClick={() => void logout().catch(() => undefined)}
+                      className="mt-6 border border-[#d7b36a]/35 px-5 py-2 text-[#d7b36a]"
+                    >
+                      退出登录
+                    </button>
+                  </div>
+                ) : (
+                  <div className="border border-[#d7b36a]/25 bg-white/[0.02] p-5">
+                    <ChaotangAccountForm
+                      mode={authMode}
+                      onModeChange={setAuthMode}
+                    />
+                  </div>
+                )}
+              </>
             ) : businessPanel === 'models' ? (
               <ModelProvidersWorkspace />
             ) : businessPanel === 'skills' ? (

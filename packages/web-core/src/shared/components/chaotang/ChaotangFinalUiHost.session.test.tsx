@@ -26,7 +26,7 @@ vi.mock('react', async (importOriginal) => ({
     return [
       h.slots[i],
       (next: unknown) => {
-        h.slots[i] = next;
+        h.slots[i] = typeof next === 'function' ? next(h.slots[i]) : next;
       },
     ];
   },
@@ -66,6 +66,7 @@ vi.mock('./SkillsWorkspace', () => ({ SkillsWorkspace: () => null }));
 vi.mock('./McpWorkspace', () => ({ McpWorkspace: () => null }));
 
 import { ChaotangFinalUiHost } from './ChaotangFinalUiHost';
+import { ChancellorStudyWorkspace } from './ChancellorStudyWorkspace';
 
 function deferred<T>() {
   let resolve!: (value: T) => void;
@@ -84,7 +85,103 @@ function render() {
   );
   frame.ref.current = { contentWindow: h.frame };
   for (const effect of h.effects.splice(0)) effect();
+  return tree;
 }
+
+function elements(node: any): any[] {
+  if (Array.isArray(node)) return node.flatMap(elements);
+  if (!node || typeof node !== 'object' || !node.props) return [];
+  return [node, ...elements(node.props.children)];
+}
+
+function sendHandoff(prompt: string) {
+  for (const listener of h.listeners)
+    listener({
+      source: h.frame,
+      origin: 'https://isolated.invalid',
+      data: {
+        type: 'chaotang:prepare-decree',
+        prompt,
+      },
+    });
+}
+
+const resumeButton = (tree: any) =>
+  elements(tree).find(
+    (node) => node.type === 'button' && node.props.children === '带入上书房'
+  );
+
+describe('anonymous result-case handoff', () => {
+  it('retains input through login and transfers it only after explicit confirmation', () => {
+    h.user = null;
+    render();
+    sendHandoff('调研一个开源项目');
+    expect(resumeButton(render())).toBeUndefined();
+    h.user = { id: 'owner-A' };
+    h.authGeneration++;
+    render();
+    const account = render();
+    expect(resumeButton(account)).toBeDefined();
+    expect(
+      elements(account).some((node) => node.type === ChancellorStudyWorkspace)
+    ).toBe(false);
+    resumeButton(account).props.onClick();
+    const study = elements(render()).find(
+      (node) => node.type === ChancellorStudyWorkspace
+    );
+    expect(study.props.initialObjective).toBe('调研一个开源项目');
+    expect(h.client.chancellorConsult).not.toHaveBeenCalled();
+    expect(h.client.junjichuCases).not.toHaveBeenCalled();
+    expect(resumeButton(render())).toBeUndefined();
+  });
+
+  it('forgets pending input when the account panel is closed', () => {
+    h.user = null;
+    render();
+    sendHandoff('不要保留');
+    const close = elements(render()).find(
+      (node) => node.props['aria-label'] === '关闭'
+    );
+    close.props.onClick();
+    h.user = { id: 'owner-A' };
+    render();
+    expect(resumeButton(render())).toBeUndefined();
+  });
+
+  it('does not offer one account pending input after switching accounts', () => {
+    h.user = null;
+    render();
+    sendHandoff('仅供初次登录用户确认');
+    h.user = { id: 'owner-A' };
+    render();
+    const oldButton = resumeButton(render());
+    expect(oldButton).toBeDefined();
+    h.user = { id: 'owner-B' };
+    h.authGeneration++;
+    render();
+    oldButton.props.onClick();
+    const tree = render();
+    expect(resumeButton(tree)).toBeUndefined();
+    expect(
+      elements(tree).some((node) => node.type === ChancellorStudyWorkspace)
+    ).toBe(false);
+  });
+
+  it('allows discarding the draft without logging out or issuing a task', () => {
+    h.user = null;
+    render();
+    sendHandoff('稍后再办');
+    const discard = elements(render()).find(
+      (node) => node.type === 'button' && node.props.children === '放弃这次需求'
+    );
+    expect(discard).toBeDefined();
+    discard.props.onClick();
+    h.user = { id: 'owner-A' };
+    render();
+    expect(resumeButton(render())).toBeUndefined();
+    expect(h.client.chancellorConsult).not.toHaveBeenCalled();
+  });
+});
 function consult(page = 'A03') {
   for (const listener of h.listeners)
     listener({

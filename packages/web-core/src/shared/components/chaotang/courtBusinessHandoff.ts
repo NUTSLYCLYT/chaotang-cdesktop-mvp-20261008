@@ -11,7 +11,7 @@ export function courtBusinessHandoff(value: unknown, owner?: string) {
   if (typeof message.prompt !== 'string') return undefined;
   const objective = message.prompt.trim();
   if (!objective || objective.length > 4000) return undefined;
-  if (!owner) return { panel: 'account' } as const;
+  if (!owner) return { panel: 'account', pendingObjective: objective } as const;
   return { panel: 'study', owner, objective } as const;
 }
 

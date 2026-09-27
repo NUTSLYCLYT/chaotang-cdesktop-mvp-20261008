@@ -98,9 +98,19 @@ export function ChaotangFinalUiHost() {
   const writes = useRef<Promise<unknown>>(Promise.resolve());
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
   const client = useChaotangClient();
-  const { health, user, logout } = useChaotangProvider();
+  const { health, user, logout, authGeneration } = useChaotangProvider();
   const currentAccount = useRef(user?.id);
   currentAccount.current = user?.id;
+  const currentGeneration = useRef(authGeneration);
+  currentGeneration.current = authGeneration;
+  const mounted = useRef(true);
+
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
 
   useEffect(() => {
     setHandoff(undefined);
@@ -248,6 +258,12 @@ export function ChaotangFinalUiHost() {
               }))
           : [];
         const prompt = data.prompt;
+        const owner = user.id;
+        const generation = authGeneration;
+        const isCurrent = () =>
+          mounted.current &&
+          currentAccount.current === owner &&
+          currentGeneration.current === generation;
         postToShell({ type: 'chaotang:consulting' });
         void withTimeout(
           (async () => {
@@ -288,6 +304,9 @@ export function ChaotangFinalUiHost() {
               ) > 18000
             )
               recent.splice(0, 2);
+            // Context reads can outlive logout or an account switch. Never
+            // submit the previous account's question under a newer session.
+            if (!isCurrent()) return;
             const response = await client.chancellorConsult([
               ...recent,
               message,
@@ -297,6 +316,7 @@ export function ChaotangFinalUiHost() {
           60_000
         )
           .then((response) => {
+            if (!isCurrent() || !response) return;
             postToShell({
               type: 'chaotang:reply',
               requestId,
@@ -305,6 +325,7 @@ export function ChaotangFinalUiHost() {
             });
           })
           .catch((cause: unknown) => {
+            if (!isCurrent()) return;
             postToShell({
               type: 'chaotang:error',
               requestId,
@@ -313,13 +334,13 @@ export function ChaotangFinalUiHost() {
           })
           .finally(() => {
             busy.current = false;
-            setIsConsulting(false);
+            if (mounted.current) setIsConsulting(false);
           });
       }
     };
     window.addEventListener('message', receive);
     return () => window.removeEventListener('message', receive);
-  }, [client, isConsulting, navigate, user]);
+  }, [authGeneration, client, isConsulting, navigate, user]);
 
   useEffect(() => {
     if (!loaded) return;

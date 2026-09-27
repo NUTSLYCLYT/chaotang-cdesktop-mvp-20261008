@@ -18,6 +18,11 @@ import { consumePendingOutcomeIntent } from './outcomeCaseHandoff';
 import { StudyTaskProgress } from './StudyTaskProgress';
 import { submitStudyDecree } from './studySubmission';
 import {
+  readStudyTextMaterial,
+  appendStudyTextMaterial,
+  type StudyTextMaterial,
+} from './studyTextMaterial';
+import {
   confirmStudyIntent,
   isStudyIntentCurrent,
   prepareConfirmedStudyDraft,
@@ -55,6 +60,12 @@ function ChancellorStudySession({
   const [savedObjectiveNotice, setSavedObjectiveNotice] = useState<string>();
   const [savedObjectiveError, setSavedObjectiveError] = useState(false);
   const [restorePending, setRestorePending] = useState(false);
+  const [materialPreview, setMaterialPreview] = useState<StudyTextMaterial>();
+  const [materialNotice, setMaterialNotice] = useState<string>();
+  const [materialError, setMaterialError] = useState(false);
+  const [readingMaterial, setReadingMaterial] = useState(false);
+  const materialGeneration = useRef(0);
+  const materialPending = useRef(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const submissionInFlight = useRef(false);
   const mounted = useRef(true);
@@ -92,7 +103,17 @@ function ChancellorStudySession({
   const draftIsCurrent =
     understandingConfirmed && draftIntent === confirmedIntent;
 
+  const discardMaterial = () => {
+    ++materialGeneration.current;
+    materialPending.current = false;
+    setMaterialPreview(undefined);
+    setReadingMaterial(false);
+    setMaterialNotice(undefined);
+    setMaterialError(false);
+  };
+
   const invalidateUnderstanding = () => {
+    discardMaterial();
     ++authorizationEpoch.current;
     setConfirmedIntent(null);
     setDraftIntent(null);
@@ -209,9 +230,62 @@ function ChancellorStudySession({
     );
   };
 
+  const chooseMaterial = async (file: File) => {
+    if (!canUseSavedObjective()) return;
+    // Invalidate approval immediately, before an asynchronous file read can finish.
+    invalidateUnderstanding();
+    consult.reset();
+    setRestorePending(false);
+    const generation = materialGeneration.current;
+    const epoch = authorizationEpoch.current;
+    materialPending.current = true;
+    setReadingMaterial(true);
+    const isCurrent = () =>
+      mounted.current &&
+      generation === materialGeneration.current &&
+      epoch === authorizationEpoch.current;
+    try {
+      const material = await readStudyTextMaterial(file);
+      if (!isCurrent()) return;
+      appendStudyTextMaterial(objective, material);
+      setMaterialPreview(material);
+    } catch (error) {
+      if (!isCurrent()) return;
+      materialPending.current = false;
+      setMaterialError(true);
+      setMaterialNotice(
+        error instanceof Error ? error.message : '资料读取失败，请重新选择。'
+      );
+    } finally {
+      if (isCurrent()) setReadingMaterial(false);
+    }
+  };
+
+  const applyMaterial = () => {
+    if (
+      !materialPreview ||
+      !materialPending.current ||
+      readingMaterial ||
+      !canUseSavedObjective()
+    )
+      return;
+    const combined = appendStudyTextMaterial(objective, materialPreview);
+    ++contextGeneration.current;
+    invalidateUnderstanding();
+    consult.reset();
+    cancel.reset();
+    setObjective(combined);
+    setCameFromOutcomeCase(false);
+    setJobId(undefined);
+    setMaterialNotice(
+      '已加入需求，尚未上传、保存或办理。请检查内容，再咨询丞相并重新确认理解。'
+    );
+  };
+
   const createDraft = () => {
     if (
       !understandingConfirmed ||
+      materialPending.current ||
       submissionInFlight.current ||
       consult.isPending ||
       draft.isPending ||
@@ -241,6 +315,7 @@ function ChancellorStudySession({
   const issueDraft = async () => {
     if (
       !ready ||
+      materialPending.current ||
       !draft.data ||
       jobId ||
       submissionInFlight.current ||
@@ -348,6 +423,66 @@ function ChancellorStudySession({
           placeholder="说明目标、范围、已有材料、限制条件和期望成果…"
           className="mt-double w-full resize-y border border-brand/20 bg-primary/60 p-base text-sm leading-7 text-normal outline-none placeholder:text-low/60 focus:border-brand/45"
         />
+        <div
+          className="mt-base border border-brand/15 bg-primary/35 p-base"
+          aria-label="文本资料导入"
+        >
+          <label className="block text-sm text-normal">
+            导入文本资料
+            <input
+              type="file"
+              accept=".txt,.md"
+              aria-label="导入文本资料"
+              disabled={objectiveBusy}
+              className="mt-base block w-full text-xs text-normal focus-visible:outline focus-visible:outline-brand"
+              onChange={(event) => {
+                const file = event.currentTarget.files?.[0];
+                event.currentTarget.value = '';
+                if (file) void chooseMaterial(file);
+              }}
+            />
+          </label>
+          <p className="mt-base text-xs leading-relaxed text-low">
+            支持 UTF-8 的 TXT、Markdown，每次一个文件，最多 16
+            KiB；加入后总需求不得超过 4000 字符。PDF、Word、Excel 暂不支持。
+            先在本机预览；点击“咨询丞相”时，需求中的资料会随文字发送到后端及已配置的模型服务。请先移除密钥和不应发送的个人资料。
+          </p>
+          {readingMaterial && (
+            <p role="status" className="mt-base text-xs text-low">
+              正在读取资料…
+            </p>
+          )}
+          {materialPreview && (
+            <div className="mt-base space-y-base">
+              <p className="text-sm text-normal">
+                待加入：{materialPreview.name}
+              </p>
+              <pre className="max-h-56 overflow-auto whitespace-pre-wrap break-words border border-brand/15 bg-secondary p-base text-xs text-normal">
+                {materialPreview.text}
+              </pre>
+              <ChaotangButton disabled={objectiveBusy} onClick={applyMaterial}>
+                加入当前需求
+              </ChaotangButton>
+            </div>
+          )}
+          {(readingMaterial || materialPreview) && (
+            <ChaotangButton
+              variant="ghost"
+              className="mt-base"
+              onClick={discardMaterial}
+            >
+              取消资料导入
+            </ChaotangButton>
+          )}
+          {materialNotice && (
+            <p
+              role={materialError ? 'alert' : 'status'}
+              className={`mt-base text-xs ${materialError ? 'text-error' : 'text-low'}`}
+            >
+              {materialNotice}
+            </p>
+          )}
+        </div>
         {cameFromOutcomeCase && (
           <p className="mt-base border-l-2 border-brand/55 bg-brand/5 px-base py-half text-xs leading-relaxed text-low">
             已带入案例提纲，可直接修改。此处仍是商议草稿；只有你确认并正式下旨后才会创建任务。
@@ -466,12 +601,14 @@ function ChancellorStudySession({
           <ChaotangButton
             disabled={
               !objective.trim() ||
+              readingMaterial ||
+              Boolean(materialPreview) ||
               consult.isPending ||
               draft.isPending ||
               submitting
             }
             onClick={() => {
-              if (submissionInFlight.current) return;
+              if (submissionInFlight.current || materialPending.current) return;
               if (
                 consult.isPending ||
                 draft.isPending ||
@@ -497,6 +634,8 @@ function ChancellorStudySession({
             variant="primary"
             disabled={
               !understandingConfirmed ||
+              readingMaterial ||
+              Boolean(materialPreview) ||
               consult.isPending ||
               draft.isPending ||
               submitting

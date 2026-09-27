@@ -357,3 +357,133 @@ test('removing the saved copy keeps the visible objective available to save agai
   assert.equal(h.savedValues.size, 0);
   assert.equal(h.find('textarea').props.value, '可继续编辑的需求');
 });
+
+function textFile(text, name = '资料.md') {
+  const bytes = new TextEncoder().encode(text);
+  return {
+    name,
+    size: bytes.byteLength,
+    arrayBuffer: async () => bytes.buffer,
+  };
+}
+function selectMaterial(h, file) {
+  const input = h.find('input');
+  assert.ok(input, 'material input exists');
+  input.props.onChange({
+    currentTarget: { files: file ? [file] : [], value: 'selected' },
+  });
+}
+const settleMaterial = () => new Promise((resolve) => setImmediate(resolve));
+
+test('material selection previews locally; explicit append preserves goal and requires new understanding', async () => {
+  const h = setup();
+  h.prepare();
+  const staleIssue = h.button('正式下旨').props.onClick;
+  const callsBefore = h.calls.length;
+  selectMaterial(h, textFile('资料原文'));
+  staleIssue();
+  await settleMaterial();
+  assert.equal(h.find('textarea').props.value, '原始目标');
+  assert.equal(textOf(h.find('pre')), '资料原文');
+  assert.equal(h.button('咨询丞相').props.disabled, true);
+  assert.equal(h.calls.length, callsBefore);
+  h.button('加入当前需求').props.onClick();
+  assert.equal(
+    h.find('textarea').props.value,
+    '原始目标\n\n[参考资料："资料.md"]\n资料原文\n[参考资料结束]'
+  );
+  assert.equal(h.button('正式下旨'), undefined);
+  assert.equal(h.savedValues.size, 0);
+  assert.equal(h.calls.length, callsBefore);
+  h.button('咨询丞相').props.onClick();
+  assert.match(h.calls.at(-1)[1][0].content, /资料原文/);
+});
+
+test('a cancelled file read cannot add a late preview or change the objective', async () => {
+  const h = setup();
+  h.goal('保留目标');
+  let finish;
+  selectMaterial(h, {
+    ...textFile('abc'),
+    arrayBuffer: () =>
+      new Promise((resolve) => {
+        finish = resolve;
+      }),
+  });
+  h.button('取消资料导入').props.onClick();
+  finish(new TextEncoder().encode('abc').buffer);
+  await settleMaterial();
+  assert.equal(h.find('pre'), undefined);
+  assert.equal(h.find('textarea').props.value, '保留目标');
+  assert.equal(h.calls.length, 0);
+});
+
+test('the newest file wins when local reads finish out of order', async () => {
+  const h = setup();
+  let finish;
+  selectMaterial(h, {
+    ...textFile('old'),
+    arrayBuffer: () =>
+      new Promise((resolve) => {
+        finish = resolve;
+      }),
+  });
+  selectMaterial(h, textFile('new', 'new.txt'));
+  await settleMaterial();
+  finish(new TextEncoder().encode('old').buffer);
+  await settleMaterial();
+  assert.equal(textOf(h.find('pre')), 'new');
+  h.button('加入当前需求').props.onClick();
+  assert.match(h.find('textarea').props.value, /new.txt/);
+  assert.equal(h.calls.length, 0);
+});
+
+test('editing the goal invalidates a preview and its captured append action', async () => {
+  const h = setup();
+  selectMaterial(h, textFile('private material'));
+  await settleMaterial();
+  const staleApply = h.button('加入当前需求').props.onClick;
+  h.goal('新的目标');
+  staleApply();
+  assert.equal(h.find('textarea').props.value, '新的目标');
+  assert.equal(h.find('pre'), undefined);
+});
+
+test('unsupported and overlong imports leave the goal and saved copy intact', async () => {
+  const h = setup();
+  h.goal('保存目标');
+  h.button('保存需求').props.onClick();
+  const saved = [...h.savedValues];
+  selectMaterial(h, textFile('content', 'report.pdf'));
+  await settleMaterial();
+  assert.match(textOf(h.render()), /仅支持 TXT/);
+  assert.equal(h.find('textarea').props.value, '保存目标');
+  h.goal('字'.repeat(3990));
+  selectMaterial(h, textFile('content'));
+  await settleMaterial();
+  assert.match(textOf(h.render()), /未截断/);
+  assert.equal(h.find('textarea').props.value.length, 3990);
+  assert.equal(h.find('pre'), undefined);
+  assert.deepEqual([...h.savedValues], saved);
+  assert.equal(h.calls.length, 0);
+});
+
+test('account changes hide pending material and do not transmit it', async () => {
+  const h = setup();
+  let finish;
+  selectMaterial(h, {
+    ...textFile('abc'),
+    arrayBuffer: () =>
+      new Promise((resolve) => {
+        finish = resolve;
+      }),
+  });
+  h.provider.user = { id: 'owner-b', username: 'B' };
+  h.provider.authGeneration++;
+  h.reopen();
+  finish(new TextEncoder().encode('abc').buffer);
+  await settleMaterial();
+  assert.equal(h.find('pre'), undefined);
+  assert.equal(h.find('textarea').props.value, '');
+  assert.equal(h.calls.length, 0);
+});

@@ -2,6 +2,7 @@
   "use strict";
 
   let responseTimer = null;
+  let draftTimer = null;
   const records = {};
   let activePage = "A01";
   let pendingPage = null;
@@ -200,6 +201,12 @@
     if (event.data && event.data.type === "chaotang:status") {
       const nextAccount = event.data.authenticated ? event.data.username : null;
       if (nextAccount !== accountName) {
+        clearTimeout(draftTimer);
+        draftTimer = null;
+        const input = document.getElementById("promptInput");
+        const send = document.getElementById("sendButton");
+        if (input) input.value = "";
+        if (send) send.disabled = true;
         Object.keys(records).forEach((key) => delete records[key]);
         document.getElementById("chaotangLiveReply")?.remove();
         accountName = nextAccount;
@@ -225,6 +232,9 @@
       if (avatar && event.data.authenticated) {
         avatar.textContent = (event.data.username || "君").slice(0, 1);
         avatar.title = "已登录 · " + event.data.username;
+      } else if (avatar) {
+        avatar.textContent = "君";
+        avatar.title = "未登录";
       }
       const truth = document.querySelector(".capability-truth");
       if (truth)
@@ -254,6 +264,9 @@
         );
         document.getElementById("promptInput").value =
           sessions[selected[activePage]]?.draft || "";
+        const send = document.getElementById("sendButton");
+        if (send)
+          send.disabled = !document.getElementById("promptInput").value.trim();
         if (records[selected[activePage]]?.length) renderHistory();
       } catch {
         showLiveMessage(
@@ -487,12 +500,14 @@
       },
       true,
     );
-    let draftTimer;
     input.addEventListener("input", () => {
       if (!ready) return;
       sessions[key()].draft = input.value;
       clearTimeout(draftTimer);
-      draftTimer = setTimeout(() => save(), 400);
+      draftTimer = setTimeout(() => {
+        draftTimer = null;
+        save();
+      }, 400);
     });
   }
 })();

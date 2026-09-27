@@ -38,11 +38,12 @@ export const PRIMARY_MODULES: PrimaryModuleDefinition[] = [
   },
   {
     id: 'forecast',
-    label: '预测',
+    label: '钦天监',
     route: '/forecast',
     icon: ChartLineUpIcon,
-    status: 'planned',
-    description: '承载钦天监预测、触发器、证据和人工复核。',
+    status: 'partial',
+    description:
+      '基于你提供的资料研判影响、推演情景并设置复核信号；实时趋势须先核验来源。',
   },
   {
     id: 'projects',

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createAcceptanceChaotangClient } from './acceptanceChaotangClient.ts';
+import { createAcceptanceChaotangClient } from './acceptanceChaotangClient.test-support.mjs';
 test('real HTTP adapter maps job metadata but preserves report keys and sends authority header', async () => {
   const requests = [];
   let token = null;

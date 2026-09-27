@@ -89,6 +89,8 @@ export function JunjichuCasesWorkspace() {
             <h2 className="chaotang-title text-xl text-high">军机处案卷</h2>
             <ChaotangButton
               className="ml-auto"
+              aria-label="刷新军机处案卷"
+              title="刷新案卷列表"
               disabled={cases.isFetching}
               onClick={() => void cases.refetch()}
             >

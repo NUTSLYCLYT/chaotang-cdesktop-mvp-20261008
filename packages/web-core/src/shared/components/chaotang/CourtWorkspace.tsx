@@ -1,6 +1,7 @@
 import { FilesIcon, UsersThreeIcon, BookOpenIcon } from '@phosphor-icons/react';
 import { useEffect, useRef, useState } from 'react';
 import { TaskDesktopResources } from './TaskDesktopResources';
+import { TaskInspector } from './TaskInspector';
 import {
   confirmStudyIntent,
   isStudyIntentCurrent,
@@ -372,7 +373,7 @@ function CourtSession({
                   value={job.data.approvedDraft?.draft}
                   historical
                 />
-                <p>模型请求：{job.data.providerRequestCount}</p>
+                <TaskInspector job={job.data} workspace={workspace.data} />
                 <TaskDesktopResources
                   jobId={jobId}
                   connected={connected}

@@ -64,9 +64,11 @@ test('logout completes before a subsequent login changes credentials', async () 
 import { usesTechnicalShell } from './chaotangFusion.ts';
 import * as fusion from './chaotangFusion.ts';
 import { CHAOTANG_MODULE_SHELLS } from './chaotangShell.ts';
+import { PRIMARY_MODULES } from './primaryModules.ts';
 test('technical routes reach the real workspace instead of scene iframe', () => {
   for (const path of [
     '/court-workspace',
+    '/forecast',
     '/workspaces',
     '/workspaces/abc',
     '/routines/new',
@@ -76,6 +78,14 @@ test('technical routes reach the real workspace instead of scene iframe', () => 
     assert.equal(usesTechnicalShell(path), true, path);
   for (const path of ['/court', '/today', '/workspaces-fake'])
     assert.equal(usesTechnicalShell(path), false, path);
+});
+
+test('Qintian entry names its current value and evidence limitation', () => {
+  const module = PRIMARY_MODULES.find((item) => item.id === 'forecast');
+  assert.equal(module?.label, '钦天监');
+  assert.equal(module?.status, 'partial');
+  assert.match(module?.description ?? '', /基于你提供的资料/);
+  assert.match(module?.description ?? '', /实时趋势须先核验来源/);
 });
 
 test('authenticated Outcome and Hanlin sections are marked live', () => {

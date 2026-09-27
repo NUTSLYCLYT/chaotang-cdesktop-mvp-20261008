@@ -8,20 +8,28 @@ import { pathToFileURL } from 'node:url';
 
 test('real backend workspace publication contract controls rendered download button', async () => {
   const root = resolve(import.meta.dirname, '../../../../../..');
+  const pythonCommand = process.env.CHAOTANG_TEST_PYTHON || 'python';
+  const pythonPrefixArgs = process.env.CHAOTANG_TEST_PYTHON_ARGS
+    ? JSON.parse(process.env.CHAOTANG_TEST_PYTHON_ARGS)
+    : [];
+  if (
+    !Array.isArray(pythonPrefixArgs) ||
+    pythonPrefixArgs.some((value) => typeof value !== 'string')
+  ) {
+    throw new Error('CHAOTANG_TEST_PYTHON_ARGS must be a JSON string array');
+  }
+  const pythonPath =
+    process.env.CHAOTANG_TEST_PYTHONPATH || resolve(root, 'platform/backend');
   const script = `import json\nfrom types import SimpleNamespace as N\nfrom unittest.mock import patch\nfrom app.fusion.workspace import workspace_snapshot\nfrom app.decree_jobs.models import DecreeJobState\njob=N(job_id='contract-job',owner_user_id='owner',reply_id='contract-job',state=DecreeJobState.SUCCEEDED,result_json=json.dumps({'fusion_artifact_ids':['artifact']}),decree_text='合成资料')\nartifact=N(job_id=job.job_id,reply_id=job.reply_id,artifact_id='artifact',file_name='report.md',kind='md',sha256='a'*64,version=1)\nwith patch('app.api.fusion_artifacts.get_fusion_artifact_store',return_value=N(download=lambda *args:(artifact,None))):\n print(json.dumps(workspace_snapshot(job)))`;
   const payload = JSON.parse(
-    execFileSync(
-      'D:/workspace/chaotang-ai-os-gitee/platform/backend/.venv/Scripts/python.exe',
-      ['-c', script],
-      {
-        encoding: 'utf8',
-        env: {
-          ...process.env,
-          PYTHONPATH: resolve(root, 'platform/backend'),
-          CHAOTANG_FUSION_WORKSPACE_DB: '',
-        },
-      }
-    )
+    execFileSync(pythonCommand, [...pythonPrefixArgs, '-c', script], {
+      encoding: 'utf8',
+      env: {
+        ...process.env,
+        PYTHONPATH: pythonPath,
+        CHAOTANG_FUSION_WORKSPACE_DB: '',
+      },
+    })
   );
   const entry = `import React from 'react'; import {renderToStaticMarkup} from 'react-dom/server'; import {WorkspaceCards, CourtWorkspace} from '${resolve(root, 'desktop/packages/web-core/src/shared/components/chaotang/CourtWorkspace.tsx').replaceAll('\\', '/')}'; export const render=(workspace, extra={})=>renderToStaticMarkup(React.createElement(WorkspaceCards,{workspace,result:null,objective:'',hasSelectedJob:true,...extra})); export const renderCourt=()=>renderToStaticMarkup(React.createElement(CourtWorkspace,{selectedJobId:'contract-job',onSelectJob:()=>{}}));`;
   const out = resolve(import.meta.dirname, '.workspace-contract-render.mjs');

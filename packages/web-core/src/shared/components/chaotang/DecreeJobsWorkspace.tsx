@@ -21,6 +21,8 @@ import {
   ChaotangPanel,
 } from '@/shared/components/chaotang/ChaotangPrimitives';
 import { cn } from '@/shared/lib/utils';
+import { useNavigate } from '@tanstack/react-router';
+import { getTaskRecordDestination } from './outcomeCaseHandoff';
 
 const STATE_META: Record<DecreeJobState, { label: string; className: string }> =
   {
@@ -32,6 +34,7 @@ const STATE_META: Record<DecreeJobState, { label: string; className: string }> =
   };
 
 export function DecreeJobsWorkspace() {
+  const navigate = useNavigate();
   const { user, health } = useChaotangProvider();
   const jobs = useDecreeJobs();
   const cancel = useCancelDecreeJob();
@@ -220,6 +223,9 @@ export function DecreeJobsWorkspace() {
               cancelling={cancel.isPending}
               cancelError={cancel.error?.message}
               onCancel={() => cancel.mutate(selected.jobId)}
+              onOpenRecord={() =>
+                void navigate(getTaskRecordDestination(selected.jobId))
+              }
             />
           )}
         </ChaotangPanel>
@@ -233,11 +239,13 @@ function JobDetail({
   cancelling,
   cancelError,
   onCancel,
+  onOpenRecord,
 }: {
   job: DecreeJob;
   cancelling: boolean;
   cancelError?: string;
   onCancel: () => void;
+  onOpenRecord: () => void;
 }) {
   const meta = STATE_META[job.state];
   const canRequestCancel =
@@ -307,6 +315,15 @@ function JobDetail({
           </pre>
         </section>
       )}
+
+      <div className="mt-double border-t border-brand/15 pt-double">
+        <p className="text-xs leading-relaxed text-low">
+          需要查看批准范围、部门事件、来源与已登记文件时，可打开完整案卷。
+        </p>
+        <ChaotangButton className="mt-base" onClick={onOpenRecord}>
+          查看完整任务案卷
+        </ChaotangButton>
+      </div>
 
       <div className="mt-double border-t border-brand/15 pt-double">
         <p className="text-xs leading-relaxed text-low">

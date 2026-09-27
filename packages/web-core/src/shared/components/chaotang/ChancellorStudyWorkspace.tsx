@@ -17,6 +17,7 @@ import {
 } from '@/shared/hooks/chaotang/useChancellor';
 import { useChaotangProvider } from '@/shared/providers/ChaotangProvider';
 import { ChaotangButton, ChaotangPanel } from './ChaotangPrimitives';
+import { consumePendingOutcomeIntent } from './outcomeCaseHandoff';
 
 export function ChancellorStudyWorkspace() {
   const { user } = useChaotangProvider();
@@ -26,6 +27,7 @@ export function ChancellorStudyWorkspace() {
 function ChancellorStudySession() {
   const { user, health } = useChaotangProvider();
   const [objective, setObjective] = useState('');
+  const [cameFromOutcomeCase, setCameFromOutcomeCase] = useState(false);
   const [draftVersion, setDraftVersion] = useState(1);
   const [jobId, setJobId] = useState<string>();
   const [understandingConfirmed, setUnderstandingConfirmed] = useState(false);
@@ -37,6 +39,11 @@ function ChancellorStudySession() {
 
   useEffect(() => {
     if (!user) return;
+    const pendingIntent = consumePendingOutcomeIntent(sessionStorage);
+    if (pendingIntent) {
+      setObjective(pendingIntent);
+      setCameFromOutcomeCase(true);
+    }
     const storedJobId = sessionStorage.getItem(activeJobKey(user.id));
     if (storedJobId) setJobId(storedJobId);
   }, [user]);
@@ -138,6 +145,7 @@ function ChancellorStudySession() {
           value={objective}
           onChange={(event) => {
             setObjective(event.target.value);
+            setCameFromOutcomeCase(false);
             setUnderstandingConfirmed(false);
             consult.reset();
             draft.reset();
@@ -146,6 +154,11 @@ function ChancellorStudySession() {
           placeholder="说明目标、范围、已有材料、限制条件和期望成果…"
           className="mt-double w-full resize-y border border-brand/20 bg-primary/60 p-base text-sm leading-7 text-normal outline-none placeholder:text-low/60 focus:border-brand/45"
         />
+        {cameFromOutcomeCase && (
+          <p className="mt-base border-l-2 border-brand/55 bg-brand/5 px-base py-half text-xs leading-relaxed text-low">
+            已带入案例提纲，可直接修改。此处仍是商议草稿；只有你确认并正式下旨后才会创建任务。
+          </p>
+        )}
         <div className="mt-base flex flex-wrap gap-base">
           <ChaotangButton
             disabled={!objective.trim() || consult.isPending || draft.isPending}

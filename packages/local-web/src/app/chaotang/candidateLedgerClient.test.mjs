@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { resolve } from 'node:path';
 import { build } from '../../../../../node_modules/.pnpm/esbuild@0.27.2/node_modules/esbuild/lib/main.js';
-import { createAcceptanceChaotangClient } from './acceptanceChaotangClient.ts';
+import { createAcceptanceChaotangClient } from './acceptanceChaotangClient.test-support.mjs';
 
 const compiled = await build({
   entryPoints: [resolve(import.meta.dirname, 'tauriChaotangClient.ts')],

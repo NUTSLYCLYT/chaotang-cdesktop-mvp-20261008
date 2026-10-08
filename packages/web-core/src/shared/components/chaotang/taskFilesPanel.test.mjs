@@ -174,3 +174,62 @@ test('only published artifacts are offered for explicit import and receipts stay
     'artifact.txt'
   );
 });
+
+const htmlReceipt = (overrides = {}) => ({
+  jobId: 'job',
+  workspaceId: 'workspace',
+  entry: entry('reports/result.html'),
+  kind: 'text',
+  sha256: 'a'.repeat(64),
+  encoding: 'utf-8',
+  truncated: false,
+  text: '<h1>项目决策报告</h1><script>fetch("https://outside.example")</script>',
+  ...overrides,
+});
+
+test('selecting a complete HTML file offers an inline page without entering its path again', () => {
+  const html = render({
+    ...common,
+    previewAvailable: true,
+    preview: htmlReceipt(),
+  });
+  assert.match(html, /页面效果（只读）/);
+  assert.match(html, /任务静态预览：reports\/result.html/);
+  assert.match(html, /sandbox=""/);
+  assert.match(html, /Content-Security-Policy/);
+  assert.match(html, /查看文件原文/);
+  assert.doesNotMatch(html, /allow-scripts|allow-same-origin/);
+  assert.match(html, /&lt;script&gt;/);
+});
+
+test('inline rendering respects capability, completeness and file type', () => {
+  for (const props of [
+    { previewAvailable: false, preview: htmlReceipt() },
+    { previewAvailable: true, preview: htmlReceipt({ truncated: true }) },
+    {
+      previewAvailable: true,
+      preview: htmlReceipt({ entry: entry('report.txt') }),
+    },
+  ]) {
+    const html = render({ ...common, ...props });
+    assert.doesNotMatch(html, /<iframe/);
+    assert.match(html, /&lt;h1&gt;/);
+  }
+});
+
+test('disconnected task files cannot start a directory or file request', () => {
+  const html = render({
+    ...common,
+    connected: false,
+    path: 'reports',
+    entries: [entry('reports/result.html'), entry('reports/sub', 'directory')],
+  });
+  const buttons = [...html.matchAll(/<button\b[^>]*>[\s\S]*?<\/button>/g)].map(
+    (match) => match[0]
+  );
+  for (const label of ['返回上一级', 'result.html', 'sub']) {
+    const button = buttons.find((value) => value.includes(label));
+    assert.ok(button, label);
+    assert.match(button, /disabled=""/);
+  }
+});

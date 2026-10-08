@@ -315,20 +315,25 @@ export function SharedAppLayout() {
       <div
         className={cn(
           'chaotang-shell bg-primary text-normal',
-          isMobile
-            ? 'flex fixed inset-0 pb-[env(safe-area-inset-bottom)]'
-            : cn(
-                'grid h-screen',
-                'grid-cols-[72px_1fr]',
-                // Top navbar is hidden (sidebar carries its actions); when
-                // visible, banner gets an auto row above the 1fr content row.
-                showCloudShutdownBanner ? 'grid-rows-[auto_1fr]' : 'grid-rows-1'
-              )
+          !technicalShell
+            ? 'fixed inset-0'
+            : isMobile
+              ? 'flex fixed inset-0 pb-[env(safe-area-inset-bottom)]'
+              : cn(
+                  'grid h-screen',
+                  'grid-cols-[72px_1fr]',
+                  // Top navbar is hidden (sidebar carries its actions); when
+                  // visible, banner gets an auto row above the 1fr content row.
+                  showCloudShutdownBanner
+                    ? 'grid-rows-[auto_1fr]'
+                    : 'grid-rows-1'
+                )
         )}
       >
-        {!isMobile && (
+        {/* Keep the court host mounted when the viewport crosses a breakpoint. */}
+        {!technicalShell && <ChaotangFinalUiHost />}
+        {!isMobile && technicalShell && (
           <>
-            {!technicalShell && <ChaotangFinalUiHost />}
             {technicalShell && (
               <>
                 <div className={showCloudShutdownBanner ? 'row-span-2' : ''}>
@@ -434,7 +439,7 @@ export function SharedAppLayout() {
           </>
         )}
 
-        {isMobile && (
+        {isMobile && technicalShell && (
           <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
             {showCloudShutdownBanner && (
               <CloudShutdownExportBanner onClick={handleExportClick} />
@@ -452,7 +457,7 @@ export function SharedAppLayout() {
 
         {/* Mobile project navigation drawer */}
         <MobileDrawer
-          open={isDrawerOpen && isMobile}
+          open={isDrawerOpen && isMobile && technicalShell}
           onClose={() => setIsDrawerOpen(false)}
         >
           <div className="flex flex-col h-full">

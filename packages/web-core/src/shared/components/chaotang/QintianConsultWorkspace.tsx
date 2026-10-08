@@ -97,7 +97,7 @@ export function QintianConsultWorkspace() {
             </p>
           </div>
           <span className="border border-success/30 bg-success/10 px-base py-half text-[9px] tracking-[0.14em] text-success">
-            LIVE · 非持久化
+            当前会话 · 不保存
           </span>
         </div>
 

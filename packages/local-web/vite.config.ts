@@ -77,17 +77,20 @@ export default schemas;
   };
 }
 
-const acceptanceTarget =
-  process.env.VITE_FUSION_ACCEPTANCE === '1'
-    ? process.env.FUSION_ACCEPTANCE_BACKEND
-    : undefined;
-if (process.env.VITE_FUSION_ACCEPTANCE === '1') {
+const localTrialEnabled = process.env.VITE_CHAOTANG_LOCAL_TRIAL === '1';
+const httpBridgeEnabled =
+  localTrialEnabled || process.env.VITE_FUSION_ACCEPTANCE === '1';
+const acceptanceTarget = httpBridgeEnabled
+  ? process.env.FUSION_ACCEPTANCE_BACKEND
+  : undefined;
+if (httpBridgeEnabled) {
   if (!acceptanceTarget)
     throw new Error('FUSION_ACCEPTANCE_BACKEND is required');
   const target = new URL(acceptanceTarget);
   if (
     target.protocol !== 'http:' ||
     target.hostname !== '127.0.0.1' ||
+    !target.port ||
     target.username ||
     target.password ||
     target.pathname !== '/' ||

@@ -23,8 +23,16 @@ type LearningSection =
 
 export function LearningOverviewWorkspace({
   onNavigate,
+  scrollPresentation = false,
 }: {
   onNavigate: (section: LearningSection) => void;
+  /**
+   * Inside the court scroll the original 御屏 owns the frame, so the overview
+   * drops its big hero and giant cards, leading with the existing "today's
+   * learning verdict" and compact real-number entries instead. The default
+   * (false) keeps the original standalone overview untouched.
+   */
+  scrollPresentation?: boolean;
 }) {
   const { user, health } = useChaotangProvider();
   const statistics = useShiguanStatistics();
@@ -46,7 +54,13 @@ export function LearningOverviewWorkspace({
 
   if (statistics.isPending || skills.isPending || connectors.isPending) {
     return (
-      <div className="h-[560px] animate-pulse border border-brand/15 bg-panel/60" />
+      <div
+        className={
+          scrollPresentation
+            ? 'h-40 animate-pulse border border-brand/15 bg-panel/60'
+            : 'h-[560px] animate-pulse border border-brand/15 bg-panel/60'
+        }
+      />
     );
   }
 
@@ -102,6 +116,103 @@ export function LearningOverviewWorkspace({
       section: 'hanlin' as const,
     },
   ];
+  const verdict =
+    statistics.data.pendingReview > 0
+      ? `当前有 ${statistics.data.pendingReview} 份档案等待人工复盘。先确认实际结果与所得经验，再进入能力评测。`
+      : statistics.data.total > 0
+        ? '当前没有待复盘档案。可从相似旧案召回中检索既有经验，避免重复试错。'
+        : '当前账户尚无正式档案。完成真实事项并形成回奏后，学习闭环才会开始。';
+
+  if (scrollPresentation) {
+    // One honest scroll: the existing "today's learning verdict" leads as the
+    // main content and the primary next step, the real numbers stay visible as
+    // a compact row, and every section is still one compact entry away.
+    return (
+      <div className="court-scroll-learning" data-learning-presentation="court">
+        <section
+          className="court-scroll-verdict"
+          aria-labelledby="courtScrollVerdict"
+        >
+          <p className="court-scroll-eyebrow">TODAY'S LEARNING VERDICT</p>
+          <h2
+            id="courtScrollVerdict"
+            className="chaotang-title text-lg text-high"
+          >
+            今日学习判断
+          </h2>
+          <p className="court-scroll-verdict-body">{verdict}</p>
+          <div className="court-scroll-actions">
+            <button type="button" onClick={() => onNavigate('archive-review')}>
+              进入复盘
+            </button>
+            <button type="button" onClick={() => onNavigate('recall')}>
+              召回旧案
+            </button>
+          </div>
+        </section>
+
+        <dl className="court-scroll-stats" aria-label="真实数据快照">
+          <div>
+            <dt>史馆档案</dt>
+            <dd>{statistics.data.total}</dd>
+          </div>
+          <div>
+            <dt>待复盘</dt>
+            <dd>{statistics.data.pendingReview}</dd>
+          </div>
+          <div>
+            <dt>Skills</dt>
+            <dd>{skills.data.total}</dd>
+          </div>
+          <div>
+            <dt>受控来源</dt>
+            <dd>{connectors.data.total}</dd>
+          </div>
+        </dl>
+
+        <div className="court-scroll-links" aria-label="学习栏目入口">
+          {learningPath.map(({ icon: Icon, ...item }, index) => (
+            <button
+              key={item.title}
+              type="button"
+              onClick={() => onNavigate(item.section)}
+              className="court-scroll-link"
+            >
+              <span className="court-scroll-link-index">
+                {String(index + 1).padStart(2, '0')}
+              </span>
+              <Icon className="court-scroll-link-icon" weight="duotone" />
+              <span className="court-scroll-link-copy">
+                <b>{item.title}</b>
+                <small>
+                  {item.status} · {item.description}
+                </small>
+              </span>
+              <span className="court-scroll-link-value">
+                {item.value}
+                <small>{item.unit}</small>
+              </span>
+              <ArrowRightIcon className="court-scroll-link-arrow" />
+            </button>
+          ))}
+        </div>
+
+        <section className="court-scroll-bounds">
+          <h2 className="chaotang-title text-base text-high">真实性边界</h2>
+          <ul>
+            <li>归档不等于 Outcome 已达成。</li>
+            <li>用户确认不等于能力已经提升。</li>
+            <li>没有权威 Outcome 时，翰林必须显示 NO_DATA。</li>
+            <li>连接器存在不代表知识来源已经同步。</li>
+            <li>评测只能给建议，不能自动晋级或发布。</li>
+          </ul>
+          <button type="button" onClick={() => onNavigate('knowledge-sources')}>
+            查看知识来源治理 <ArrowRightIcon className="size-4" />
+          </button>
+        </section>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-double">
@@ -200,11 +311,7 @@ export function LearningOverviewWorkspace({
               今日学习判断
             </h2>
             <p className="mt-double text-sm leading-7 text-[#514735]">
-              {statistics.data.pendingReview > 0
-                ? `当前有 ${statistics.data.pendingReview} 份档案等待人工复盘。先确认实际结果与所得经验，再进入能力评测。`
-                : statistics.data.total > 0
-                  ? '当前没有待复盘档案。可从相似旧案召回中检索既有经验，避免重复试错。'
-                  : '当前账户尚无正式档案。完成真实事项并形成回奏后，学习闭环才会开始。'}
+              {verdict}
             </p>
             <div className="mt-double flex flex-wrap gap-half">
               <button

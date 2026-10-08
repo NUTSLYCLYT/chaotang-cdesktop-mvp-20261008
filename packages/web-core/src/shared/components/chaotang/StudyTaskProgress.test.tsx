@@ -82,6 +82,25 @@ describe('study task feedback uses only confirmed task state', () => {
     expect(html).toContain('请求取消');
   });
 
+  it('shows accepted cancellation as pending rather than ordinary execution', () => {
+    const html = render({ job: { ...running, cancelRequested: true } });
+    expect(html).toContain('正在取消');
+    expect(html).not.toContain('>执行中<');
+    expect(html).not.toContain('已取消</');
+  });
+
+  it('explains uncertain external cleanup without suggesting another attempt', () => {
+    const html = render({ job: {
+      ...running, state: 'FAILED', cancelRequested: true,
+      error: { code: 'external_execution_uncertain', stage: 'execution', category: 'provider' },
+    } });
+    expect(html).toContain('外部执行待核对');
+    expect(html).toContain('预留额度');
+    expect(html).toContain('请勿重复发起');
+    expect(html).not.toContain('已取消</');
+    expect(html).not.toContain('修复后重试');
+  });
+
   it.each(['SUCCEEDED', 'FAILED', 'CANCELLED'] as const)(
     'does not offer cancel for a confirmed terminal task: %s',
     (state) => {

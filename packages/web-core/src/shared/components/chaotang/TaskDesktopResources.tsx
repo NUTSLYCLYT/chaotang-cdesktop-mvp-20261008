@@ -72,13 +72,23 @@ export function TaskDesktopResources({
             connected={connected}
           />
           <TaskTerminalPanel resources={resources.data} connected={connected} />
-          <TaskPreviewPanel resources={resources.data} connected={connected} />
           <TaskSessionHistoryPanel
             resources={resources.data}
             connected={connected}
           />
           <TaskDiffPanel resources={resources.data} connected={connected} />
           <TaskFilesPanel resources={resources.data} connected={connected} />
+          <details className="rounded border border-brand/15 p-base">
+            <summary className="cursor-pointer text-low focus-visible:ring-1 focus-visible:ring-brand">
+              按路径预览网页文件（高级）
+            </summary>
+            <div className="mt-base">
+              <TaskPreviewPanel
+                resources={resources.data}
+                connected={connected}
+              />
+            </div>
+          </details>
         </>
       )}
     </div>

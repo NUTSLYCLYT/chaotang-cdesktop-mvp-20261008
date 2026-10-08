@@ -528,7 +528,7 @@ function CelestialBanner({
       <div className="relative flex flex-wrap items-end justify-between gap-double">
         <div>
           <p className="text-[9px] tracking-[0.24em] text-brand/60">
-            CELESTIAL CONDITION MAP · LIVE
+            CELESTIAL CONDITION MAP
           </p>
           <h2 className="chaotang-title mt-half text-2xl text-high">{title}</h2>
           <p className="mt-base max-w-2xl text-xs leading-relaxed text-low">

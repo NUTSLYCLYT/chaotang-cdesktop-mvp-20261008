@@ -8,19 +8,18 @@ import {
 import { SettingsDialog } from '@/shared/dialogs/settings/SettingsDialog';
 import { useProviders } from '@/shared/hooks/useProviders';
 import { ChaotangPanel } from '@/shared/components/chaotang/ChaotangPrimitives';
+import { FusionCapabilitiesPanel } from './FusionCapabilitiesPanel';
 
 const SUPPORTED_PROVIDERS = [
   {
     presetId: 'openai',
     name: 'OpenAI · GPT',
-    description: '官方 Responses API，供 Codex 与 OpenCode 会话调用。',
-    models: ['gpt-5.6-sol', 'gpt-5.6-terra', 'gpt-5.6-luna'],
+    description: '开发会话使用的模型服务预设，实际支持情况以服务返回为准。',
   },
   {
     presetId: 'deepseek',
     name: 'DeepSeek',
-    description: '兼容 Responses、Chat Completions 与 Anthropic 协议。',
-    models: ['deepseek-v4-pro', 'deepseek-v4-flash'],
+    description: '开发会话使用的 DeepSeek 预设，实际协议和模型以服务返回为准。',
   },
 ] as const;
 
@@ -29,6 +28,7 @@ export function ModelProvidersWorkspace() {
 
   return (
     <div className="space-y-double">
+      <FusionCapabilitiesPanel />
       <ChaotangPanel className="relative overflow-hidden p-double">
         <div className="pointer-events-none absolute right-0 top-0 size-72 bg-[radial-gradient(circle,rgba(194,155,76,0.18),transparent_68%)]" />
         <div className="relative flex flex-wrap items-start justify-between gap-double">
@@ -41,11 +41,11 @@ export function ModelProvidersWorkspace() {
                 MODEL PROVIDERS
               </p>
               <h1 className="chaotang-title mt-half text-2xl text-high">
-                模型服务
+                开发会话的模型配置
               </h1>
               <p className="mt-base max-w-2xl text-sm leading-relaxed text-low">
-                统一配置 GPT 与 DeepSeek。选择官方预设、填写自己的 API
-                密钥并校验模型列表后，即可在新会话中直接选择模型。
+                管理开发会话使用的模型。朝堂大臣团队的办理配置见上方状态，
+                此处保存密钥不会自动启用大臣执行任务。
               </p>
             </div>
           </div>
@@ -64,7 +64,7 @@ export function ModelProvidersWorkspace() {
         <div className="h-48 animate-pulse border border-brand/15 bg-panel/60" />
       ) : providers.isError ? (
         <ChaotangPanel className="p-double text-center text-error">
-          <p>模型服务读取失败：{providers.error.message}</p>
+          <p>开发会话的模型配置暂时无法读取，请检查对应服务后重试。</p>
           <button
             type="button"
             onClick={() => providers.refetch()}
@@ -98,7 +98,7 @@ export function ModelProvidersWorkspace() {
                         : 'border border-brand/25 bg-brand/5 px-base py-half text-[9px] text-brand'
                     }
                   >
-                    {ready ? '已配置' : '待填写密钥'}
+                    {ready ? '已配置' : '待配置'}
                   </span>
                 </div>
                 <p className="mt-base text-xs leading-relaxed text-low">
@@ -112,12 +112,9 @@ export function ModelProvidersWorkspace() {
                   <div className="flex items-start gap-base text-xs text-normal">
                     <CheckCircleIcon className="mt-px size-4 shrink-0 text-brand" />
                     <span>
-                      已启用模型：
                       {record?.enabledModels.length
-                        ? record.enabledModels
-                            .map((model) => model.id)
-                            .join('、')
-                        : definition.models.join('、')}
+                        ? `配置中的模型：${record.enabledModels.map((model) => model.id).join('、')}`
+                        : '尚未配置模型列表'}
                     </span>
                   </div>
                 </div>
@@ -141,7 +138,7 @@ export function ModelProvidersWorkspace() {
         <ul className="mt-base space-y-half text-xs leading-relaxed text-low">
           <li>“已保存”仅表示本机已有配置，不等于密钥一定有效。</li>
           <li>
-            请在服务商设置中点击“从端点获取”，成功返回模型列表后再视为验证通过。
+            获取模型列表只证明目录可以读取；实际调用和任务交付还需要分别验证。
           </li>
           <li>模型调用仍受所选 Agent、模型权限、账户余额与供应商限流约束。</li>
         </ul>

@@ -25,11 +25,14 @@ export function MobileDrawer({ open, onClose, children }: MobileDrawerProps) {
       />
       {/* Drawer panel */}
       <div
+        aria-hidden={!open}
         className={cn(
           'fixed left-0 top-0 h-full w-[280px] bg-primary z-[101]',
           'pb-[env(safe-area-inset-bottom)]',
           'transition-transform duration-200 ease-out',
-          open ? 'translate-x-0' : '-translate-x-full pointer-events-none'
+          open
+            ? 'translate-x-0'
+            : '-translate-x-full pointer-events-none invisible'
         )}
       >
         {children}

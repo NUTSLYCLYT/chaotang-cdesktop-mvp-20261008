@@ -1,5 +1,10 @@
 (function () {
   "use strict";
+  let pendingIntentText = "";
+
+  // Set only while a parent-driven route sync programmatically clicks a real
+  // navigation button, so the sync does not echo a route back to the parent.
+  let suppressNavigationDispatch = false;
 
   const pageRoutes = {
     A01: "/today",
@@ -18,16 +23,22 @@
     dragSurface.addEventListener("mousedown", function (event) {
       if (event.button !== 0) return;
       event.preventDefault();
-      window.parent.postMessage(
+      (window.CHAOTANG_PARENT || window.parent).postMessage(
         { type: "chaotang:window-drag", doubleClick: event.detail >= 2 },
-        window.location.origin
+        window.location.origin,
       );
     });
   }
 
   function selectPage(page) {
-    const button = document.querySelector('[data-page="' + page + '"]');
-    if (button) button.click();
+    const button = document.querySelector('button[data-page="' + page + '"]');
+    if (!button) return;
+    suppressNavigationDispatch = true;
+    try {
+      button.click();
+    } finally {
+      suppressNavigationDispatch = false;
+    }
   }
 
   function showLiveMessage(title, body, tone) {
@@ -36,9 +47,12 @@
       panel = document.createElement("section");
       panel.id = "chaotangLiveReply";
       panel.className = "live-reply";
-      panel.innerHTML = '<div class="live-reply-head"><span></span><button type="button" aria-label="关闭真实回复">×</button></div><div class="live-reply-body"></div>';
+      panel.innerHTML =
+        '<div class="live-reply-head"><span></span><button type="button" aria-label="关闭真实回复">×</button></div><div class="live-reply-body"></div>';
       document.getElementById("app").appendChild(panel);
-      panel.querySelector("button").addEventListener("click", function () { panel.hidden = true; });
+      panel.querySelector("button").addEventListener("click", function () {
+        panel.hidden = true;
+      });
     }
     panel.hidden = false;
     panel.dataset.tone = tone || "normal";
@@ -54,7 +68,9 @@
     if (event.data && event.data.type === "chaotang:status") {
       const badge = document.querySelector(".truth-badge");
       if (badge) {
-        badge.textContent = event.data.connected ? "LIVE · 客户端已连接" : "OFFLINE · 服务未连接";
+        badge.textContent = event.data.connected
+          ? "LIVE · 客户端已连接"
+          : "OFFLINE · 服务未连接";
         badge.classList.toggle("is-live", Boolean(event.data.connected));
       }
       const avatar = document.querySelector(".avatar");
@@ -63,53 +79,85 @@
         avatar.title = "已登录 · " + event.data.username;
       }
       const truth = document.querySelector(".capability-truth");
-      if (truth) truth.textContent = event.data.connected ? "已连接朝堂客户端服务 · 外部动作仍需授权" : "服务未连接 · 不会触发外部动作";
+      if (truth)
+        truth.textContent = event.data.connected
+          ? "已连接朝堂客户端服务 · 外部动作仍需授权"
+          : "服务未连接 · 不会触发外部动作";
     }
     if (event.data && event.data.type === "chaotang:consulting") {
-      showLiveMessage("丞相正在研判", "正在调用已配置的模型服务，请稍候……", "loading");
+      showLiveMessage(
+        "丞相正在研判",
+        "正在调用已配置的模型服务，请稍候……",
+        "loading",
+      );
     }
     if (event.data && event.data.type === "chaotang:reply") {
-      showLiveMessage((event.data.consultant || "丞相") + " · 真实回复", event.data.reply || "未返回内容", "success");
+      showLiveMessage(
+        (event.data.consultant || "丞相") + " · 真实回复",
+        event.data.reply || "未返回内容",
+        "success",
+      );
     }
     if (event.data && event.data.type === "chaotang:error") {
-      showLiveMessage("调用未完成", event.data.message || "请检查模型服务配置。", "error");
+      showLiveMessage(
+        "调用未完成",
+        event.data.message || "请检查模型服务配置。",
+        "error",
+      );
     }
   });
 
-  document.addEventListener("click", function (event) {
-    const pageButton = event.target.closest("[data-page]");
-    const page = pageButton && pageButton.dataset.page;
-    if (page && pageRoutes[page]) {
-      window.parent.postMessage(
-        { type: "chaotang:navigate", route: pageRoutes[page] },
-        window.location.origin
-      );
-    }
-    const actionButton = event.target.closest("[data-open]");
-    const action = actionButton && actionButton.dataset.open;
-    const actionMap = { account: "account", models: "models", skills: "skills", plugins: "mcp", capabilityHub: "skills" };
-    if (actionMap[action]) {
-      event.preventDefault();
-      event.stopImmediatePropagation();
-      window.parent.postMessage({ type: "chaotang:action", action: actionMap[action] }, window.location.origin);
-    }
-  }, true);
+  document.addEventListener(
+    "click",
+    function (event) {
+      const pageButton = event.target.closest("button[data-page]");
+      const page = pageButton && pageButton.dataset.page;
+      if (page && !suppressNavigationDispatch && pageRoutes[page]) {
+        (window.CHAOTANG_PARENT || window.parent).postMessage(
+          { type: "chaotang:navigate", route: pageRoutes[page] },
+          window.location.origin,
+        );
+      }
+      const actionButton = event.target.closest("[data-open]");
+      const action = actionButton && actionButton.dataset.open;
+      const actionMap = {
+        account: "account",
+        models: "models",
+        skills: "skills",
+        plugins: "mcp",
+        capabilityHub: "skills",
+      };
+      if (actionMap[action]) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        (window.CHAOTANG_PARENT || window.parent).postMessage(
+          { type: "chaotang:action", action: actionMap[action] },
+          window.location.origin,
+        );
+      }
+    },
+    true,
+  );
 
   const send = document.getElementById("sendButton");
   const input = document.getElementById("promptInput");
   if (send && input) {
-    send.addEventListener("click", function (event) {
-      const value = input.value.trim();
-      if (!value) return;
-      event.preventDefault();
-      event.stopImmediatePropagation();
-      sessionStorage.setItem("chaotang.pending-intent", value);
-      window.parent.postMessage(
-        { type: "chaotang:consult", prompt: value },
-        window.location.origin
-      );
-      input.value = "";
-      send.disabled = true;
-    }, true);
+    send.addEventListener(
+      "click",
+      function (event) {
+        const value = input.value.trim();
+        if (!value) return;
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        pendingIntentText = value;
+        (window.CHAOTANG_PARENT || window.parent).postMessage(
+          { type: "chaotang:consult", prompt: value },
+          window.location.origin,
+        );
+        input.value = "";
+        send.disabled = true;
+      },
+      true,
+    );
   }
 })();

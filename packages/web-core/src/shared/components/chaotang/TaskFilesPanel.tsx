@@ -22,12 +22,18 @@ import {
   type TaskFileScope,
   type TaskFilesClient,
 } from './taskFilesContract';
+import { securePreviewDocument } from './TaskPreviewPanel';
 
 const button =
   'rounded border px-base py-half text-normal disabled:opacity-40 hover:bg-secondary focus-visible:ring-1 focus-visible:ring-brand';
 type Problem = ReturnType<typeof taskFilesError>;
 type Gate = ReturnType<typeof createTaskFileScopeGate>;
-type ActiveScope = { gate: Gate; scope: TaskFileScope };
+type ActiveScope = {
+  gate: Gate;
+  scope: TaskFileScope;
+  key: string;
+  path: string;
+};
 type ImportState = {
   pending?: boolean;
   result?: TaskArtifactImport;
@@ -93,6 +99,15 @@ export function TaskFilesPanel({
       ].join('\u0000')
     : '';
   const active = useRef<ActiveScope | null>(null);
+  const latest = useRef({ scopeKey, connected });
+  latest.current = { scopeKey, connected };
+  const isCurrent = useCallback(
+    (context: ActiveScope) =>
+      active.current === context &&
+      latest.current.connected &&
+      latest.current.scopeKey === context.key,
+    []
+  );
   const [directory, setDirectory] = useState<{
     loading?: boolean;
     data?: TaskFileList;
@@ -109,22 +124,13 @@ export function TaskFilesPanel({
     (artifact) => artifact.state.toLowerCase() === 'published'
   );
 
-  useEffect(() => {
-    setTargets((current) => {
-      const next = { ...current };
-      for (const artifact of artifacts)
-        next[artifact.id] ??= suggestArtifactPath(
-          artifact.displayName,
-          artifact.id
-        );
-      return next;
-    });
-  }, [workspace.dataUpdatedAt]);
-
   const loadDirectory = useCallback(
     async (path: string, context = active.current) => {
-      if (!context || !client.listTaskFiles) return;
+      if (!context || !isCurrent(context) || !client.listTaskFiles) return;
       const ticket = context.gate.begin('directory');
+      // Changing directory invalidates the previous file read as well.
+      context.gate.begin('preview');
+      context.path = path;
       setDirectory({ loading: true });
       setPreview({});
       const input = taskFileListInput({
@@ -136,11 +142,12 @@ export function TaskFilesPanel({
         client.listTaskFiles(input),
         (value) => decodeTaskFileList(value, ticket.scope, path)
       );
+      if (!isCurrent(context)) return;
       if (settled.status === 'accepted') setDirectory({ data: settled.value });
       if (settled.status === 'error')
         setDirectory({ problem: taskFilesError(settled.error) });
     },
-    [client]
+    [client, isCurrent]
   );
 
   useEffect(() => {
@@ -149,19 +156,38 @@ export function TaskFilesPanel({
     setDirectory({});
     setPreview({});
     setImports({});
-    if (!scope || !supported) return;
-    const context = { gate: createTaskFileScopeGate(scope), scope };
+    if (!scope || !supported || !connected) return;
+    const context = {
+      gate: createTaskFileScopeGate(scope),
+      scope,
+      key: scopeKey,
+      path: '',
+    };
     active.current = context;
     void loadDirectory('', context);
     return () => {
       context.gate.dispose();
       if (active.current === context) active.current = null;
     };
-  }, [loadDirectory, scopeKey, supported]);
+  }, [loadDirectory, scopeKey, supported, connected]);
+
+  useEffect(() => setTargets({}), [scopeKey]);
+
+  useEffect(() => {
+    setTargets((current) => {
+      const next = { ...current };
+      for (const artifact of artifacts)
+        next[artifact.id] ??= suggestArtifactPath(
+          artifact.displayName,
+          artifact.id
+        );
+      return next;
+    });
+  }, [workspace.dataUpdatedAt, scopeKey, connected]);
 
   const openFile = async (entry: TaskFileEntry) => {
     const context = active.current;
-    if (!context || !client.readTaskFile) return;
+    if (!context || !isCurrent(context) || !client.readTaskFile) return;
     const ticket = context.gate.begin('preview');
     setPreview({ loading: true });
     const input = taskFileReadInput({
@@ -173,6 +199,7 @@ export function TaskFilesPanel({
       client.readTaskFile(input),
       (value) => decodeTaskFileRead(value, ticket.scope, entry.relativePath)
     );
+    if (!isCurrent(context)) return;
     if (settled.status === 'accepted') setPreview({ data: settled.value });
     if (settled.status === 'error')
       setPreview({ problem: taskFilesError(settled.error) });
@@ -180,7 +207,7 @@ export function TaskFilesPanel({
 
   const importArtifact = async (artifact: PublishedArtifact) => {
     const context = active.current;
-    if (!context || !client.importTaskArtifact) return;
+    if (!context || !isCurrent(context) || !client.importTaskArtifact) return;
     const target = targets[artifact.id] ?? '';
     let input;
     try {
@@ -206,13 +233,13 @@ export function TaskFilesPanel({
       client.importTaskArtifact(input),
       (value) => decodeTaskArtifactImport(value, ticket.scope, input)
     );
+    if (!isCurrent(context)) return;
     if (settled.status === 'accepted') {
       setImports((current) => ({
         ...current,
         [artifact.id]: { result: settled.value },
       }));
-      const path = directory.data?.relativePath ?? '';
-      void loadDirectory(path, context);
+      void loadDirectory(context.path, context);
     }
     if (settled.status === 'error')
       setImports((current) => ({
@@ -221,30 +248,34 @@ export function TaskFilesPanel({
       }));
   };
 
+  const current = Boolean(
+    active.current && isCurrent(active.current) && supported
+  );
   return (
     <TaskFilesView
       supported={supported}
-      connected={connected}
-      loading={directory.loading}
-      problem={directory.problem}
-      path={directory.data?.relativePath ?? ''}
-      entries={directory.data?.entries ?? []}
-      truncated={directory.data?.truncated}
-      previewLoading={preview.loading}
-      preview={preview.data}
-      previewProblem={preview.problem}
-      artifacts={artifacts}
-      targets={targets}
-      imports={imports}
+      connected={connected && current}
+      previewAvailable={resources.previewAvailable}
+      loading={current ? directory.loading : undefined}
+      problem={current ? directory.problem : undefined}
+      path={current ? (directory.data?.relativePath ?? '') : ''}
+      entries={current ? (directory.data?.entries ?? []) : []}
+      truncated={current ? directory.data?.truncated : undefined}
+      previewLoading={current ? preview.loading : undefined}
+      preview={current ? preview.data : undefined}
+      previewProblem={current ? preview.problem : undefined}
+      artifacts={current ? artifacts : []}
+      targets={current ? targets : {}}
+      imports={current ? imports : {}}
       onOpenDirectory={(entry) => void loadDirectory(entry.relativePath)}
       onOpenFile={(entry) => void openFile(entry)}
       onBack={() => {
-        const path = directory.data?.relativePath ?? '';
+        const path = active.current?.path ?? '';
         void loadDirectory(
           path.includes('/') ? path.slice(0, path.lastIndexOf('/')) : ''
         );
       }}
-      onReload={() => void loadDirectory(directory.data?.relativePath ?? '')}
+      onReload={() => void loadDirectory(active.current?.path ?? '')}
       onTargetChange={(artifactId, value) =>
         setTargets((current) => ({ ...current, [artifactId]: value }))
       }
@@ -256,6 +287,7 @@ export function TaskFilesPanel({
 export function TaskFilesView({
   supported,
   connected,
+  previewAvailable = false,
   loading,
   problem,
   path,
@@ -276,6 +308,7 @@ export function TaskFilesView({
 }: {
   supported: boolean;
   connected: boolean;
+  previewAvailable?: boolean;
   loading?: boolean;
   problem?: Problem;
   path: string;
@@ -294,6 +327,12 @@ export function TaskFilesView({
   onTargetChange: (artifactId: string, value: string) => void;
   onImport: (artifact: PublishedArtifact) => void;
 }) {
+  const showPage = Boolean(
+    previewAvailable &&
+      preview?.kind === 'text' &&
+      !preview.truncated &&
+      /\.html?$/i.test(preview.entry.relativePath)
+  );
   return (
     <section
       aria-label="任务文件"
@@ -329,7 +368,12 @@ export function TaskFilesView({
           <div className="flex flex-wrap items-center gap-base">
             <p className="break-all text-low">当前位置：{path || '根目录'}</p>
             {path && (
-              <button type="button" className={button} onClick={onBack}>
+              <button
+                type="button"
+                className={button}
+                disabled={!connected}
+                onClick={onBack}
+              >
                 返回上一级
               </button>
             )}
@@ -349,6 +393,7 @@ export function TaskFilesView({
                   <button
                     type="button"
                     className="w-full rounded border p-base text-left hover:bg-secondary focus-visible:ring-1 focus-visible:ring-brand"
+                    disabled={!connected}
                     onClick={() =>
                       entry.kind === 'directory'
                         ? onOpenDirectory(entry)
@@ -389,18 +434,52 @@ export function TaskFilesView({
             {previewProblem.message}
           </p>
         ) : preview?.kind === 'text' ? (
-          <>
+          <div
+            key={`${preview.entry.relativePath}:${preview.sha256}`}
+            className="space-y-base"
+          >
             <p className="break-all text-low">{preview.entry.relativePath}</p>
-            <pre className="max-h-80 overflow-auto whitespace-pre-wrap break-words rounded bg-secondary p-base">
-              {preview.text}
-            </pre>
+            {showPage && (
+              <details
+                open
+                className="rounded border border-brand/30 bg-panel/75 p-base"
+              >
+                <summary className="cursor-pointer text-high focus-visible:ring-1 focus-visible:ring-brand">
+                  页面效果（只读）
+                </summary>
+                <p className="my-base text-sm text-low">
+                  工部呈上此文件的静态页面。可收起预览继续查看文件；网页脚本和外部资源不会运行，页面显示不代表任务已验收。
+                </p>
+                <iframe
+                  title={`任务静态预览：${preview.entry.relativePath}`}
+                  sandbox=""
+                  referrerPolicy="no-referrer"
+                  srcDoc={securePreviewDocument(preview.text)}
+                  className="h-96 w-full rounded border bg-white"
+                />
+              </details>
+            )}
+            <details
+              open={!showPage}
+              className="rounded border border-brand/15 p-base"
+            >
+              <summary className="cursor-pointer text-normal focus-visible:ring-1 focus-visible:ring-brand">
+                查看文件原文
+              </summary>
+              <pre className="mt-base max-h-80 overflow-auto whitespace-pre-wrap break-words rounded bg-secondary p-base">
+                {preview.text}
+              </pre>
+            </details>
             {preview.truncated && (
               <p role="status" className="text-low">
                 文件内容仅显示前段，原文件未被修改。
               </p>
             )}
-            <p className="break-all text-low">SHA-256：{preview.sha256}</p>
-          </>
+            <details className="text-xs text-low">
+              <summary className="cursor-pointer">文件校验信息</summary>
+              <p className="break-all">SHA-256：{preview.sha256}</p>
+            </details>
+          </div>
         ) : preview ? (
           <p className="text-low">
             {preview.reason === 'binary'

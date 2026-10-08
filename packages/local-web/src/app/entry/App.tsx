@@ -1,4 +1,5 @@
 import { createAcceptanceChaotangClient } from '@web/app/chaotang/acceptanceChaotangClient';
+import { shouldUseLocalTrialTransport } from '@web/app/chaotang/localTrialMode';
 import { RouterProvider } from '@tanstack/react-router';
 import { HotkeysProvider } from 'react-hotkeys-hook';
 import { UserSystemProvider } from '@web/app/providers/ConfigProvider';
@@ -14,10 +15,18 @@ import { router } from '@web/app/router';
 import { ChaotangProvider } from '@/shared/providers/ChaotangProvider';
 import { tauriChaotangClient } from '@web/app/chaotang/tauriChaotangClient';
 
-const chaotangClient =
-  import.meta.env.DEV && import.meta.env.VITE_FUSION_ACCEPTANCE === '1'
-    ? createAcceptanceChaotangClient(tauriChaotangClient, fetch, sessionStorage)
-    : tauriChaotangClient;
+const localTrialTransport = shouldUseLocalTrialTransport({
+  dev: import.meta.env.DEV,
+  acceptance: import.meta.env.VITE_FUSION_ACCEPTANCE,
+  localTrial: import.meta.env.VITE_CHAOTANG_LOCAL_TRIAL,
+  protocol: window.location.protocol,
+  hostname: window.location.hostname,
+  nativeShell: '__TAURI_INTERNALS__' in window,
+});
+
+const chaotangClient = localTrialTransport
+  ? createAcceptanceChaotangClient(tauriChaotangClient, fetch, sessionStorage)
+  : tauriChaotangClient;
 
 function TauriListeners() {
   useTauriNotificationNavigation();
@@ -31,7 +40,7 @@ function App() {
       <ChaotangProvider client={chaotangClient}>
         <AppNavigationProvider value={localAppNavigation}>
           <TauriListeners />
-          <UserSystemProvider>
+          <UserSystemProvider hostConfigurationEnabled={!localTrialTransport}>
             <LocalAuthProvider>
               <AppSystemNotifications />
               <ClickedElementsProvider>

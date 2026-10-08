@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import io
 import json
 import os
 import secrets
@@ -13,6 +14,7 @@ import subprocess
 import time
 import urllib.error
 import urllib.request
+import zipfile
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -21,6 +23,11 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--build-root", required=True, type=Path)
     parser.add_argument("--probe-root", required=True, type=Path)
+    parser.add_argument(
+        "--exercise-cash",
+        action="store_true",
+        help="Also check actual synthetic cash analysis, XLSX and archives",
+    )
     args = parser.parse_args()
     build = args.build_root.resolve(strict=True)
     evidence = json.loads((build / "build-evidence.json").read_text(encoding="utf-8"))
@@ -66,6 +73,9 @@ def main() -> None:
         "startedAt": datetime.now(timezone.utc).isoformat(),
         "checks": [],
         "backendCommit": evidence["backendCommit"],
+        "backendBaseCommit": evidence.get("backendBaseCommit"),
+        "sourceKind": evidence.get("sourceKind", "GIT_COMMIT"),
+        "snapshotManifestSha256": evidence.get("snapshotManifestSha256"),
         "executableSha256": evidence["executableSha256"],
         "realModelCalled": False,
         "network": "loopback-http-only",
@@ -81,7 +91,7 @@ def main() -> None:
     log = (root / "runtime.log").open("w", encoding="utf-8")
     opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
 
-    def request(path: str, *, method: str = "GET", body=None, token=None):
+    def request(path: str, *, method: str = "GET", body=None, token=None, binary=False):
         headers = {"Content-Type": "application/json"}
         if token:
             headers["Authorization"] = "Bearer " + token
@@ -97,7 +107,9 @@ def main() -> None:
             response = error
         with response:
             data = response.read()
-            return response.status, json.loads(data) if data else None
+            return response.status, data if binary else (
+                json.loads(data) if data else None
+            )
 
     def check(name: str, passed: bool) -> None:
         report["checks"].append({"name": name, "passed": bool(passed)})
@@ -190,6 +202,114 @@ def main() -> None:
             "authenticated identity correct",
             status == 200 and identity == registered["user"],
         )
+        if args.exercise_cash:
+
+            def amount(value, reference):
+                return {
+                    "amount": value,
+                    "sourceReference": "synthetic:" + reference,
+                    "attested": True,
+                }
+
+            payload = {
+                "kind": "hubu.cash-safety-review.v1",
+                "period": "2026-07",
+                "asOf": "2026-08-01",
+                "currency": "CNY",
+                "balances": {
+                    "cash": amount("100", "cash"),
+                    "bank": amount("500", "bank"),
+                    "reserved": amount("0", "reserved"),
+                },
+                "monthlyFlows": [
+                    {
+                        "period": month,
+                        "inflow": "0",
+                        "outflow": "100",
+                        "sourceReference": "synthetic:" + month,
+                        "attested": True,
+                    }
+                    for month in ("2026-05", "2026-06", "2026-07")
+                ],
+                "scheduledMovements": [],
+            }
+            status, cash = request(
+                "/api/v1/hubu/cash-safety/create",
+                method="POST",
+                body=payload,
+                token=token,
+            )
+            check(
+                "packaged cash calculation and persistence",
+                status == 200
+                and cash["available_cash"] == "600.00"
+                and cash["runway_months"] == "6.00"
+                and len(cash["daily_forecast"]) == 31
+                and cash["persistence_status"] == "PERSISTED",
+            )
+            artifact_path = "/api/v1/report-artifacts/" + cash["artifact_id"]
+            status, workbook = request(
+                artifact_path + "/download", token=token, binary=True
+            )
+            check("actual workbook download", status == 200)
+            with zipfile.ZipFile(io.BytesIO(workbook)) as book:
+                check(
+                    "download is intact XLSX",
+                    "xl/workbook.xml" in book.namelist() and book.testzip() is None,
+                )
+            report["workbookSha256"] = hashlib.sha256(workbook).hexdigest()
+            status, confirmation = request(
+                artifact_path + "/confirmation",
+                method="POST",
+                token=token,
+                body={
+                    "decision": "CONFIRMED",
+                    "structured_reason": "合成打包测试，非真实经营数据。",
+                },
+            )
+            check(
+                "confirmation produces archive",
+                status == 200 and bool(confirmation.get("shiguan_archive_id")),
+            )
+            archive_path = (
+                "/api/v1/shiguan/archives/" + confirmation["shiguan_archive_id"]
+            )
+            status, _ = request(
+                archive_path + "/review",
+                method="PATCH",
+                token=token,
+                body={
+                    "status": "PARTIAL",
+                    "reviewed_at": "2026-09-28T00:00:00Z",
+                    "note": "仅核验打包恢复。",
+                },
+            )
+            check("archive review can be saved", status == 200)
+            status, archive = request(archive_path, token=token)
+            check("archive can be read", status == 200)
+            check(
+                "anonymous workbook denied",
+                request(artifact_path + "/download", binary=True)[0] == 401,
+            )
+            status, other = request(
+                "/api/v1/auth/register",
+                method="POST",
+                body={
+                    "username": "other-probe",
+                    "email": "other@example.invalid",
+                    "password": secrets.token_urlsafe(24),
+                },
+            )
+            check("second isolated account created", status == 201)
+            for path in (artifact_path + "/download", archive_path):
+                check(
+                    "other account cannot read " + path.split("/")[-1],
+                    request(path, token=other["session_id"], binary=True)[0] == 404,
+                )
+            request("/api/v1/auth/logout", method="POST", token=other["session_id"])
+            status, jobs = request("/api/v1/decree-jobs", token=token)
+            check("packaged task history readable", status == 200)
+            report["syntheticInputs"] = True
         stop()
         start()
         status, identity = request("/api/v1/auth/me", token=token)
@@ -197,6 +317,24 @@ def main() -> None:
             "session survives process restart",
             status == 200 and identity == registered["user"],
         )
+        if args.exercise_cash:
+            status, after = request(
+                artifact_path + "/download", token=token, binary=True
+            )
+            check(
+                "workbook bytes survive executable restart",
+                status == 200 and after == workbook,
+            )
+            status, after = request(archive_path, token=token)
+            check(
+                "archive and review survive executable restart",
+                status == 200 and after == archive,
+            )
+            status, after = request("/api/v1/decree-jobs", token=token)
+            check(
+                "task history readable after executable restart",
+                status == 200 and after == jobs,
+            )
         check(
             "logout acknowledged",
             request("/api/v1/auth/logout", method="POST", token=token)[0] == 204,

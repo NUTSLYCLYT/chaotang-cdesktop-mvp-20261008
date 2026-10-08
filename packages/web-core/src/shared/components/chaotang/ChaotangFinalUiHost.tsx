@@ -1,3 +1,5 @@
+import { courtDemoSnapshot, courtDemoWrite } from './courtFrameStorage';
+import { CourtBusinessDialog, CourtDialogTitle } from './CourtBusinessDialog';
 import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from '@tanstack/react-router';
 import { XIcon } from '@phosphor-icons/react';
@@ -14,11 +16,31 @@ import { McpWorkspace } from '@/shared/components/chaotang/McpWorkspace';
 import { isTauriApp } from '@/shared/lib/platform';
 import { ChancellorStudyWorkspace } from './ChancellorStudyWorkspace';
 import { ChaotangAccountForm } from './ChaotangAccountForm';
-import { JunjichuCasesWorkspace } from './JunjichuCasesWorkspace';
+import {
+  GongbuTaskWorkspace,
+  JunjichuOperationsWorkspace,
+} from './CourtOperationsWorkspace';
+import { HubuOperationsWorkspace } from './HubuOperationsWorkspace';
+import { JinyiweiWorkspace } from './JinyiweiWorkspace';
+import { ShiguanOperationsWorkspace } from './ShiguanOperationsWorkspace';
+import { OutcomeCatalogWorkspace } from './OutcomeCatalogWorkspace';
+import { DepartmentContentWorkspace } from './DepartmentContentWorkspace';
 import {
   courtBusinessHandoff,
   courtPanelFromRoute,
+  courtPanelSection,
 } from './courtBusinessHandoff';
+import {
+  INLINE_SURFACE_DISMISS,
+  INLINE_SURFACE_REQUEST,
+  inlinePageForPanel,
+  inlineSurfaceDirective,
+  inlineSurfaceStyle,
+  readInlineSurfaceState,
+  type InlineSurfacePage,
+  type InlineSurfaceState,
+} from './courtInlineSurface';
+import './CourtInlineWorkspace.css';
 
 const ROUTE_TO_PAGE: Record<string, string> = {
   '/today': 'A01',
@@ -30,6 +52,99 @@ const ROUTE_TO_PAGE: Record<string, string> = {
   '/life': 'E04',
   '/more': 'D02',
 };
+
+/**
+ * Real page → owning panel, title and honest one-line description for the single
+ * in-scroll surface. Keeping them in one table means the eight pages can never
+ * disagree about which panel or copy they belong to.
+ */
+const INLINE_SURFACE_KEY: Record<InlineSurfacePage, string> = {
+  A01: 'results',
+  A02: 'study',
+  A03: 'cases',
+  A06: 'shiguan',
+  B02: 'hubu',
+  B06: 'gongbu',
+  C01: 'jinyiwei',
+  C02: 'forecast',
+  C03: 'learning',
+};
+
+const INLINE_SURFACE_TITLE: Record<InlineSurfacePage, string> = {
+  A01: '结果案例 · 先选你想得到的成果',
+  A02: '上书房 · 拟旨与办理',
+  A03: '军机处 · 办理与会审',
+  A06: '史馆总卷 · 档案与成果',
+  B02: '户部 · 现金分析与成果',
+  B06: '工部 · 技术任务与成果',
+  C01: '锦衣卫 · 调查与证据',
+  C02: '钦天监 · 条件推演',
+  C03: '翰林院 · 学习与评测',
+};
+
+const INLINE_SURFACE_DESCRIPTION: Record<InlineSurfacePage, string> = {
+  A01: '先看能得到什么，再选择办理。现金分析是规则计算；其他案例可先准备需求，真实 AI 执行仍需配置与验收。',
+  A02: '进入页面不会自动下旨。任务和部门状态仅以真实回执为准。',
+  A03: '进入页面不会自动下旨。任务和部门状态仅以真实回执为准。',
+  A06: '查阅已保存的成果，下载原件，记录实际效果。档案只向所属账户展示。',
+  B02: '输入数据可生成现金分析与 Excel。确认成果后归入史馆；不会执行付款或记账。',
+  B06: '进入页面不会自动下旨。查看本账户技术任务的进度、部门贡献、文件与验收状态；没有真实记录时保持空态，不会伪造执行进度。',
+  C01: '查阅与你有关的调查、来源与证据。这里只展示当前账户的真实记录。',
+  C02: '进入页面不会自动下旨。条件推演、触发器与复核只读取当前账户真实记录；示例仅作案例说明，不伪装真实预测。',
+  C03: '进入页面不会自动下旨。档案、复盘与评测只读取当前账户真实记录；待接入项保持明确空态，不虚构进步。',
+};
+
+/**
+ * The iframe background page must follow the real deep link, not only the
+ * pathname. `/court#study` and `/court#junjichu` own A02/A03, so the topbar and
+ * background match the embedded operation surface instead of showing the hall
+ * behind the study. Real user navigation is never echoed back: the bridge
+ * suppresses its outbound dispatch while a parent route sync selects a page.
+ */
+export function routePageForLocation(pathname: string, hash: string): string {
+  const safePathname = typeof pathname === 'string' ? pathname : '';
+  const safeHash = typeof hash === 'string' ? hash : '';
+  return (
+    inlinePageForPanel(courtPanelFromRoute(safePathname, safeHash)) ??
+    ROUTE_TO_PAGE[safePathname] ??
+    'A01'
+  );
+}
+
+/**
+ * The migrated department panel owns its section in local state, so a hash-only
+ * route change must be able to remount it at the new section. The key carries
+ * the owner, session generation, module and verified deep-link section: a
+ * different legal hash gets a new mount identity, while an unrelated re-render
+ * of the same route keeps the same identity and preserves in-panel input.
+ */
+export function departmentPanelKey(
+  owner: string | undefined,
+  authGeneration: number,
+  module: 'forecast' | 'learning' | 'hubu' | 'life',
+  section?: string
+) {
+  return `${owner ?? 'anonymous'}:${authGeneration}:${module}:${section ?? ''}`;
+}
+
+/**
+ * Panels that own the single in-scroll operation surface. The list is derived
+ * from the shared protocol so C02/C03 can never drift from the bridge whitelist.
+ */
+type InlinePanel =
+  | 'results'
+  | 'study'
+  | 'cases'
+  | 'shiguan'
+  | 'jinyiwei'
+  | 'hubu'
+  | 'gongbu'
+  | 'forecast'
+  | 'learning';
+
+const isInlinePanel = (
+  panel: string | null | undefined
+): panel is InlinePanel => inlinePageForPanel(panel) !== undefined;
 
 const getChaotangUiPath = () => {
   const requestedVersion = new URLSearchParams(window.location.search).get(
@@ -82,12 +197,45 @@ const readableError = (cause: unknown): string => {
  */
 export function ChaotangFinalUiHost() {
   const frameRef = useRef<HTMLIFrameElement>(null);
+  const frameOutputPort = useRef<MessagePort | null>(null);
+  // Route updates may remove the query; keep this document paired with its nonce.
+  const [uiPath] = useState(getChaotangUiPath);
+  const [bridgeNonce] = useState(() => crypto.randomUUID());
+  const frameLoadedOnce = useRef(false);
+  const frameBridgeEnabled = useRef(true);
+  const [frameBlocked, setFrameBlocked] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const [loaded, setLoaded] = useState(false);
   const [businessPanel, setBusinessPanel] = useState<
-    'account' | 'models' | 'skills' | 'mcp' | 'study' | 'cases' | null
+    | 'account'
+    | 'results'
+    | 'models'
+    | 'skills'
+    | 'mcp'
+    | 'study'
+    | 'cases'
+    | 'hubu'
+    | 'jinyiwei'
+    | 'shiguan'
+    | 'gongbu'
+    | 'forecast'
+    | 'learning'
+    | 'life'
+    | null
   >(() => courtPanelFromRoute(location.pathname, location.hash) ?? null);
+  const [panelSection, setPanelSection] = useState<string | undefined>(() =>
+    courtPanelSection(location.pathname, location.hash)
+  );
+  // Geometry reported by the sandboxed child for the A02/A03 real operation
+  // surface. Unknown, stale or out-of-viewport rectangles are ignored upstream.
+  const [inlineSurface, setInlineSurface] = useState<InlineSurfaceState>();
+  // The account drawer can open over a real inline page from the global entry.
+  // Remember it so closing the drawer returns to the same embedded surface
+  // (still mounted, so its task data is never discarded).
+  const [retainedInline, setRetainedInline] = useState<InlinePanel | null>(
+    null
+  );
   const [handoff, setHandoff] = useState<{
     owner: string;
     objective: string;
@@ -100,6 +248,8 @@ export function ChaotangFinalUiHost() {
   }>();
   const pendingIntentRef = useRef(pendingIntent);
   pendingIntentRef.current = pendingIntent;
+  const businessPanelRef = useRef(businessPanel);
+  businessPanelRef.current = businessPanel;
   const [isConsulting, setIsConsulting] = useState(false);
   const busy = useRef(false);
   const writes = useRef<Promise<unknown>>(Promise.resolve());
@@ -112,10 +262,41 @@ export function ChaotangFinalUiHost() {
   currentGeneration.current = authGeneration;
   const mounted = useRef(true);
 
+  const prepareObjective = (objective: string) => {
+    const transfer = courtBusinessHandoff(
+      { type: 'chaotang:prepare-decree', prompt: objective },
+      user?.id
+    );
+    if (!transfer) return;
+    if (
+      'pendingObjective' in transfer &&
+      typeof transfer.pendingObjective === 'string'
+    ) {
+      const pending = { objective: transfer.pendingObjective };
+      pendingIntentRef.current = pending;
+      setPendingIntent(pending);
+    } else if (
+      'objective' in transfer &&
+      typeof transfer.objective === 'string' &&
+      typeof transfer.owner === 'string'
+    ) {
+      pendingIntentRef.current = undefined;
+      setPendingIntent(undefined);
+      setHandoff({
+        owner: transfer.owner,
+        objective: transfer.objective,
+        id: crypto.randomUUID(),
+      });
+    }
+    setBusinessPanel(transfer.panel);
+  };
+
   useEffect(() => {
     mounted.current = true;
     return () => {
       mounted.current = false;
+      frameOutputPort.current?.close();
+      frameOutputPort.current = null;
     };
   }, []);
 
@@ -136,20 +317,111 @@ export function ChaotangFinalUiHost() {
 
   useEffect(() => {
     const panel = courtPanelFromRoute(location.pathname, location.hash);
-    if (panel) setBusinessPanel(panel);
+    // The route is the source of truth for route-owned workspaces. When the
+    // user returns to a shell page such as /today, clear the previous inline
+    // workspace instead of leaving the last department surface on screen.
+    setBusinessPanel(panel ?? null);
+    setPanelSection(courtPanelSection(location.pathname, location.hash));
   }, [location.pathname, location.hash]);
 
+  // A different panel owns a different surface; drop the previous geometry so
+  // an old rectangle can never place the new page's real component.
+  useEffect(() => {
+    setInlineSurface(undefined);
+    if (isInlinePanel(businessPanel)) setRetainedInline(businessPanel);
+    else if (businessPanel !== 'account') setRetainedInline(null);
+  }, [businessPanel]);
+
   const postToShell = (message: Record<string, unknown>) => {
-    frameRef.current?.contentWindow?.postMessage(
-      message,
-      window.location.origin
-    );
+    if (!frameBridgeEnabled.current) return;
+    if (isTauriApp()) {
+      frameRef.current?.contentWindow?.postMessage(
+        message,
+        window.location.origin
+      );
+    } else {
+      // The child creates this channel: navigation cannot transfer it to a new document.
+      frameOutputPort.current?.postMessage(message);
+    }
   };
 
   useEffect(() => {
     const receive = (event: MessageEvent) => {
+      if (!frameBridgeEnabled.current) return;
       if (event.source !== frameRef.current?.contentWindow) return;
-      if (event.origin !== window.location.origin) return;
+      if (event.origin !== (isTauriApp() ? window.location.origin : 'null'))
+        return;
+      if (!isTauriApp() && event.data?.bridgeNonce !== bridgeNonce) return;
+      if (event.data?.type === 'chaotang:bridge-ready') {
+        const port = event.ports?.[0];
+        if (isTauriApp() || !port || frameOutputPort.current) {
+          port?.close();
+          return;
+        }
+        frameOutputPort.current = port;
+        port.onmessage = (message) => {
+          if (
+            frameOutputPort.current !== port ||
+            message.data?.type !== 'chaotang:bridge-closed'
+          )
+            return;
+          frameBridgeEnabled.current = false;
+          frameOutputPort.current = null;
+          port.close();
+          setFrameBlocked(true);
+        };
+        postToShell(courtDemoSnapshot(localStorage));
+        const routePage = routePageForLocation(
+          window.location.pathname,
+          window.location.hash
+        );
+        postToShell({
+          type: 'chaotang:route',
+          page: routePage,
+        });
+        // A deep link can select a real page before the verified MessagePort is
+        // ready. The earlier effect then cannot deliver its measurement
+        // request, so repeat it as part of the successful bridge handshake.
+        if (
+          (routePage === 'A01' &&
+            courtPanelFromRoute(
+              window.location.pathname,
+              window.location.hash
+            ) === 'results') ||
+          routePage === 'A02' ||
+          routePage === 'A03' ||
+          routePage === 'B02' ||
+          routePage === 'B06' ||
+          routePage === 'C02' ||
+          routePage === 'C03'
+        )
+          postToShell({ type: INLINE_SURFACE_REQUEST, page: routePage });
+        postToShell({
+          type: 'chaotang:status',
+          connected: Boolean(health),
+          authenticated: Boolean(user),
+          username: user?.username ?? '',
+        });
+        return;
+      }
+      if (event.data?.type === 'chaotang:demo-storage-write') {
+        const reply = courtDemoWrite(event.data, localStorage);
+        if (reply) postToShell(reply);
+        return;
+      }
+      if (event.data?.type === 'chaotang:inline-surface') {
+        // Only accept a strictly finite, in-viewport rectangle for the page the
+        // user is actually on. A mismatch or malformed geometry is dropped so no
+        // stale or forged surface can host real processing controls.
+        const next = readInlineSurfaceState(event.data, {
+          width: window.innerWidth,
+          height: window.innerHeight,
+        });
+        if (!next) return;
+        if (inlinePageForPanel(businessPanelRef.current) !== next.page) return;
+        setInlineSurface(next);
+        return;
+      }
       const data = event.data as {
         type?: string;
         route?: string;
@@ -237,6 +509,14 @@ export function ChaotangFinalUiHost() {
         return;
       }
       if (data?.type === 'chaotang:navigate' && data.route) {
+        // The shell may ask to navigate to the URL that is already active
+        // (for example A03 -> A01 while the host is still on /today). React
+        // Router then has no location change to observe, so synchronise the
+        // route-owned workspace before navigating as well.
+        const target = new URL(data.route, window.location.origin);
+        const targetPanel = courtPanelFromRoute(target.pathname, target.hash);
+        setBusinessPanel(targetPanel ?? null);
+        setPanelSection(courtPanelSection(target.pathname, target.hash));
         void navigate({ to: data.route });
       }
       if (data?.type === 'chaotang:action') {
@@ -365,18 +645,26 @@ export function ChaotangFinalUiHost() {
     };
     window.addEventListener('message', receive);
     return () => window.removeEventListener('message', receive);
-  }, [authGeneration, client, isConsulting, navigate, user]);
+  }, [
+    authGeneration,
+    bridgeNonce,
+    client,
+    health,
+    isConsulting,
+    navigate,
+    user,
+  ]);
 
   useEffect(() => {
     if (!loaded) return;
-    frameRef.current?.contentWindow?.postMessage(
-      {
-        type: 'chaotang:route',
-        page: ROUTE_TO_PAGE[window.location.pathname] ?? 'A01',
-      },
-      window.location.origin
-    );
-  }, [loaded, location.pathname]);
+    postToShell({
+      type: 'chaotang:route',
+      page: routePageForLocation(
+        window.location.pathname,
+        window.location.hash
+      ),
+    });
+  }, [loaded, location.pathname, location.hash]);
 
   useEffect(() => {
     if (!loaded) return;
@@ -388,6 +676,47 @@ export function ChaotangFinalUiHost() {
     });
   }, [health, loaded, user]);
 
+  // Ask the child to measure its stage once, only when an inline page opens.
+  // Sync the background page first so the topbar/background match A02/A03 even
+  // for a catalog prepareObjective, then request geometry. The child suppresses
+  // its outbound dispatch for a parent route sync, so this cannot echo. When the
+  // owning panel goes away (close button, department switch or the account
+  // drawer) explicitly release the lease so the child restores its own composer
+  // and cannot reactivate the surface on an ordinary click.
+  useEffect(() => {
+    if (!loaded) return;
+    const directive = inlineSurfaceDirective(businessPanel);
+    if (directive.kind === 'connect') {
+      postToShell({ type: 'chaotang:route', page: directive.page });
+      postToShell({ type: INLINE_SURFACE_REQUEST, page: directive.page });
+    } else {
+      postToShell({ type: INLINE_SURFACE_DISMISS });
+    }
+  }, [businessPanel, loaded]);
+
+  const activeInline = isInlinePanel(businessPanel)
+    ? businessPanel
+    : businessPanel === 'account'
+      ? retainedInline
+      : null;
+  const inlinePage = inlinePageForPanel(activeInline);
+  // While the account drawer covers the page the surface stays mounted but
+  // hidden, so the real component keeps its task data and returns unchanged.
+  const inlineVisible = isInlinePanel(businessPanel);
+  const inlineState = !inlineSurface
+    ? 'connecting'
+    : inlineSurface.suspended
+      ? 'suspended'
+      : inlineSurface.rect
+        ? 'ready'
+        : 'connecting';
+  const inlineRect =
+    inlineState === 'ready' ? (inlineSurface?.rect ?? null) : null;
+  const inlineTitle = inlinePage ? INLINE_SURFACE_TITLE[inlinePage] : '';
+  const inlineDescription = inlinePage
+    ? INLINE_SURFACE_DESCRIPTION[inlinePage]
+    : '';
+
   return (
     <div className="fixed inset-0 z-[100] overflow-hidden bg-[#050907]">
       {!loaded && (
@@ -397,14 +726,29 @@ export function ChaotangFinalUiHost() {
       )}
       <iframe
         ref={frameRef}
+        hidden={frameBlocked}
         title="朝堂 AI OS"
-        src={getChaotangUiPath()}
+        src={uiPath + '&bridgeNonce=' + bridgeNonce}
+        sandbox={isTauriApp() ? undefined : 'allow-scripts allow-downloads'}
+        referrerPolicy="no-referrer"
         onLoad={() => {
+          if (!isTauriApp() && frameLoadedOnce.current) {
+            frameBridgeEnabled.current = false;
+            frameOutputPort.current?.close();
+            frameOutputPort.current = null;
+            setFrameBlocked(true);
+            return;
+          }
+          frameLoadedOnce.current = true;
           setLoaded(true);
+          postToShell(courtDemoSnapshot(localStorage));
           window.requestAnimationFrame(() => {
             postToShell({
               type: 'chaotang:route',
-              page: ROUTE_TO_PAGE[window.location.pathname] ?? 'A01',
+              page: routePageForLocation(
+                window.location.pathname,
+                window.location.hash
+              ),
             });
             postToShell({
               type: 'chaotang:status',
@@ -416,36 +760,175 @@ export function ChaotangFinalUiHost() {
         }}
         className="block h-full w-full border-0 bg-[#050907]"
       />
-      {businessPanel && (
-        <div className="absolute inset-0 z-50 flex justify-end bg-black/60 backdrop-blur-sm">
-          <section
-            className={`h-full ${businessPanel === 'study' || businessPanel === 'cases' ? 'w-[min(1200px,96vw)]' : 'w-[min(760px,92vw)]'} overflow-y-auto border-l border-[#d7b36a]/35 bg-[#07100c] p-6 text-[#efe5ce] shadow-2xl`}
+      {frameBlocked && (
+        <div
+          role="alert"
+          className="absolute inset-0 grid place-content-center gap-4 bg-[#050907] p-6 text-[#efe5ce]"
+        >
+          <p>内嵌页面发生跳转，连接已停止。已保存的任务和成果仍然保留。</p>
+          <button
+            type="button"
+            className="rounded border border-[#d7b36a]/35 px-4 py-2"
+            onClick={() => window.location.reload()}
+          >
+            重新打开朝堂
+          </button>
+        </div>
+      )}
+      {inlinePage && (
+        <section
+          aria-labelledby="courtInlineSurfaceTitle"
+          data-court-inline-surface={INLINE_SURFACE_KEY[inlinePage]}
+          data-court-inline-state={inlineState}
+          data-court-inline-visible={inlineVisible}
+          className={`court-inline-surface court-inline-surface-${inlineState}`}
+          style={inlineSurfaceStyle(inlineRect)}
+        >
+          <header className="court-inline-surface-head">
+            <div>
+              <p className="text-[10px] tracking-[0.22em] text-[#d7b36a]">
+                状态以真实服务回执为准
+              </p>
+              <h2
+                id="courtInlineSurfaceTitle"
+                className="mt-2 font-serif text-2xl"
+              >
+                {inlineTitle}
+              </h2>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                pendingIntentRef.current = undefined;
+                setPendingIntent(undefined);
+                setBusinessPanel(null);
+              }}
+              className="border border-[#d7b36a]/30 p-2 text-[#d7b36a]"
+              aria-label={
+                inlinePage === 'C01'
+                  ? '返回锦衣卫概览'
+                  : inlinePage === 'A03'
+                    ? '返回军机处概览'
+                    : '关闭办理区'
+              }
+            >
+              <XIcon className="size-5" />
+            </button>
+          </header>
+          <div
+            className="court-inline-surface-body"
+            hidden={inlineState === 'suspended'}
+          >
+            <p className="mb-4 text-sm text-[#aaa99f]">{inlineDescription}</p>
+            {!user && (
+              <button
+                type="button"
+                className="mb-4 border border-[#d7b36a]/35 px-5 py-2 text-[#d7b36a]"
+                onClick={() => setBusinessPanel('account')}
+              >
+                登录朝堂账户
+              </button>
+            )}
+            {inlinePage === 'A01' ? (
+              <OutcomeCatalogWorkspace
+                compact
+                initialFilter="ready"
+                onOpen={setBusinessPanel}
+                onPrepare={prepareObjective}
+              />
+            ) : inlinePage === 'A02' ? (
+              <ChancellorStudyWorkspace
+                key={handoff?.owner === user?.id ? handoff?.id : 'manual'}
+                initialObjective={
+                  handoff?.owner === user?.id ? handoff?.objective : undefined
+                }
+              />
+            ) : inlinePage === 'C01' ? (
+              <JinyiweiWorkspace
+                key={`${user?.id ?? 'anonymous'}:${authGeneration}`}
+              />
+            ) : inlinePage === 'A06' ? (
+              <ShiguanOperationsWorkspace
+                key={`${user?.id ?? 'anonymous'}:${authGeneration}`}
+                onReuse={prepareObjective}
+              />
+            ) : inlinePage === 'B02' ? (
+              <div
+                key={departmentPanelKey(
+                  user?.id,
+                  authGeneration,
+                  'hubu',
+                  panelSection
+                )}
+              >
+                <HubuOperationsWorkspace initialSection={panelSection} />
+              </div>
+            ) : inlinePage === 'B06' ? (
+              <div key={`${user?.id ?? 'anonymous'}:${authGeneration}`}>
+                <GongbuTaskWorkspace />
+              </div>
+            ) : inlinePage === 'C02' || inlinePage === 'C03' ? (
+              <DepartmentContentWorkspace
+                key={departmentPanelKey(
+                  user?.id,
+                  authGeneration,
+                  inlinePage === 'C02' ? 'forecast' : 'learning',
+                  panelSection
+                )}
+                moduleId={inlinePage === 'C02' ? 'forecast' : 'learning'}
+                initialSection={panelSection}
+                scrollPresentation
+              />
+            ) : (
+              <JunjichuOperationsWorkspace
+                key={`${user?.id ?? 'anonymous'}:${authGeneration}`}
+              />
+            )}
+          </div>
+          {inlineState !== 'ready' && (
+            <p role="status" className="court-inline-surface-notice">
+              {inlineState === 'suspended'
+                ? '当前界面切换中，真实办理区暂时收起；返回后继续当前任务。'
+                : '正在接入真实办理区，页面就绪后即可在原布局内办理，不自动下旨。'}
+            </p>
+          )}
+        </section>
+      )}
+      {businessPanel && !inlineVisible && (
+        <div
+          data-court-modal="true"
+          className="absolute inset-0 z-50 flex justify-end bg-black/60 backdrop-blur-sm"
+        >
+          <CourtBusinessDialog
+            onRestoreFocus={() => {
+              frameRef.current?.focus();
+              postToShell({ type: 'chaotang:restore-focus' });
+            }}
+            className={`h-full ${['results', 'study', 'cases', 'jinyiwei', 'shiguan', 'forecast', 'learning', 'life'].includes(businessPanel) ? 'w-[min(1200px,96vw)]' : 'w-[min(760px,92vw)]'} overflow-y-auto border-l border-[#d7b36a]/35 bg-[#07100c] p-6 text-[#efe5ce] shadow-2xl`}
           >
             <header className="mb-6 flex items-center justify-between border-b border-[#d7b36a]/20 pb-4">
               <div>
                 <p className="text-[10px] tracking-[0.22em] text-[#d7b36a]">
                   状态以真实服务回执为准
                 </p>
-                <h2 className="mt-2 font-serif text-2xl">
-                  {businessPanel === 'study'
-                    ? '上书房 · 拟旨与办理'
-                    : businessPanel === 'cases'
-                      ? '军机处 · 真实案卷'
-                      : businessPanel === 'account'
-                        ? '朝堂账户'
-                        : businessPanel === 'models'
-                          ? '模型服务'
-                          : businessPanel === 'skills'
-                            ? 'Skills 目录'
-                            : 'MCP 工具目录'}
-                </h2>
+                <CourtDialogTitle className="mt-2 font-serif text-2xl">
+                  {businessPanel === 'life'
+                    ? '生活 · 本机日程与笔记'
+                    : businessPanel === 'account'
+                      ? '朝堂账户'
+                      : businessPanel === 'models'
+                        ? '模型服务'
+                        : businessPanel === 'skills'
+                          ? 'Skills 目录'
+                          : 'MCP 工具目录'}
+                </CourtDialogTitle>
               </div>
               <button
                 type="button"
                 onClick={() => {
                   pendingIntentRef.current = undefined;
                   setPendingIntent(undefined);
-                  setBusinessPanel(null);
+                  setBusinessPanel(retainedInline);
                 }}
                 className="border border-[#d7b36a]/30 p-2 text-[#d7b36a]"
                 aria-label="关闭"
@@ -453,11 +936,8 @@ export function ChaotangFinalUiHost() {
                 <XIcon className="size-5" />
               </button>
             </header>
-            {businessPanel === 'study' || businessPanel === 'cases' ? (
+            {businessPanel === 'life' ? (
               <>
-                <p className="mb-4 text-sm text-[#aaa99f]">
-                  进入页面不会自动下旨。任务和部门状态仅以真实回执为准。
-                </p>
                 {!user && (
                   <button
                     type="button"
@@ -467,18 +947,16 @@ export function ChaotangFinalUiHost() {
                     登录朝堂账户
                   </button>
                 )}
-                {businessPanel === 'study' ? (
-                  <ChancellorStudyWorkspace
-                    key={handoff?.owner === user?.id ? handoff?.id : 'manual'}
-                    initialObjective={
-                      handoff?.owner === user?.id
-                        ? handoff?.objective
-                        : undefined
-                    }
-                  />
-                ) : (
-                  <JunjichuCasesWorkspace key={user?.id ?? 'anonymous'} />
-                )}
+                <DepartmentContentWorkspace
+                  key={departmentPanelKey(
+                    user?.id,
+                    authGeneration,
+                    'life',
+                    panelSection
+                  )}
+                  moduleId="life"
+                  initialSection={panelSection}
+                />
               </>
             ) : businessPanel === 'account' ? (
               <>
@@ -572,7 +1050,7 @@ export function ChaotangFinalUiHost() {
             ) : (
               <McpWorkspace />
             )}
-          </section>
+          </CourtBusinessDialog>
         </div>
       )}
     </div>

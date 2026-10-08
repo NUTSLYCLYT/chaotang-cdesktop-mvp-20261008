@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type MouseEvent } from 'react';
 import {
   CheckCircleIcon,
   ChatCircleTextIcon,
@@ -16,6 +16,7 @@ import { useChaotangProvider } from '@/shared/providers/ChaotangProvider';
 import { ChaotangButton, ChaotangPanel } from './ChaotangPrimitives';
 import { consumePendingOutcomeIntent } from './outcomeCaseHandoff';
 import { StudyTaskProgress } from './StudyTaskProgress';
+import { StudyResourceBudget } from './StudyResourceBudget';
 import { submitStudyDecree } from './studySubmission';
 import {
   readStudyTextMaterial,
@@ -206,13 +207,53 @@ function ChancellorStudySession({
     draft.data.decreeText;
   const error =
     consult.error?.message ?? draft.error?.message ?? issue.error?.message;
+  const preparationError = consult.error ?? draft.error;
+  const modelConfigurationMissing =
+    preparationError &&
+    'code' in preparationError &&
+    preparationError.code === 'config_unavailable';
   const submitting = isSubmitting || issue.isPending;
   const objectiveBusy = consult.isPending || draft.isPending || submitting;
+  // User-facing copy: never surface DRAFT_READY as the primary explanation and
+  // never imply the draft is executable unless the original ready check is true.
+  const draftStatusText = submitting
+    ? '正在受理，请勿重复提交'
+    : jobId
+      ? '已创建办理任务，请查看下方进展'
+      : ready
+        ? '拟旨已就绪，等待您确认下旨'
+        : '拟旨尚需完善，请按下方意见补充';
+  const issueButtonText = submitting
+    ? '正在受理…'
+    : jobId
+      ? '已创建办理任务'
+      : ready
+        ? '正式下旨'
+        : '请先完善拟旨';
   const canUseSavedObjective = () =>
     mounted.current &&
     !objectiveBusy &&
     !submissionInFlight.current &&
     renderedEpoch === authorizationEpoch.current;
+
+  const saveBeforeRecoveryNavigation = (
+    event: MouseEvent<HTMLAnchorElement>
+  ) => {
+    if (!canUseSavedObjective()) {
+      event.preventDefault();
+      return;
+    }
+    if (!objective.trim()) return;
+    const saved = saveStudyObjective(() => localStorage, user.id, objective);
+    setSavedObjectiveError(!saved);
+    if (saved) setSavedObjective(saved);
+    else {
+      event.preventDefault();
+      setSavedObjectiveNotice(
+        '未能保存需求，暂未离开上书房。请复制当前内容留存后再打开其他入口。'
+      );
+    }
+  };
 
   const restoreObjective = () => {
     if (!savedObjective || !canUseSavedObjective()) return;
@@ -394,7 +435,7 @@ function ChancellorStudySession({
         <div className="flex flex-wrap items-start justify-between gap-base border-b border-brand/15 pb-double">
           <div>
             <p className="text-[9px] tracking-[0.22em] text-brand/55">
-              CHANCELLOR DESK · LIVE
+              CHANCELLOR DESK
             </p>
             <h2 className="chaotang-title mt-half text-2xl text-high">
               上书房
@@ -454,12 +495,28 @@ function ChancellorStudySession({
           )}
           {materialPreview && (
             <div className="mt-base space-y-base">
-              <p className="text-sm text-normal">
-                待加入：{materialPreview.name}
-              </p>
-              <pre className="max-h-56 overflow-auto whitespace-pre-wrap break-words border border-brand/15 bg-secondary p-base text-xs text-normal">
-                {materialPreview.text}
-              </pre>
+              <div className="border border-brand/15 bg-secondary p-base">
+                <p className="text-[10px] tracking-[0.18em] text-brand/70">
+                  本机已读取 · 待加入需求
+                </p>
+                <p className="mt-half break-words text-sm text-normal">
+                  {materialPreview.name}
+                </p>
+                <p className="mt-half text-xs leading-relaxed text-low">
+                  资料仅在本机预览，尚未发送给丞相或模型。
+                </p>
+                <details
+                  key={`${materialPreview.name}:${materialPreview.text}`}
+                  className="mt-base border border-brand/15 bg-primary/40"
+                >
+                  <summary className="cursor-pointer px-base py-half text-xs text-brand focus-visible:outline focus-visible:outline-brand">
+                    查看资料内容
+                  </summary>
+                  <pre className="max-h-56 overflow-auto whitespace-pre-wrap break-words border-t border-brand/15 bg-secondary p-base text-xs text-normal">
+                    {materialPreview.text}
+                  </pre>
+                </details>
+              </div>
               <ChaotangButton disabled={objectiveBusy} onClick={applyMaterial}>
                 加入当前需求
               </ChaotangButton>
@@ -658,6 +715,30 @@ function ChancellorStudySession({
             {error}
           </p>
         )}
+        {modelConfigurationMissing && (
+          <div className="mt-base space-y-base border border-brand/20 bg-primary/35 p-base text-xs text-low">
+            <p>
+              咨询或拟旨所需的模型配置尚未就绪。当前输入仍保留；打开下面入口前会先保存当前需求到本机，配置完善后可恢复并继续咨询。
+              这次失败不会自动创建办理任务。
+            </p>
+            <div className="flex flex-wrap gap-base">
+              <a
+                className="text-brand underline focus-visible:outline focus-visible:outline-brand"
+                href="/court#models"
+                onClick={saveBeforeRecoveryNavigation}
+              >
+                查看模型设置
+              </a>
+              <a
+                className="text-brand underline focus-visible:outline focus-visible:outline-brand"
+                href="/court#hubu"
+                onClick={saveBeforeRecoveryNavigation}
+              >
+                先试用户部现金分析
+              </a>
+            </div>
+          </div>
+        )}
         {submissionNotice && (
           <p role="alert" className="mt-base text-xs text-error">
             {submissionNotice}
@@ -757,17 +838,9 @@ function ChancellorStudySession({
         <section className="border border-[#bda65d]/55 bg-[#e9e2cc] p-1 text-[#272116] shadow-[0_18px_55px_rgba(0,0,0,0.35)]">
           <div className="border border-[#9b8140]/35 bg-[linear-gradient(135deg,#eee9d9,#dcd3bb)] p-double sm:p-8">
             <div className="flex flex-wrap justify-between gap-base">
-              <div>
-                <p className="text-xs text-[#8f6f2a]">
-                  拟旨 v{draft.data.version}
-                </p>
-                <h3 className="chaotang-title mt-half text-xl text-[#272116]">
-                  {draft.data.status}
-                </h3>
-              </div>
-              <span className="font-mono text-[9px] text-[#786f5d]">
-                {draft.data.fingerprint.slice(0, 16)}…
-              </span>
+              <h3 className="chaotang-title text-xl text-[#272116]">
+                {draftStatusText}
+              </h3>
             </div>
             <p className="mt-double text-sm leading-7 text-[#312a1e]">
               {draft.data.understanding}
@@ -785,6 +858,26 @@ function ChancellorStudySession({
                   items={draft.data.draft.deliverables}
                 />
                 <DraftList
+                  title="办理范围"
+                  items={draft.data.draft.scope ?? []}
+                  emptyLabel="尚未列明，请返回补充要求"
+                />
+                <DraftList
+                  title="使用资料"
+                  items={draft.data.draft.inputMaterials ?? []}
+                  emptyLabel="尚未列明，不代表已读取任何文件"
+                />
+                <DraftList
+                  title="本次不办理"
+                  items={draft.data.draft.exclusions ?? []}
+                  emptyLabel="尚未列明，不代表允许所有外部动作"
+                />
+                <DraftList
+                  title="完成标准"
+                  items={draft.data.draft.completionCriteria ?? []}
+                  emptyLabel="尚未列明，请返回补充验收要求"
+                />
+                <DraftList
                   title="材料缺口"
                   items={draft.data.draft.materialGaps}
                 />
@@ -794,9 +887,34 @@ function ChancellorStudySession({
                 />
               </div>
             )}
+            <StudyResourceBudget />
             <div className="mt-double border border-[#9b8140]/35 bg-white/25 p-base text-sm leading-7 text-[#312a1e]">
               {draft.data.decreeText ?? draft.data.revisionPrompt}
             </div>
+            <details className="mt-double border border-[#9b8140]/35 bg-white/25 p-base">
+              <summary className="cursor-pointer text-xs text-[#665323] focus-visible:outline focus-visible:outline-[#8f6c22]">
+                拟旨详情
+              </summary>
+              <dl className="mt-base space-y-half text-xs leading-relaxed text-[#4a4133]">
+                <div className="flex gap-base">
+                  <dt className="shrink-0 text-[#8f6f2a]">状态</dt>
+                  <dd className="font-mono">{draft.data.status}</dd>
+                </div>
+                <div className="flex gap-base">
+                  <dt className="shrink-0 text-[#8f6f2a]">版本</dt>
+                  <dd className="font-mono">{draft.data.version}</dd>
+                </div>
+                <div className="flex gap-base">
+                  <dt className="shrink-0 text-[#8f6f2a]">指纹</dt>
+                  <dd className="break-all font-mono">
+                    {draft.data.fingerprint}
+                  </dd>
+                </div>
+              </dl>
+            </details>
+            <p className="mt-double text-xs leading-relaxed text-[#665323]">
+              正式下旨后才创建办理任务；拟旨不代表部门已经执行。
+            </p>
             <ChaotangButton
               className="mt-double"
               variant="primary"
@@ -804,11 +922,7 @@ function ChancellorStudySession({
               onClick={() => void issueDraft()}
             >
               <PaperPlaneTiltIcon className="size-4" />
-              {submitting
-                ? '正在受理…'
-                : ready
-                  ? '正式下旨'
-                  : '尚未达到 DRAFT_READY'}
+              {issueButtonText}
             </ChaotangButton>
           </div>
         </section>
@@ -853,18 +967,26 @@ function Phase({
   );
 }
 
-function DraftList({ title, items }: { title: string; items: string[] }) {
+function DraftList({
+  title,
+  items,
+  emptyLabel = '无',
+}: {
+  title: string;
+  items: string[];
+  emptyLabel?: string;
+}) {
   return (
-    <section className="border border-brand/15 bg-primary/35 p-base">
-      <p className="text-xs text-brand">{title}</p>
+    <section className="border border-[#9b8140]/35 bg-white/25 p-base">
+      <p className="text-xs text-[#665323]">{title}</p>
       {items.length ? (
-        <ul className="mt-base space-y-half text-xs leading-relaxed text-low">
+        <ul className="mt-base space-y-half text-xs leading-relaxed text-[#312a1e]">
           {items.map((item) => (
             <li key={item}>· {item}</li>
           ))}
         </ul>
       ) : (
-        <p className="mt-base text-xs text-low">无</p>
+        <p className="mt-base text-xs text-[#4a4133]">{emptyLabel}</p>
       )}
     </section>
   );

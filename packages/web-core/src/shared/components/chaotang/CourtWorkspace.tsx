@@ -2,6 +2,8 @@ import { FilesIcon, UsersThreeIcon, BookOpenIcon } from '@phosphor-icons/react';
 import { useEffect, useRef, useState } from 'react';
 import { TaskDesktopResources } from './TaskDesktopResources';
 import { TaskInspector } from './TaskInspector';
+import { TaskDeliveryReview } from './TaskDeliveryReview';
+import { decreeJobStatus } from './decreeJobStatus';
 import {
   confirmStudyIntent,
   isStudyIntentCurrent,
@@ -11,12 +13,14 @@ import {
 import {
   createArtifactTransfer,
   canArchiveHistory,
+  canRetryTask,
   filterTaskHistory,
   taskTitle,
   type ArtifactTransferResult,
 } from './taskWorkspaceState';
 import {
   useChaotangClient,
+  type DecreeJob,
   type DecreeWorkspace,
   useChaotangProvider,
 } from '@/shared/providers/ChaotangProvider';
@@ -63,6 +67,12 @@ const taskErrors: Record<string, string> = {
   cancelled: '任务已取消',
   deadline_exceeded: '任务办理超时',
   provider_budget_exceeded: '模型请求预算已用完',
+  token_budget_transport_unavailable:
+    '本次未开始模型生成：任务预算与模型配置尚未接通。请管理员修复后再点“修复后重试”；原批准范围和累计用量会保留。',
+  gateway_cleanup_unconfirmed:
+    '执行连接尚未确认关闭，请管理员核对后处理。为避免重复执行，此任务暂不提供重试。',
+  execution_mode_incompatible:
+    '这是旧执行方式的任务，当前服务不能直接接续。原记录保留；如需重新办理，请回上书房核对范围并重新确认。',
   provider_failed: '模型服务调用失败',
   retry_exhausted: '已达到重试上限，请检查原因后再处理',
   accounting_source_unavailable: '所需会计资料不可用',
@@ -96,12 +106,81 @@ const stateReasons: Record<string, string> = {
   execution_cancelled: '任务已取消',
 };
 
+const terminalJobStates = ['SUCCEEDED', 'FAILED', 'CANCELLED'];
+const jobStateLabels: Record<string, string> = {
+  SUCCEEDED: '已完成',
+  FAILED: '失败',
+  CANCELLED: '已取消',
+};
+
+export function CancelRequestControl({
+  job,
+  receipt,
+  isPending,
+  error,
+  connected,
+  onCancel,
+}: {
+  job: Pick<DecreeJob, 'jobId' | 'state' | 'cancelRequested'>;
+  receipt?: Pick<DecreeJob, 'jobId' | 'state' | 'cancelRequested'>;
+  isPending: boolean;
+  error?: string;
+  connected: boolean;
+  onCancel: () => void;
+}) {
+  if (!['QUEUED', 'RUNNING'].includes(job.state)) return null;
+  const matched = receipt?.jobId === job.jobId ? receipt : undefined;
+  return (
+    <>
+      <button
+        className={button}
+        disabled={!connected || isPending || job.cancelRequested}
+        onClick={onCancel}
+      >
+        {isPending
+          ? '正在请求取消…'
+          : job.cancelRequested
+            ? '已请求取消，正在核对最终状态'
+            : '请求取消'}
+      </button>
+      {isPending && (
+        <p role="status">取消请求已发出，等待后端受理，请勿重复点击。</p>
+      )}
+      {!isPending && error && (
+        <p role="alert" className="text-error">
+          取消请求未确认：{error}。请重新读取任务状态后再决定。
+        </p>
+      )}
+      {!isPending &&
+        !error &&
+        matched &&
+        (terminalJobStates.includes(matched.state) ? (
+          <p role="status">
+            {`后端已确认任务结束：${jobStateLabels[matched.state] ?? matched.state}。`}
+          </p>
+        ) : matched.cancelRequested ? (
+          <p role="status">
+            取消请求已受理，正在核对最终状态；收尾阶段仍可能完成，请以后端最终状态为准。
+          </p>
+        ) : (
+          <p role="status">
+            后端回执尚未登记取消标志；请重新读取任务状态确认是否受理。
+          </p>
+        ))}
+    </>
+  );
+}
+
 export function CourtWorkspace({
   selectedJobId,
   onSelectJob,
+  embedded = false,
+  scrollPresentation = false,
 }: {
   selectedJobId?: string;
   onSelectJob: (id?: string, replace?: boolean) => void;
+  embedded?: boolean;
+  scrollPresentation?: boolean;
 }) {
   const {
     user,
@@ -139,24 +218,26 @@ export function CourtWorkspace({
   const [password, setPassword] = useState('');
   const [pending, setPending] = useState(false);
   return (
-    <div className="flex h-full min-h-0 flex-col bg-primary text-base text-normal">
-      <header className="flex flex-wrap items-center justify-between gap-base border-b p-base">
-        <div>
-          <h1 className="text-xl text-high">朝堂工作区</h1>
-          <p className="text-low">咨询 → 拟旨 → 明确确认 → 办理与成果</p>
-        </div>
-        {user && (
+    <div className="court-task-root flex h-full min-h-0 flex-col bg-primary text-base text-normal">
+      {!embedded && (
+        <header className="flex flex-wrap items-center justify-between gap-base border-b p-base">
           <div>
-            {user.username}{' '}
-            <button
-              className={button}
-              onClick={() => void logout().catch(() => undefined)}
-            >
-              退出朝堂账户
-            </button>
+            <h1 className="text-xl text-high">朝堂工作区</h1>
+            <p className="text-low">咨询 → 拟旨 → 明确确认 → 办理与成果</p>
           </div>
-        )}
-      </header>
+          {user && (
+            <div>
+              {user.username}{' '}
+              <button
+                className={button}
+                onClick={() => void logout().catch(() => undefined)}
+              >
+                退出朝堂账户
+              </button>
+            </div>
+          )}
+        </header>
+      )}
       {!health && (
         <p role="alert" className="p-base text-error">
           {error ?? '正在检查朝堂连接'}
@@ -224,6 +305,7 @@ export function CourtWorkspace({
           connected={Boolean(health)}
           history={history}
           updateHistory={updateHistory}
+          scrollPresentation={scrollPresentation}
         />
       )}
     </div>
@@ -237,6 +319,7 @@ function CourtSession({
   onSelectJob,
   history,
   updateHistory,
+  scrollPresentation,
 }: {
   owner: string;
   connected: boolean;
@@ -244,6 +327,7 @@ function CourtSession({
   onSelectJob: (id?: string, replace?: boolean) => void;
   history: HistoryView;
   updateHistory: (patch: Partial<HistoryView>) => void;
+  scrollPresentation: boolean;
 }) {
   const [objective, setObjective] = useState('');
   const [confirmedIntent, setConfirmedIntent] =
@@ -313,7 +397,7 @@ function CourtSession({
       issue.reset();
       setIssueError('丞相理解或目标已变化，请重新确认后拟旨。');
     }
-  }, [confirmedIntent, confirmed, draft.reset, issue.reset]);
+  }, [confirmedIntent, confirmed, draft, issue]);
   const busy = consult.isPending || draft.isPending || issue.isPending;
   const error =
     issueError ??
@@ -341,9 +425,23 @@ function CourtSession({
     '',
     history.state
   );
+  const HistoryContainer = scrollPresentation ? 'details' : 'div';
+  const ResourceContainer = scrollPresentation ? 'details' : 'div';
+  const workspaceCards = (
+    <WorkspaceCards
+      key={jobId ?? 'new'}
+      loading={Boolean(jobId) && workspace.isLoading}
+      onRetry={() => void workspace.refetch()}
+      result={job.data?.result}
+      objective={objective}
+      hasSelectedJob={Boolean(jobId)}
+      workspace={workspace.data}
+      error={workspace.error?.message}
+    />
+  );
   return (
-    <div className="grid min-h-0 flex-1 overflow-auto lg:grid-cols-[minmax(0,1fr)_360px]">
-      <main className="space-y-base overflow-auto p-double">
+    <div className="court-task-layout grid min-h-0 flex-1 overflow-auto lg:grid-cols-[minmax(0,1fr)_360px]">
+      <main className="court-task-main space-y-base overflow-auto p-double">
         <button className={button} disabled={busy} onClick={newTask}>
           新建任务
         </button>
@@ -361,7 +459,17 @@ function CourtSession({
                   ? '任务读取失败'
                   : '正在读取任务'}
             </h2>
-            <p className="break-all text-low">任务：{jobId}</p>
+            <details className="text-low">
+              <summary className="cursor-pointer py-half">
+                任务编号与技术状态
+              </summary>
+              <p className="break-all">任务：{jobId}</p>
+              {job.data && (
+                <p>
+                  {job.data.state} · {job.data.stage}
+                </p>
+              )}
+            </details>
             {job.isLoading && <p>读取任务中…</p>}
             {job.error && (
               <p role="alert" className="text-error">
@@ -373,9 +481,13 @@ function CourtSession({
             )}
             {job.data && (
               <>
-                <p>
-                  {job.data.state} · {job.data.stage}
-                </p>
+                {decreeJobStatus(job.data).notice && (
+                  <p role="status" className="text-normal">
+                    {decreeJobStatus(job.data).label}：
+                    {decreeJobStatus(job.data).notice}
+                  </p>
+                )}
+                <TaskInspector job={job.data} workspace={workspace.data} />
                 <h3 className="text-lg text-high">已批准目标与范围</h3>
                 <p className="whitespace-pre-wrap break-words">
                   {job.data.decreeText ||
@@ -391,49 +503,46 @@ function CourtSession({
                   value={job.data.approvedDraft?.draft}
                   historical
                 />
-                <TaskInspector job={job.data} workspace={workspace.data} />
-                <TaskDesktopResources
-                  jobId={jobId}
-                  connected={connected}
-                  businessAttemptId={job.data.runtimeAttemptId}
-                />
-                {job.data.error && (
+                <ResourceContainer>
+                  {scrollPresentation && (
+                    <summary className="cursor-pointer py-half">
+                      技术资源与运行记录
+                    </summary>
+                  )}
+                  <TaskDesktopResources
+                    jobId={jobId}
+                    connected={connected}
+                    businessAttemptId={job.data.runtimeAttemptId}
+                  />
+                </ResourceContainer>
+                {job.data.error && !decreeJobStatus(job.data).notice && (
                   <p role="alert" className="text-error">
                     {taskErrors[job.data.error.code] ??
                       '任务办理失败，请检查任务记录'}
                   </p>
                 )}
-                {['QUEUED', 'RUNNING'].includes(job.data.state) && (
+                <CancelRequestControl
+                  job={job.data}
+                  receipt={cancel.data}
+                  isPending={cancel.isPending}
+                  error={cancel.error?.message}
+                  connected={connected}
+                  onCancel={() => cancel.mutate(jobId)}
+                />
+                {canRetryTask(job.data) && (
                   <button
                     className={button}
-                    disabled={
-                      !connected || cancel.isPending || job.data.cancelRequested
+                    disabled={!connected || retry.isPending}
+                    onClick={() =>
+                      retry.mutate(jobId, {
+                        onSuccess: (successor) => {
+                          if (mounted.current) setJobId(successor.jobId);
+                        },
+                      })
                     }
-                    onClick={() => cancel.mutate(jobId)}
                   >
-                    {job.data.cancelRequested ? '已请求取消' : '请求取消'}
+                    {retry.isPending ? '正在建立重试任务…' : '修复后重试'}
                   </button>
-                )}
-                {job.data.state === 'FAILED' &&
-                  job.data.error?.code === 'validation_failed' && (
-                    <button
-                      className={button}
-                      disabled={!connected || retry.isPending}
-                      onClick={() =>
-                        retry.mutate(jobId, {
-                          onSuccess: (successor) => {
-                            if (mounted.current) setJobId(successor.jobId);
-                          },
-                        })
-                      }
-                    >
-                      {retry.isPending ? '正在建立重试任务…' : '修复后重试'}
-                    </button>
-                  )}
-                {cancel.error && (
-                  <p role="alert" className="text-error">
-                    {cancel.error.message}
-                  </p>
                 )}
                 {retry.error && (
                   <p role="alert" className="text-error">
@@ -443,6 +552,11 @@ function CourtSession({
                 {job.data.result && (
                   <ValidatedDecreeResult value={job.data.result} />
                 )}
+                <TaskDeliveryReview
+                  jobId={job.data.jobId}
+                  jobState={job.data.state}
+                  jobVersion={job.data.updatedAt}
+                />
               </>
             )}
           </section>
@@ -628,198 +742,202 @@ function CourtSession({
       </main>
       <aside
         aria-label="任务与成果"
-        className="space-y-base overflow-auto border-l bg-secondary p-base"
+        className="court-task-history space-y-base overflow-auto border-l bg-secondary p-base"
       >
-        <WorkspaceCards
-          key={jobId ?? 'new'}
-          loading={Boolean(jobId) && workspace.isLoading}
-          onRetry={() => void workspace.refetch()}
-          result={job.data?.result}
-          objective={objective}
-          hasSelectedJob={Boolean(jobId)}
-          workspace={workspace.data}
-          error={workspace.error?.message}
-        />
-        <h2 className="text-lg text-high">任务记录</h2>
-        <button
-          className={button}
-          disabled={jobs.isFetching}
-          onClick={() => void jobs.refetch()}
-        >
-          刷新任务
-        </button>
-        {jobs.isLoading && <p>加载任务中…</p>}
-        {jobs.error && (
-          <p role="alert" className="text-error">
-            {jobs.error.message}
-          </p>
-        )}
-        {!jobs.isLoading && !jobs.error && jobs.data?.items.length === 0 && (
-          <p className="text-low">
-            {history.offset > 0
-              ? '此页已无记录，请返回上一页或第一页。'
-              : history.q || history.archived !== 'active'
-                ? '没有符合条件的历史记录。'
-                : '暂无任务。先咨询并确认拟旨。'}
-          </p>
-        )}
-        <form
-          onSubmit={(event) => {
-            event.preventDefault();
-            updateHistory({ q: history.search, offset: 0 });
-          }}
-          className="space-y-half"
-        >
-          <label className="block">
-            搜索本账户任务
-            <input
-              className={input}
-              value={history.search}
-              maxLength={500}
-              onChange={(event) =>
-                updateHistory({ search: event.target.value })
-              }
-              placeholder="标题或任务编号"
-            />
-          </label>
-          <button className={button}>搜索全部历史</button>
-        </form>
-        <label className="block">
-          历史范围
-          <select
-            className={input}
-            value={history.archived}
-            onChange={(event) =>
-              updateHistory({
-                archived: event.target.value as HistoryView['archived'],
-                offset: 0,
-              })
-            }
+        <HistoryContainer open={scrollPresentation ? !jobId : undefined}>
+          {scrollPresentation && (
+            <summary className="court-history-summary">任务列表与筛选</summary>
+          )}
+          {!scrollPresentation && workspaceCards}
+          <h2 className="text-lg text-high">任务记录</h2>
+          <button
+            className={button}
+            disabled={jobs.isFetching}
+            onClick={() => void jobs.refetch()}
           >
-            <option value="active">未归档</option>
-            <option value="archived">已归档</option>
-            <option value="all">全部记录</option>
-          </select>
-        </label>
-        <label className="block">
-          本页状态
-          <select
-            className={input}
-            value={history.state}
-            onChange={(event) => updateHistory({ state: event.target.value })}
-          >
-            <option value="ALL">全部</option>
-            <option value="QUEUED">排队中</option>
-            <option value="RUNNING">办理中</option>
-            <option value="SUCCEEDED">办理完成</option>
-            <option value="FAILED">失败</option>
-            <option value="CANCELLED">已取消</option>
-          </select>
-        </label>
-        {jobs.data && !jobs.error && (
-          <>
-            <p className="text-low">
-              共 {jobs.data.total} 项；当前{' '}
-              {jobs.data.items.length ? jobs.data.offset + 1 : 0}–
-              {jobs.data.items.length
-                ? jobs.data.offset + jobs.data.items.length
-                : 0}{' '}
-              项。状态筛选仅作用于本页。
+            刷新任务
+          </button>
+          {jobs.isLoading && <p>加载任务中…</p>}
+          {jobs.error && (
+            <p role="alert" className="text-error">
+              {jobs.error.message}
             </p>
-            <nav aria-label="历史分页" className="flex flex-wrap gap-half">
-              <button
-                className={button}
-                disabled={jobs.isFetching || history.offset === 0}
-                onClick={() => updateHistory({ offset: 0 })}
-              >
-                第一页
-              </button>
-              <button
-                className={button}
-                disabled={jobs.isFetching || history.offset === 0}
-                onClick={() =>
-                  updateHistory({
-                    offset: Math.max(0, history.offset - jobs.data.limit),
-                  })
+          )}
+          {!jobs.isLoading && !jobs.error && jobs.data?.items.length === 0 && (
+            <p className="text-low">
+              {history.offset > 0
+                ? '此页已无记录，请返回上一页或第一页。'
+                : history.q || history.archived !== 'active'
+                  ? '没有符合条件的历史记录。'
+                  : '暂无任务。先咨询并确认拟旨。'}
+            </p>
+          )}
+          <form
+            onSubmit={(event) => {
+              event.preventDefault();
+              updateHistory({ q: history.search, offset: 0 });
+            }}
+            className="space-y-half"
+          >
+            <label className="block">
+              搜索本账户任务
+              <input
+                className={input}
+                value={history.search}
+                maxLength={500}
+                onChange={(event) =>
+                  updateHistory({ search: event.target.value })
                 }
-              >
-                上一页
-              </button>
-              <button
-                className={button}
-                disabled={
-                  jobs.isFetching ||
-                  jobs.data.offset + jobs.data.limit >= jobs.data.total
-                }
-                onClick={() =>
-                  updateHistory({ offset: history.offset + jobs.data.limit })
-                }
-              >
-                下一页
-              </button>
-            </nav>
-          </>
-        )}
-        <p className="text-low">
-          归档仅调整历史列表，不代表史馆正式归档，也不取消办理。只有已结束任务可以归档或恢复。
-        </p>
-        {archive.isPending && <p role="status">正在更新历史记录…</p>}
-        {archive.error && (
-          <p role="alert" className="text-error">
-            {archive.error.message}
+                placeholder="标题或任务编号"
+              />
+            </label>
+            <button className={button}>搜索全部历史</button>
+          </form>
+          <label className="block">
+            历史范围
+            <select
+              className={input}
+              value={history.archived}
+              onChange={(event) =>
+                updateHistory({
+                  archived: event.target.value as HistoryView['archived'],
+                  offset: 0,
+                })
+              }
+            >
+              <option value="active">未归档</option>
+              <option value="archived">已归档</option>
+              <option value="all">全部记录</option>
+            </select>
+          </label>
+          <label className="block">
+            本页状态
+            <select
+              className={input}
+              value={history.state}
+              onChange={(event) => updateHistory({ state: event.target.value })}
+            >
+              <option value="ALL">全部</option>
+              <option value="QUEUED">排队中</option>
+              <option value="RUNNING">办理中</option>
+              <option value="SUCCEEDED">办理完成</option>
+              <option value="FAILED">失败</option>
+              <option value="CANCELLED">已取消</option>
+            </select>
+          </label>
+          {jobs.data && !jobs.error && (
+            <>
+              <p className="text-low">
+                共 {jobs.data.total} 项；当前{' '}
+                {jobs.data.items.length ? jobs.data.offset + 1 : 0}–
+                {jobs.data.items.length
+                  ? jobs.data.offset + jobs.data.items.length
+                  : 0}{' '}
+                项。状态筛选仅作用于本页。
+              </p>
+              <nav aria-label="历史分页" className="flex flex-wrap gap-half">
+                <button
+                  className={button}
+                  disabled={jobs.isFetching || history.offset === 0}
+                  onClick={() => updateHistory({ offset: 0 })}
+                >
+                  第一页
+                </button>
+                <button
+                  className={button}
+                  disabled={jobs.isFetching || history.offset === 0}
+                  onClick={() =>
+                    updateHistory({
+                      offset: Math.max(0, history.offset - jobs.data.limit),
+                    })
+                  }
+                >
+                  上一页
+                </button>
+                <button
+                  className={button}
+                  disabled={
+                    jobs.isFetching ||
+                    jobs.data.offset + jobs.data.limit >= jobs.data.total
+                  }
+                  onClick={() =>
+                    updateHistory({ offset: history.offset + jobs.data.limit })
+                  }
+                >
+                  下一页
+                </button>
+              </nav>
+            </>
+          )}
+          <p className="text-low">
+            归档仅调整历史列表，不代表史馆正式归档，也不取消办理。只有已结束任务可以归档或恢复。
           </p>
+          {archive.isPending && <p role="status">正在更新历史记录…</p>}
+          {archive.error && (
+            <p role="alert" className="text-error">
+              {archive.error.message}
+            </p>
+          )}
+          {archive.isSuccess && (
+            <p role="status">
+              历史记录已{archive.data.historyArchived ? '归档' : '恢复'}。
+            </p>
+          )}
+          {!jobs.isLoading &&
+            !jobs.error &&
+            Boolean(jobs.data?.items.length) &&
+            visibleJobs.length === 0 && <p>没有匹配的任务。</p>}
+          {!jobs.error &&
+            visibleJobs.map((item) => (
+              <div key={item.jobId} className="space-y-half">
+                <button
+                  className={`${button} block w-full text-left ${jobId === item.jobId ? 'border-brand' : ''}`}
+                  disabled={busy}
+                  aria-current={jobId === item.jobId ? 'true' : undefined}
+                  onClick={() => {
+                    cancel.reset();
+                    retry.reset();
+                    setJobId(item.jobId);
+                  }}
+                >
+                  <span className="block truncate">{taskTitle(item)}</span>
+                  <span>
+                    {item.state} · {item.stage}
+                  </span>
+                </button>
+                <button
+                  className={button}
+                  disabled={
+                    !connected ||
+                    archive.isPending ||
+                    !canArchiveHistory(item.state)
+                  }
+                  title={
+                    !canArchiveHistory(item.state)
+                      ? '任务尚未结束，不能归档或恢复历史记录'
+                      : undefined
+                  }
+                  aria-label={`${item.historyArchived ? '恢复' : '归档'}历史记录：${taskTitle(item)}`}
+                  onClick={() => {
+                    archive.mutate({
+                      jobId: item.jobId,
+                      archived: !item.historyArchived,
+                    });
+                  }}
+                >
+                  {item.historyArchived ? '恢复历史记录' : '归档历史记录'}
+                </button>
+              </div>
+            ))}
+        </HistoryContainer>
+        {scrollPresentation && jobId && (
+          <details>
+            <summary className="court-history-summary">
+              成果、证据与参与部门
+            </summary>
+            {workspaceCards}
+          </details>
         )}
-        {archive.isSuccess && (
-          <p role="status">
-            历史记录已{archive.data.historyArchived ? '归档' : '恢复'}。
-          </p>
-        )}
-        {!jobs.isLoading &&
-          !jobs.error &&
-          Boolean(jobs.data?.items.length) &&
-          visibleJobs.length === 0 && <p>没有匹配的任务。</p>}
-        {!jobs.error &&
-          visibleJobs.map((item) => (
-            <div key={item.jobId} className="space-y-half">
-              <button
-                className={`${button} block w-full text-left ${jobId === item.jobId ? 'border-brand' : ''}`}
-                disabled={busy}
-                aria-current={jobId === item.jobId ? 'true' : undefined}
-                onClick={() => {
-                  cancel.reset();
-                  retry.reset();
-                  setJobId(item.jobId);
-                }}
-              >
-                <span className="block truncate">{taskTitle(item)}</span>
-                <span>
-                  {item.state} · {item.stage}
-                </span>
-              </button>
-              <button
-                className={button}
-                disabled={
-                  !connected ||
-                  archive.isPending ||
-                  !canArchiveHistory(item.state)
-                }
-                title={
-                  !canArchiveHistory(item.state)
-                    ? '任务尚未结束，不能归档或恢复历史记录'
-                    : undefined
-                }
-                aria-label={`${item.historyArchived ? '恢复' : '归档'}历史记录：${taskTitle(item)}`}
-                onClick={() => {
-                  archive.mutate({
-                    jobId: item.jobId,
-                    archived: !item.historyArchived,
-                  });
-                }}
-              >
-                {item.historyArchived ? '恢复历史记录' : '归档历史记录'}
-              </button>
-            </div>
-          ))}
       </aside>
     </div>
   );
@@ -1025,6 +1143,13 @@ export function TaskAcceptanceContract({
   );
 }
 
+export function artifactStateText(state: string): string {
+  const normalized = state.toLowerCase();
+  if (normalized === 'published') return '文件已发布（不等于翰林验收）';
+  if (normalized === 'registered') return '已登记，等待文件发布';
+  return '暂不可下载，状态待确认';
+}
+
 export function WorkspaceCards({
   result,
   objective,
@@ -1159,59 +1284,93 @@ export function WorkspaceCards({
               成果格式未通过校验
             </p>
           ) : artifacts?.length ? (
-            artifacts.map((item) => (
-              <div key={item.id} className="rounded border p-base">
-                <p>{item.displayName}</p>
-                <p className="text-low">
-                  {item.kind} · {item.state}
-                </p>
-                <button
-                  disabled={
-                    Boolean(downloads[item.id]?.pending) ||
-                    !workspace?.jobId ||
-                    (!client.saveWorkspaceArtifact &&
-                      (!item.downloadPath ||
-                        !client.downloadWorkspaceArtifact)) ||
-                    item.state.toLowerCase() !== 'published'
-                  }
-                  onClick={() => void download(item)}
-                  className={button}
-                >
-                  {downloads[item.id]?.pending
-                    ? '处理中…'
-                    : client.saveWorkspaceArtifact
-                      ? '保存文件'
-                      : item.downloadPath
-                        ? '下载文件'
-                        : '下载未就绪'}
-                </button>
-                {downloads[item.id]?.error && (
-                  <p role="alert" className="text-error">
-                    {downloads[item.id].error}
-                  </p>
-                )}
-                {downloads[item.id]?.result && (
-                  <p role="status" className="break-all text-low">
-                    {downloads[item.id].result?.status === 'saved' ? (
-                      <>
-                        已保存：
-                        {(downloads[item.id].result as { path?: string }).path}
-                        <br />
-                        SHA-256：
-                        {
-                          (downloads[item.id].result as { sha256?: string })
-                            .sha256
-                        }
-                      </>
-                    ) : downloads[item.id].result?.status === 'cancelled' ? (
-                      '已取消保存，未确认写入文件。'
-                    ) : (
-                      '已交给浏览器下载，请在浏览器下载记录中确认文件。'
-                    )}
-                  </p>
-                )}
-              </div>
-            ))
+            artifacts.map((item) => {
+              const pending = Boolean(downloads[item.id]?.pending);
+              const downloadError = downloads[item.id]?.error;
+              const disabledReason = pending
+                ? '处理中：正在处理上一次下载或保存请求，请稍候。'
+                : !workspace?.jobId
+                  ? '缺少任务编号，暂不能下载或保存。'
+                  : !client.saveWorkspaceArtifact &&
+                      (!item.downloadPath || !client.downloadWorkspaceArtifact)
+                    ? !item.downloadPath
+                      ? '此文件没有可用下载地址，暂不能下载。'
+                      : '当前客户端未接入文件下载，暂不能下载。'
+                    : item.state.toLowerCase() === 'registered'
+                      ? '文件尚未发布，暂不能下载或保存。'
+                      : item.state.toLowerCase() === 'published'
+                        ? undefined
+                        : '状态未确认，暂不能下载或保存。';
+              return (
+                <div key={item.id} className="rounded border p-base">
+                  <p>{item.displayName}</p>
+                  <p className="text-low">{artifactStateText(item.state)}</p>
+                  <details className="text-low">
+                    <summary className="cursor-pointer py-half">
+                      文件详情
+                    </summary>
+                    <p>
+                      {item.kind} · {item.state}
+                    </p>
+                  </details>
+                  {disabledReason && (
+                    <p className="text-low">{disabledReason}</p>
+                  )}
+                  <button
+                    disabled={
+                      Boolean(downloads[item.id]?.pending) ||
+                      !workspace?.jobId ||
+                      (!client.saveWorkspaceArtifact &&
+                        (!item.downloadPath ||
+                          !client.downloadWorkspaceArtifact)) ||
+                      item.state.toLowerCase() !== 'published'
+                    }
+                    onClick={() => void download(item)}
+                    className={button}
+                  >
+                    {pending
+                      ? '处理中…'
+                      : downloadError
+                        ? client.saveWorkspaceArtifact
+                          ? '重试保存'
+                          : '重试下载'
+                        : client.saveWorkspaceArtifact
+                          ? '保存文件'
+                          : item.downloadPath
+                            ? '下载文件'
+                            : '下载未就绪'}
+                  </button>
+                  {downloads[item.id]?.error && (
+                    <p role="alert" className="text-error">
+                      {downloads[item.id].error}
+                    </p>
+                  )}
+                  {downloads[item.id]?.result && (
+                    <p role="status" className="break-all text-low">
+                      {downloads[item.id].result?.status === 'saved' ? (
+                        <>
+                          已保存：
+                          {
+                            (downloads[item.id].result as { path?: string })
+                              .path
+                          }
+                          <br />
+                          SHA-256：
+                          {
+                            (downloads[item.id].result as { sha256?: string })
+                              .sha256
+                          }
+                        </>
+                      ) : downloads[item.id].result?.status === 'cancelled' ? (
+                        '已取消保存，未确认写入文件。'
+                      ) : (
+                        '已交给浏览器下载，请在浏览器下载记录中确认文件。'
+                      )}
+                    </p>
+                  )}
+                </div>
+              );
+            })
           ) : (
             <p className="text-low">
               {hasSelectedJob

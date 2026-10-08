@@ -68,15 +68,21 @@ import { PRIMARY_MODULES } from './primaryModules.ts';
 test('technical routes reach the real workspace instead of scene iframe', () => {
   for (const path of [
     '/court-workspace',
-    '/forecast',
     '/workspaces',
     '/workspaces/abc',
     '/routines/new',
     '/hosts/h1/workspaces/abc',
-    '/learning',
   ])
     assert.equal(usesTechnicalShell(path), true, path);
-  for (const path of ['/court', '/today', '/workspaces-fake'])
+  // Qintian and Hanlin now render inside the single court shell, so their real
+  // business content is hosted there instead of the retired technical layout.
+  for (const path of [
+    '/court',
+    '/today',
+    '/workspaces-fake',
+    '/forecast',
+    '/learning',
+  ])
     assert.equal(usesTechnicalShell(path), false, path);
 });
 

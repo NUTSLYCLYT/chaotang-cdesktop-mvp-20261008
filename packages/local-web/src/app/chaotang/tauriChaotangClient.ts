@@ -215,6 +215,8 @@ export const tauriChaotangClient: ChaotangClient &
     }),
   fusionCapabilities: () =>
     courtInvoke<FusionCapabilities>('chaotang_fusion_capabilities'),
+  reviewDecreeDelivery: (jobId) =>
+    courtInvoke<unknown>('chaotang_review_decree_delivery', { jobId }),
   decreeWorkspace: (jobId) =>
     courtInvoke<DecreeWorkspace>('chaotang_decree_workspace', { jobId }),
   downloadWorkspaceArtifact: async (path) => {

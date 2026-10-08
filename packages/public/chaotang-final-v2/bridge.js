@@ -1,5 +1,11 @@
 (function () {
   "use strict";
+  let pendingIntentText = "";
+
+  // Set only while a parent-driven route sync programmatically clicks a real
+  // navigation button. It suppresses the outbound echo/action for that click so
+  // the sync does not loop, while genuine user clicks still dispatch normally.
+  let suppressNavigationDispatch = false;
 
   let responseTimer = null;
   let draftTimer = null;
@@ -13,7 +19,10 @@
   let saving = null;
   let requestId = null;
   const post = (message) =>
-    window.parent.postMessage(message, window.location.origin);
+    (window.CHAOTANG_PARENT || window.parent).postMessage(
+      message,
+      window.location.origin,
+    );
   function key() {
     if (!selected[activePage]) {
       selected[activePage] = crypto.randomUUID();
@@ -114,15 +123,13 @@
   function restorePendingPrompt() {
     const input = document.getElementById("promptInput");
     const send = document.getElementById("sendButton");
-    const pending = sessionStorage.getItem("chaotang.pending-intent") || "";
+    const pending = pendingIntentText;
     if (input && !input.value.trim()) input.value = pending;
     if (send) send.disabled = !input?.value.trim();
   }
 
   const pageRoutes = {
     A01: "/today",
-    A03: "/workspaces",
-    B02: "/wealth",
     C02: "/forecast",
     C03: "/learning",
     E04: "/life",
@@ -142,7 +149,7 @@
       )
         return;
       event.preventDefault();
-      window.parent.postMessage(
+      (window.CHAOTANG_PARENT || window.parent).postMessage(
         { type: "chaotang:window-drag", doubleClick: event.detail >= 2 },
         window.location.origin,
       );
@@ -150,8 +157,248 @@
   }
 
   function selectPage(page) {
-    const button = document.querySelector('[data-page="' + page + '"]');
-    if (button) button.click();
+    const button = document.querySelector('button[data-page="' + page + '"]');
+    if (!button) return;
+    suppressNavigationDispatch = true;
+    try {
+      button.click();
+    } finally {
+      suppressNavigationDispatch = false;
+    }
+  }
+
+  // The single operation surface for the real pages (A02/A03/A06/B02/C01). The
+  // child measures its own stage (below the page heading, down to the composer)
+  // and reports a strictly finite rectangle over the verified channel. The Host
+  // places the real component inside it; the child never reads host state and
+  // re-measures only on demand, never per frame, so no measurement loop can
+  // start.
+  //
+  // The Host owns an explicit lease: it requests the surface when it opens a
+  // real page and dismisses it on close or switch. While no lease is held the
+  // child stays on its own composer even if the user is still on the page, so an
+  // ordinary click can never reactivate a surface the Host has released.
+  let inlineLease = false;
+  let homeCatalogLease = false;
+  let inlineActive = null;
+  let inlineScheduled = false;
+
+  function measureInlineStage() {
+    const stage = document.getElementById("stage");
+    if (!stage || typeof stage.getBoundingClientRect !== "function")
+      return null;
+    const stageRect = stage.getBoundingClientRect();
+    if (!stageRect) return null;
+    if (
+      activePage === "A01" ||
+      activePage === "A02" ||
+      activePage === "A06" ||
+      activePage === "C01" ||
+      activePage === "A03" ||
+      activePage === "B02" ||
+      activePage === "B06" ||
+      activePage === "C02" ||
+      activePage === "C03"
+    ) {
+      const display = document.getElementById("centralDisplay");
+      const bar = document.querySelector(".display-bar");
+      if (!display || !bar) return null;
+      const box = display.getBoundingClientRect(),
+        head = bar.getBoundingClientRect();
+      const left = Math.max(box.left + 1, stageRect.left);
+      const right = Math.min(box.right - 1, stageRect.right);
+      // A02 preserves its original decree controls at the foot of the paper.
+      // Other offices keep a header at the top. Never cover either control bar.
+      const controlsAtFoot = head.top > box.top + box.height / 2;
+      const top = Math.max(controlsAtFoot ? box.top + 1 : head.bottom, stageRect.top);
+      const bottom = Math.min(controlsAtFoot ? head.top : box.bottom - 1, stageRect.bottom);
+      return { left, top, width: right - left, height: bottom - top };
+    }
+    const heading = document.querySelector(".page-heading");
+    const headingRect =
+      heading && typeof heading.getBoundingClientRect === "function"
+        ? heading.getBoundingClientRect()
+        : null;
+    const top =
+      headingRect &&
+      Number.isFinite(headingRect.bottom) &&
+      headingRect.bottom > stageRect.top
+        ? headingRect.bottom
+        : stageRect.top;
+    return {
+      left: stageRect.left,
+      top: top,
+      width: stageRect.width,
+      height: stageRect.bottom - top,
+    };
+  }
+
+  function usableInlineRect(rect) {
+    return Boolean(
+      rect &&
+        Number.isFinite(rect.left) &&
+        Number.isFinite(rect.top) &&
+        Number.isFinite(rect.width) &&
+        Number.isFinite(rect.height) &&
+        rect.width > 0 &&
+        rect.height > 0,
+    );
+  }
+
+  function childOverlayOpen() {
+    for (const id of ["drawer", "atlas", "onboarding"]) {
+      const node = document.getElementById(id);
+      if (node && node.open === true) return true;
+    }
+    return false;
+  }
+
+  // On screens below the shell's 1180px breakpoint both side panels collapse;
+  // expanding one overlays the stage. The real surface must yield instead of
+  // covering the panel. Only class changes on the two panels are observed.
+  function narrowPanelsExpanded() {
+    if (!(window.innerWidth < 1180)) return false;
+    for (const side of ["left", "right"]) {
+      const panel = document.querySelector("." + side + "-panel");
+      if (panel && !panel.classList.contains("is-collapsed")) return true;
+    }
+    return false;
+  }
+
+  function composerHintOriginal(hint) {
+    if (hint.dataset.courtInlineOriginal === undefined)
+      hint.dataset.courtInlineOriginal = hint.textContent || "";
+    return hint.dataset.courtInlineOriginal;
+  }
+
+  function applyInlineMode(mode) {
+    if (mode === inlineActive) return;
+    inlineActive = mode;
+    const app = document.getElementById("app");
+    if (app) {
+      if (mode) app.dataset.courtInline = mode;
+      else delete app.dataset.courtInline;
+    }
+    const input = document.getElementById("promptInput");
+    const send = document.getElementById("sendButton");
+    const hint = document.getElementById("composerHint");
+    if (mode) {
+      // active / connecting / suspended all mean the real surface owns this
+      // page: the prototype demo controls and the ordinary send must stay inert
+      // so there are never two live operation entries at once.
+      if (input) input.readOnly = true;
+      if (send) send.disabled = true;
+      if (hint) {
+        composerHintOriginal(hint);
+        hint.textContent =
+          mode === "suspended"
+            ? "真实办理区暂时收起；返回后继续当前任务，此处不再重复发送。"
+            : activePage === "A01"
+              ? "在上方御屏选择成果；打开案例不会自动下旨或调用模型。"
+            : activePage === "C01"
+              ? "在上方御屏查看调查与证据；新需求请进入上书房，不会自动发起调查。"
+              : activePage === "A06"
+                ? "在上方史馆总卷查阅、下载与复盘；复用档案会带入上书房重新拟旨。"
+                : activePage === "B02"
+                  ? "在上方户部御屏输入数据、生成现金分析与成果；不会执行付款或记账。"
+                  : "请在上方真实办理区填写需求、附资料并确认办理；此处不再重复发送。";
+      }
+      return;
+    }
+    // The lease was released (dismiss, leave page): restore the original
+    // composer and, from the content still in the box, the correct send state.
+    if (input) input.readOnly = false;
+    if (send) send.disabled = !(input && input.value.trim());
+    if (hint && hint.dataset.courtInlineOriginal !== undefined) {
+      hint.textContent = hint.dataset.courtInlineOriginal;
+      delete hint.dataset.courtInlineOriginal;
+    }
+  }
+
+  function reportInlineSurface() {
+    if (activePage === "A01" && !homeCatalogLease) inlineLease = false;
+    if (!inlineLease) {
+      applyInlineMode(null);
+      return;
+    }
+    if (
+      activePage !== "A01" &&
+      activePage !== "A02" &&
+      activePage !== "A03" &&
+      activePage !== "A06" &&
+      activePage !== "B02" &&
+      activePage !== "B06" &&
+      activePage !== "C01" &&
+      activePage !== "C02" &&
+      activePage !== "C03"
+    ) {
+      inlineLease = false;
+      applyInlineMode(null);
+      return;
+    }
+    if (
+      childOverlayOpen() ||
+      narrowPanelsExpanded() ||
+      ((activePage === "A01" ||
+        activePage === "A02" ||
+        activePage === "A06" ||
+        activePage === "C01" ||
+        activePage === "A03" ||
+        activePage === "B02" ||
+        activePage === "B06" ||
+        activePage === "C02" ||
+        activePage === "C03") &&
+        document.getElementById("app")?.dataset.scroll === "seal")
+    ) {
+      applyInlineMode("suspended");
+      post({
+        type: "chaotang:inline-surface",
+        page: activePage,
+        suspended: true,
+        rect: null,
+      });
+      return;
+    }
+    // A transformed narrow side panel can make the browser scroll the otherwise
+    // fixed shell while moving keyboard focus back to its collapse button.
+    // The shell has no intentional document scrolling, so restore the viewport
+    // before measuring. Otherwise a valid stage can report a negative left edge
+    // and the Host must correctly reject it, leaving the real surface connecting.
+    const appRoot = document.getElementById("app");
+    if (appRoot && (appRoot.scrollLeft || appRoot.scrollTop)) {
+      appRoot.scrollLeft = 0;
+      appRoot.scrollTop = 0;
+    }
+    if (window.scrollX || window.scrollY) window.scrollTo(0, 0);
+    const rect = measureInlineStage();
+    if (!usableInlineRect(rect)) {
+      // The Host is honest about connecting; the prototype controls stay inert
+      // until the real rectangle is accepted, so no demo action can run.
+      applyInlineMode("connecting");
+      post({
+        type: "chaotang:inline-surface",
+        page: activePage,
+        suspended: false,
+        rect: null,
+      });
+      return;
+    }
+    applyInlineMode("active");
+    post({
+      type: "chaotang:inline-surface",
+      page: activePage,
+      suspended: false,
+      rect: rect,
+    });
+  }
+
+  function scheduleInlineSurface() {
+    if (inlineScheduled) return;
+    inlineScheduled = true;
+    requestAnimationFrame(function () {
+      inlineScheduled = false;
+      reportInlineSurface();
+    });
   }
 
   function showLiveMessage(title, body, tone) {
@@ -183,7 +430,7 @@
     panel.dataset.tone = tone || "normal";
     panel.querySelector(".live-reply-head span").textContent = title;
     panel.querySelector(".live-reply-body").textContent = body;
-    const pending = sessionStorage.getItem("chaotang.pending-intent") || "";
+    const pending = pendingIntentText;
     const question = panel.querySelector(".live-reply-question");
     question.hidden = !pending;
     question.querySelector("p").textContent = pending;
@@ -198,6 +445,31 @@
     if (event.data && event.data.type === "chaotang:route") {
       selectPage(event.data.page || "A01");
     }
+    if (event.data && event.data.type === "chaotang:inline-surface-request") {
+      homeCatalogLease = event.data.page === "A01";
+      inlineLease = true;
+      // Open the existing scroll once on entry. Subsequent collapse stays closed.
+      if (
+        activePage === "A01" ||
+      activePage === "A02" ||
+        activePage === "A06" ||
+        activePage === "C01" ||
+        activePage === "A03" ||
+        activePage === "B02" ||
+        activePage === "B06" ||
+        activePage === "C02" ||
+        activePage === "C03"
+      ) {
+        const app = document.getElementById("app");
+        if (app && (activePage === "A01" || app.dataset.scroll === "seal")) app.dataset.scroll = "full";
+      }
+      scheduleInlineSurface();
+    }
+    if (event.data && event.data.type === "chaotang:inline-surface-dismiss") {
+      inlineLease = false;
+      homeCatalogLease = false;
+      applyInlineMode(null);
+    }
     if (event.data && event.data.type === "chaotang:status") {
       const nextAccount = event.data.authenticated ? event.data.username : null;
       if (nextAccount !== accountName) {
@@ -210,7 +482,7 @@
         Object.keys(records).forEach((key) => delete records[key]);
         document.getElementById("chaotangLiveReply")?.remove();
         accountName = nextAccount;
-        sessionStorage.removeItem("chaotang.pending-intent");
+        pendingIntentText = "";
         ready = false;
         selected = {};
         sessions = {};
@@ -224,7 +496,7 @@
       const badge = document.querySelector(".truth-badge");
       if (badge) {
         badge.textContent = event.data.connected
-          ? "LIVE · 客户端已连接"
+          ? "服务已连接 · 模型状态以回执为准"
           : "OFFLINE · 服务未连接";
         badge.classList.toggle("is-live", Boolean(event.data.connected));
       }
@@ -257,8 +529,9 @@
       const truth = document.querySelector(".capability-truth");
       if (truth)
         truth.textContent = event.data.connected
-          ? "已连接朝堂客户端服务 · 外部动作仍需授权"
+          ? "已连接朝堂客户端服务 · 模型与外部动作均以真实回执为准"
           : "服务未连接 · 不会触发外部动作";
+      scheduleInlineSurface();
     }
     if (
       event.data?.type === "chaotang:store" &&
@@ -316,8 +589,16 @@
       }
       pendingPage = null;
       clearResponseTimer();
-      renderHistory();
-      feedback("本地保存失败：" + event.data.message);
+      if (inlineLease) {
+        // A legacy native-chat storage failure must not take ownership away
+        // from the current real business surface or hide its scroll controls.
+        const hint = document.getElementById("composerHint");
+        if (hint)
+          hint.textContent = "历史对话暂不可用；可继续使用御屏内的业务功能。";
+      } else {
+        renderHistory();
+        feedback("本地保存失败：" + event.data.message);
+      }
     }
     if (event.data && event.data.type === "chaotang:consulting") {
       renderHistory();
@@ -337,7 +618,7 @@
       pendingPage = null;
       save();
       if (page === key()) renderHistory();
-      sessionStorage.removeItem("chaotang.pending-intent");
+      pendingIntentText = "";
       const sendButton = document.getElementById("sendButton");
       if (sendButton)
         sendButton.disabled = !document
@@ -403,10 +684,26 @@
         }
         return;
       }
-      const pageButton = event.target.closest("[data-page]");
+      const pageButton = event.target.closest("button[data-page]");
       const page = pageButton && pageButton.dataset.page;
       if (page) {
+        if (page === "A01" && (activePage !== "A01" || !suppressNavigationDispatch)) homeCatalogLease = false;
         activePage = page;
+        // A genuine navigation (or a parent route sync) to a real page opens the
+        // real operation surface; the Host confirms with its own request. An
+        // explicit dismiss still wins: it clears the lease and ordinary clicks
+        // do not restore it.
+        if (
+          page === "A02" ||
+          page === "A03" ||
+          page === "A06" ||
+          page === "B02" ||
+          page === "B06" ||
+          page === "C01" ||
+          page === "C02" ||
+          page === "C03"
+        )
+          inlineLease = true;
         const panel = document.getElementById("chaotangLiveReply");
         if (panel) panel.hidden = true;
         delete document.getElementById("app").dataset.chatOpen;
@@ -420,13 +717,24 @@
       }
       // Open the existing business components inside the original court shell.
       // Navigation itself does not create a job or call a model.
-      if (page === "A02" || page === "A03") {
+      const businessPages = {
+        A02: "study",
+        A03: "cases",
+        B02: "hubu",
+        B06: "gongbu",
+        C01: "jinyiwei",
+        A06: "shiguan",
+        C02: "forecast",
+        C03: "learning",
+        E04: "life",
+      };
+      if (page && !suppressNavigationDispatch && businessPages[page]) {
         post({
           type: "chaotang:action",
-          action: page === "A02" ? "study" : "cases",
+          action: businessPages[page],
         });
-      } else if (page && pageRoutes[page]) {
-        window.parent.postMessage(
+      } else if (page && !suppressNavigationDispatch && pageRoutes[page]) {
+        (window.CHAOTANG_PARENT || window.parent).postMessage(
           { type: "chaotang:navigate", route: pageRoutes[page] },
           window.location.origin,
         );
@@ -440,6 +748,7 @@
         return;
       }
       const actionMap = {
+        results: "results",
         account: "account",
         models: "models",
         skills: "skills",
@@ -449,14 +758,63 @@
       if (actionMap[action]) {
         event.preventDefault();
         event.stopImmediatePropagation();
-        window.parent.postMessage(
+        (window.CHAOTANG_PARENT || window.parent).postMessage(
           { type: "chaotang:action", action: actionMap[action] },
           window.location.origin,
         );
       }
+      scheduleInlineSurface();
     },
     true,
   );
+
+  // Re-measure on real layout changes only: window resize, stage resize and the
+  // child's own overlays opening or closing. All paths coalesce through
+  // scheduleInlineSurface so there is no per-frame measurement loop.
+  window.addEventListener("resize", scheduleInlineSurface);
+  // Opening the original scroll animates its transform. ResizeObserver does
+  // not observe transform-only movement; measure again at the real endpoint.
+  document
+    .getElementById("centralDisplay")
+    ?.addEventListener("transitionend", scheduleInlineSurface);
+  document
+    .getElementById("centralDisplay")
+    ?.addEventListener("animationend", scheduleInlineSurface);
+  document
+    .getElementById("stage")
+    ?.addEventListener("scroll", scheduleInlineSurface);
+  if (typeof MutationObserver === "function") {
+    const inlineObserver = new MutationObserver(scheduleInlineSurface);
+    const app = document.getElementById("app");
+    if (app)
+      inlineObserver.observe(app, {
+        attributes: true,
+        attributeFilter: ["data-scroll"],
+      });
+    for (const id of ["drawer", "atlas", "onboarding"]) {
+      const node = document.getElementById(id);
+      if (node)
+        inlineObserver.observe(node, {
+          attributes: true,
+          attributeFilter: ["open", "hidden"],
+        });
+    }
+    // Narrow-screen panels expand/collapse by toggling .is-collapsed only.
+    for (const side of ["left", "right"]) {
+      const panel = document.querySelector("." + side + "-panel");
+      if (panel)
+        inlineObserver.observe(panel, {
+          attributes: true,
+          attributeFilter: ["class"],
+        });
+    }
+  }
+  if (typeof ResizeObserver === "function") {
+    const stage = document.getElementById("stage");
+    if (stage) new ResizeObserver(scheduleInlineSurface).observe(stage);
+    const display = document.getElementById("centralDisplay");
+    if (display) new ResizeObserver(scheduleInlineSurface).observe(display);
+  }
 
   const send = document.getElementById("sendButton");
   const input = document.getElementById("promptInput");
@@ -498,7 +856,7 @@
         sessions[key()].draft = "";
         if (sessions[key()].title === "新对话")
           sessions[key()].title = value.slice(0, 28);
-        sessionStorage.setItem("chaotang.pending-intent", value);
+        pendingIntentText = value;
         saving = {
           id: crypto.randomUUID(),
           prompt: value,

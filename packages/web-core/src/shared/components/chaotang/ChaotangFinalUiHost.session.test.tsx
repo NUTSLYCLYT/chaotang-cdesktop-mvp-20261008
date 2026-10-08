@@ -4,12 +4,19 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 // This verifies async account boundaries, not browser rendering or native IPC.
 const h = vi.hoisted(() => ({
   cursor: 0,
+  bridgeNonce: '',
   slots: [] as any[],
   effects: [] as Array<() => void>,
   listeners: new Set<(event: any) => void>(),
   user: { id: 'owner-A' } as { id: string } | null,
   authGeneration: 1,
   frame: { postMessage: vi.fn() },
+  port: {
+    postMessage: vi.fn(),
+    close: vi.fn(),
+    onmessage: undefined as ((event: any) => void) | undefined,
+  },
+  handshaken: false,
   client: { junjichuCases: vi.fn(), chancellorConsult: vi.fn() },
 }));
 vi.mock('react', async (importOriginal) => ({
@@ -67,6 +74,14 @@ vi.mock('./McpWorkspace', () => ({ McpWorkspace: () => null }));
 
 import { ChaotangFinalUiHost } from './ChaotangFinalUiHost';
 import { ChancellorStudyWorkspace } from './ChancellorStudyWorkspace';
+import { HubuOperationsWorkspace } from './HubuOperationsWorkspace';
+import { JinyiweiWorkspace } from './JinyiweiWorkspace';
+import { ShiguanOperationsWorkspace } from './ShiguanOperationsWorkspace';
+import { OutcomeCatalogWorkspace } from './OutcomeCatalogWorkspace';
+import {
+  GongbuTaskWorkspace,
+  JunjichuOperationsWorkspace,
+} from './CourtOperationsWorkspace';
 
 function deferred<T>() {
   let resolve!: (value: T) => void;
@@ -77,14 +92,29 @@ function deferred<T>() {
   });
   return { promise, resolve, reject };
 }
-function render() {
+function render(handshake = true) {
   h.cursor = 0;
   const tree = ChaotangFinalUiHost();
   const frame = tree.props.children.find(
     (child: any) => child?.type === 'iframe'
   );
   frame.ref.current = { contentWindow: h.frame };
+  h.bridgeNonce =
+    new URL(frame.props.src, 'https://isolated.invalid').searchParams.get(
+      'bridgeNonce'
+    ) || '';
   for (const effect of h.effects.splice(0)) effect();
+  if (handshake && !h.handshaken) {
+    h.handshaken = true;
+    for (const listener of h.listeners)
+      listener({
+        source: h.frame,
+        origin: 'null',
+        data: { type: 'chaotang:bridge-ready', bridgeNonce: h.bridgeNonce },
+        ports: [h.port],
+      });
+    h.port.postMessage.mockClear();
+  }
   return tree;
 }
 
@@ -98,8 +128,9 @@ function sendHandoff(prompt: string) {
   for (const listener of h.listeners)
     listener({
       source: h.frame,
-      origin: 'https://isolated.invalid',
+      origin: 'null',
       data: {
+        bridgeNonce: h.bridgeNonce,
         type: 'chaotang:prepare-decree',
         prompt,
       },
@@ -110,6 +141,153 @@ const resumeButton = (tree: any) =>
   elements(tree).find(
     (node) => node.type === 'button' && node.props.children === '带入上书房'
   );
+
+describe('real department panel handoff', () => {
+  it('keeps the selected iframe document when the router removes the UI query', () => {
+    window.location.search = '?chaotangUi=legacy';
+    const first = elements(render()).find((node) => node.type === 'iframe');
+    expect(first.props.src).toContain('/chaotang-final/index.html');
+    window.location.search = '';
+    const next = elements(render()).find((node) => node.type === 'iframe');
+    expect(next.props.src).toBe(first.props.src);
+  });
+  it('rejects missing or wrong document nonce even from the same opaque iframe', () => {
+    render();
+    for (const bridgeNonce of [undefined, 'wrong-document']) {
+      for (const receive of h.listeners)
+        receive({
+          source: h.frame,
+          origin: 'null',
+          data: { type: 'chaotang:action', action: 'hubu', bridgeNonce },
+        });
+      expect(
+        elements(render()).some((node) => node.type === HubuOperationsWorkspace)
+      ).toBe(false);
+    }
+  });
+  it('requires both the exact iframe and the sandbox origin', () => {
+    render();
+    for (const event of [
+      { source: {}, origin: 'null' },
+      { source: h.frame, origin: 'https://isolated.invalid' },
+      { source: h.frame, origin: 'https://foreign.invalid' },
+    ]) {
+      for (const receive of h.listeners)
+        receive({
+          ...event,
+          data: {
+            bridgeNonce: h.bridgeNonce,
+            type: 'chaotang:action',
+            action: 'hubu',
+          },
+        });
+      expect(
+        elements(render()).some((node) => node.type === HubuOperationsWorkspace)
+      ).toBe(false);
+    }
+    const tree = render();
+    const frame = elements(tree).find((node) => node.type === 'iframe');
+    expect(frame.props.sandbox).toBe('allow-scripts allow-downloads');
+  });
+  it('turns archive reuse into an editable study request without starting execution', () => {
+    render();
+    for (const receive of h.listeners)
+      receive({
+        origin: 'null',
+        source: h.frame,
+        data: {
+          bridgeNonce: h.bridgeNonce,
+          type: 'chaotang:action',
+          action: 'shiguan',
+        },
+      });
+    elements(render())
+      .find((node) => node.type === ShiguanOperationsWorkspace)
+      .props.onReuse('原始调研需求');
+    const study = elements(render()).find(
+      (node) => node.type === ChancellorStudyWorkspace
+    );
+    expect(study.props.initialObjective).toBe('原始调研需求');
+    expect(h.client.chancellorConsult).not.toHaveBeenCalled();
+    expect(h.client.junjichuCases).not.toHaveBeenCalled();
+  });
+  it.each([true, false])(
+    'catalog prepares editable input with authenticated=%s and never executes',
+    (authenticated) => {
+      if (!authenticated) h.user = null;
+      render();
+      for (const receive of h.listeners)
+        receive({
+          origin: 'null',
+          source: h.frame,
+          data: {
+            bridgeNonce: h.bridgeNonce,
+            type: 'chaotang:action',
+            action: 'results',
+          },
+        });
+      const catalog = elements(render()).find(
+        (node) => node.type === OutcomeCatalogWorkspace
+      );
+      catalog.props.onPrepare('核实开源许可证');
+      if (!authenticated) {
+        expect(resumeButton(render())).toBeUndefined();
+        h.user = { id: 'owner-A' };
+        h.authGeneration++;
+        render();
+        resumeButton(render()).props.onClick();
+      }
+      const study = elements(render()).find(
+        (node) => node.type === ChancellorStudyWorkspace
+      );
+      expect(study.props.initialObjective).toBe('核实开源许可证');
+      expect(h.client.chancellorConsult).not.toHaveBeenCalled();
+      expect(h.client.junjichuCases).not.toHaveBeenCalled();
+    }
+  );
+  it('routes the original shell to existing business components without calling a model', () => {
+    render();
+    for (const [action, component] of [
+      ['hubu', HubuOperationsWorkspace],
+      ['jinyiwei', JinyiweiWorkspace],
+      ['shiguan', ShiguanOperationsWorkspace],
+      ['gongbu', GongbuTaskWorkspace],
+      ['cases', JunjichuOperationsWorkspace],
+    ]) {
+      for (const receive of h.listeners)
+        receive({
+          origin: 'null',
+          source: h.frame,
+          data: { bridgeNonce: h.bridgeNonce, type: 'chaotang:action', action },
+        });
+      expect(elements(render()).some((node) => node.type === component)).toBe(
+        true
+      );
+    }
+    expect(h.client.chancellorConsult).not.toHaveBeenCalled();
+  });
+  it('remounts the engineering task selection when the authenticated session changes', () => {
+    render();
+    for (const receive of h.listeners)
+      receive({
+        origin: 'null',
+        source: h.frame,
+        data: {
+          bridgeNonce: h.bridgeNonce,
+          type: 'chaotang:action',
+          action: 'gongbu',
+        },
+      });
+    const before = elements(render()).find(
+      (node) => node.type === GongbuTaskWorkspace
+    );
+    h.authGeneration++;
+    const after = elements(render()).find(
+      (node) => node.type === GongbuTaskWorkspace
+    );
+    expect(before.key).not.toBe(after.key);
+  });
+});
 
 describe('anonymous result-case handoff', () => {
   it('retains input through login and transfers it only after explicit confirmation', () => {
@@ -186,8 +364,9 @@ function consult(page = 'A03') {
   for (const listener of h.listeners)
     listener({
       source: h.frame,
-      origin: 'https://isolated.invalid',
+      origin: 'null',
       data: {
+        bridgeNonce: h.bridgeNonce,
         type: 'chaotang:consult',
         page,
         prompt: 'synthetic question',
@@ -199,7 +378,7 @@ const settle = async () => {
   for (let i = 0; i < 12; i++) await Promise.resolve();
 };
 const messages = () =>
-  h.frame.postMessage.mock.calls.map(([message]) => message);
+  h.port.postMessage.mock.calls.map(([message]) => message);
 
 beforeEach(() => {
   h.slots = [];
@@ -209,6 +388,11 @@ beforeEach(() => {
   h.user = { id: 'owner-A' };
   h.authGeneration = 1;
   h.frame.postMessage.mockReset();
+  h.port.postMessage.mockReset();
+  h.port.close.mockReset();
+  h.port.onmessage = undefined;
+  h.handshaken = false;
+  vi.stubGlobal('localStorage', { getItem: () => null });
   h.client.junjichuCases.mockReset().mockResolvedValue([]);
   h.client.chancellorConsult
     .mockReset()
@@ -231,6 +415,85 @@ afterEach(() => {
 });
 
 describe('original shell asynchronous consultation account boundary', () => {
+  it('blocks an early navigation even before the first iframe load event', async () => {
+    render();
+    h.port.onmessage?.({ data: { type: 'chaotang:bridge-closed' } });
+    h.port.postMessage.mockClear();
+    consult('A01');
+    await settle();
+    expect(h.port.close).toHaveBeenCalledTimes(1);
+    expect(h.client.chancellorConsult).not.toHaveBeenCalled();
+    expect(h.port.postMessage).not.toHaveBeenCalled();
+    expect(
+      elements(render()).some((node) => node.props.children === '重新打开朝堂')
+    ).toBe(true);
+  });
+  it('does not send web output through the reusable window before or after handshake', async () => {
+    render(false);
+    consult('A01');
+    await settle();
+    expect(h.port.postMessage).not.toHaveBeenCalled();
+    expect(h.frame.postMessage).not.toHaveBeenCalled();
+    render();
+    consult('A01');
+    await settle();
+    expect(messages()).toContainEqual(
+      expect.objectContaining({ type: 'chaotang:reply' })
+    );
+    expect(h.frame.postMessage).not.toHaveBeenCalled();
+  });
+  it('rejects forged channel offers and cannot replace the accepted document channel', () => {
+    render(false);
+    const foreign = { postMessage: vi.fn(), close: vi.fn() };
+    for (const override of [
+      { source: {} },
+      { origin: 'https://foreign.invalid' },
+      { data: { type: 'chaotang:bridge-ready', bridgeNonce: 'wrong' } },
+      { ports: [] },
+    ]) {
+      for (const receive of h.listeners)
+        receive({
+          source: h.frame,
+          origin: 'null',
+          data: { type: 'chaotang:bridge-ready', bridgeNonce: h.bridgeNonce },
+          ports: [foreign],
+          ...override,
+        });
+    }
+    expect(foreign.postMessage).not.toHaveBeenCalled();
+    render();
+    for (const receive of h.listeners)
+      receive({
+        source: h.frame,
+        origin: 'null',
+        data: { type: 'chaotang:bridge-ready', bridgeNonce: h.bridgeNonce },
+        ports: [foreign],
+      });
+    expect(foreign.close).toHaveBeenCalledTimes(1);
+    expect(foreign.postMessage).not.toHaveBeenCalled();
+    expect(h.port.close).not.toHaveBeenCalled();
+  });
+  it('revokes the channel on navigation before delayed frames or replies can send', async () => {
+    const callbacks: FrameRequestCallback[] = [];
+    window.requestAnimationFrame = (callback) => {
+      callbacks.push(callback);
+      return 1;
+    };
+    const pending = deferred<any>();
+    h.client.chancellorConsult.mockReturnValue(pending.promise);
+    const frame = elements(render()).find((node) => node.type === 'iframe');
+    frame.props.onLoad();
+    consult('A01');
+    await settle();
+    frame.props.onLoad();
+    h.port.postMessage.mockClear();
+    for (const callback of callbacks) callback(0);
+    pending.resolve({ reply: 'old document reply' });
+    await settle();
+    expect(h.port.close).toHaveBeenCalledTimes(1);
+    expect(h.port.postMessage).not.toHaveBeenCalled();
+    expect(h.frame.postMessage).not.toHaveBeenCalled();
+  });
   it('keeps a current-session failure visible for recovery', async () => {
     h.client.chancellorConsult.mockRejectedValue(
       new Error('synthetic failure')

@@ -35,11 +35,11 @@
           <button class="is-active" type="button" data-mode="smart" aria-pressed="true">智能版</button>
           <button type="button" data-mode="custom" aria-pressed="false">定制版</button>
         </div>
-        <button class="stat-control upgrade-control" type="button" data-open="upgrade" aria-label="朝堂升级" title="演示等级 · 点击查看受控升级">
-          <span>朝堂等级</span><b class="level-badge">LV.3</b>
+        <button class="stat-control upgrade-control" type="button" data-open="upgrade" aria-label="朝堂升级" title="等级尚未接入真实成长记录">
+          <span>朝堂等级</span><b class="level-badge">未接入</b>
         </button>
-        <button class="stat-control compute-control" type="button" data-open="compute" aria-label="算筹" title="演示算筹余额 · 未连接真实账户">
-          <span>算筹</span><b class="compute-badge">2,480</b>
+        <button class="stat-control compute-control" type="button" data-open="compute" aria-label="算筹" title="算筹余额未接入；任务额度以办理页面为准">
+          <span>算筹</span><b class="compute-badge">未接入</b>
         </button>
         <button class="identity-control" type="button" data-open="account" aria-label="登录或注册朝堂账户" title="登录或注册朝堂账户">
           <span class="avatar" aria-hidden="true">君</span>
@@ -49,9 +49,10 @@
     </header>
 
     <div class="signal-bar" role="status">
-      <span class="truth-badge">V2 原型 · 尚未接后端</span>
+      <span class="truth-badge">服务状态读取中 · 模型状态以回执为准</span>
       <div class="signal-copy"><b>朝报：</b><span id="signalText">本页面不连接真实账户、来源或外部执行；所有状态均为体验演示。</span></div>
       <button type="button" data-open="briefing">展开今日朝报</button>
+      <button type="button" data-open="results" aria-label="结果案例：先选你想得到的成果">结果案例</button>
     </div>
 
     <aside class="domain-rail" aria-label="人生六域">
@@ -387,6 +388,7 @@
         <div class="onboarding-actions">
           <div class="onboarding-secondary-actions">
             <button class="onboarding-back" type="button" id="onboardingBack" hidden>返回修改</button>
+            <button class="onboarding-cases" type="button" id="onboardingCases">先看成果案例</button>
             <button class="onboarding-skip" type="button" id="onboardingSkip">暂不设置，先看看</button>
           </div>
           <button class="onboarding-next" type="button" id="onboardingNext" disabled>选择后继续</button>
@@ -403,6 +405,7 @@
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
   </div>
   <noscript>本原型需要 JavaScript 才能切换页面和展示交互状态。</noscript>
+  <script src="../chaotang-frame-storage.js"></script>
   <script src="pages.js"></script>
   <script src="bridge.js"></script>
   <script src="app.js"></script>

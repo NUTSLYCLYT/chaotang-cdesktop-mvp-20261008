@@ -2,14 +2,12 @@ import { useState } from 'react';
 import {
   CheckCircleIcon,
   CoinsIcon,
-  DownloadSimpleIcon,
   FileXlsIcon,
   ShieldCheckIcon,
   SealCheckIcon,
   WarningIcon,
 } from '@phosphor-icons/react';
 import {
-  useHubuArtifactDownload,
   useHubuConfirmation,
   useHubuWorkProduct,
   useHubuWorkProducts,
@@ -21,6 +19,7 @@ import type {
 } from '@/shared/providers/ChaotangProvider';
 import { ChaotangPanel } from '@/shared/components/chaotang/ChaotangPrimitives';
 import { cn } from '@/shared/lib/utils';
+import { HubuArtifactDownloadButton } from './HubuArtifactDownloadButton';
 
 type HubuMode =
   | 'overview'
@@ -41,25 +40,9 @@ export function HubuWorkspace({ mode }: { mode: HubuMode }) {
   const products = useHubuWorkProducts();
   const [selectedId, setSelectedId] = useState<string>();
   const detail = useHubuWorkProduct(selectedId);
-  const download = useHubuArtifactDownload();
   const confirmation = useHubuConfirmation();
   const [confirmArtifactId, setConfirmArtifactId] = useState<string>();
   const [confirmationReason, setConfirmationReason] = useState('');
-
-  const downloadArtifact = async (artifactId: string) => {
-    const file = await download.mutateAsync(artifactId);
-    const blob = new Blob([new Uint8Array(file.bytes)], {
-      type: file.mimeType,
-    });
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement('a');
-    anchor.href = url;
-    anchor.download = file.fileName;
-    document.body.appendChild(anchor);
-    anchor.click();
-    anchor.remove();
-    URL.revokeObjectURL(url);
-  };
 
   if (!user || !health) {
     return (
@@ -163,14 +146,8 @@ export function HubuWorkspace({ mode }: { mode: HubuMode }) {
         <ChaotangPanel className="p-double">
           <h2 className="chaotang-title text-xl text-high">成果文件</h2>
           <p className="mt-base text-xs text-low">
-            仅 PUBLISHED 成果可下载；服务端会重新核验 owner、登记记录与内容
-            digest。
+            只提供已发布且属于当前账户的成果。下载前会重新核验文件内容。
           </p>
-          {download.isError && (
-            <p className="mt-base border border-error/25 bg-error/5 p-base text-xs text-error">
-              {download.error.message}
-            </p>
-          )}
           {products.data.length === 0 ? (
             <EmptyState>当前没有成果文件</EmptyState>
           ) : (
@@ -192,20 +169,10 @@ export function HubuWorkspace({ mode }: { mode: HubuMode }) {
                   <span className="text-xs text-brand">
                     {item.artifactState}
                   </span>
-                  <button
-                    type="button"
-                    onClick={() => void downloadArtifact(item.artifactId)}
-                    disabled={
-                      item.artifactState !== 'PUBLISHED' || download.isPending
-                    }
-                    className="inline-flex items-center gap-half border border-brand/25 px-base py-half text-xs text-brand transition-colors hover:bg-brand/10 disabled:cursor-not-allowed disabled:opacity-35"
-                  >
-                    <DownloadSimpleIcon className="size-4" />
-                    {download.isPending &&
-                    download.variables === item.artifactId
-                      ? '校验中…'
-                      : '下载 XLSX'}
-                  </button>
+                  <HubuArtifactDownloadButton
+                    artifactId={item.artifactId}
+                    published={item.artifactState === 'PUBLISHED'}
+                  />
                 </article>
               ))}
             </div>

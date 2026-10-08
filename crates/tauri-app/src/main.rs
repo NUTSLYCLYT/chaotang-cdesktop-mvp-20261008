@@ -314,6 +314,7 @@ fn main() {
             chaotang_provider::chaotang_shiguan_outcomes_overview,
             chaotang_provider::chaotang_shiguan_create_outcome,
             chaotang_provider::chaotang_hanlin_experiment,
+            chaotang_provider::chaotang_review_decree_delivery,
             chaotang_provider::chaotang_candidate_history,
             chaotang_provider::chaotang_append_candidate_event,
             chaotang_provider::chaotang_runtime_rehearsal_history,

@@ -1,8 +1,9 @@
-"""Build a review candidate from an exact backend commit, without editing either repo.
+"""Build a review candidate from a commit or an explicitly hashed local snapshot.
 
 Run with the verified backend Python environment. Install build tools separately
 and provide their directory through --tool-site. This does not install, deploy,
 replace Tauri resources, certify a platform lock, or run a model.
+Snapshot mode records the commit as ancestry only, never as the packaged version.
 """
 
 from __future__ import annotations
@@ -58,25 +59,145 @@ def extract(archive: Path, target: Path, *, metadata_only: bool = False) -> None
             bundle.extract(item, target)
 
 
+def snapshot_path(name: str) -> bool:
+    path = PurePosixPath(name)
+    return (
+        name == path.as_posix()
+        and not path.is_absolute()
+        and ".." not in path.parts
+        and "\\" not in name
+        and ":" not in name
+        and not private_path(path)
+        and (
+            name == "pyproject.toml"
+            or (
+                len(path.parts) > 1
+                and path.parts[0] in {"app", "config"}
+                and path.suffix in {".py", ".json", ".yaml", ".yml", ".md"}
+            )
+        )
+    )
+
+
+def snapshot_files(source: Path) -> dict[str, str]:
+    """Inspect only product source; runtime data is never an input."""
+    source = source.resolve(strict=True)
+    files = {}
+
+    def regular(path: Path) -> None:
+        info = path.lstat()
+        if path.is_symlink() or getattr(info, "st_file_attributes", 0) & 0x400:
+            raise ValueError("Snapshot links or reparse points are not allowed")
+        if not path.resolve().is_relative_to(source):
+            raise ValueError("Snapshot source escapes root")
+
+    metadata = source / "pyproject.toml"
+    regular(metadata)
+    files["pyproject.toml"] = digest(metadata)
+    for directory in ("app", "config"):
+        base = source / directory
+        regular(base)
+        for current, directories, names in os.walk(base, followlinks=False):
+            current_path = Path(current)
+            regular(current_path)
+            for name in list(directories):
+                regular(current_path / name)
+                if name == "__pycache__":
+                    directories.remove(name)
+            for name in names:
+                path = current_path / name
+                regular(path)
+                relative = path.relative_to(source).as_posix()
+                if not snapshot_path(relative) or not path.is_file():
+                    raise ValueError("Unexpected or private snapshot source file")
+                files[relative] = digest(path)
+    return files
+
+
+def copy_snapshot(
+    source: Path, manifest_path: Path, expected_digest: str, target: Path
+) -> dict[str, str]:
+    def unique_pairs(pairs):
+        result = {}
+        for key, value in pairs:
+            if key in result:
+                raise ValueError("Duplicate snapshot path")
+            result[key] = value
+        return result
+
+    raw = manifest_path.read_bytes()
+    if (
+        not re.fullmatch(r"[0-9a-f]{64}", expected_digest)
+        or hashlib.sha256(raw).hexdigest() != expected_digest
+    ):
+        raise ValueError("Snapshot manifest digest mismatch")
+    expected = json.loads(raw, object_pairs_hook=unique_pairs)
+    if (
+        not isinstance(expected, dict)
+        or not expected
+        or any(
+            not snapshot_path(name)
+            or not isinstance(value, str)
+            or not re.fullmatch(r"[0-9a-f]{64}", value)
+            for name, value in expected.items()
+        )
+    ):
+        raise ValueError("Invalid snapshot manifest")
+    if snapshot_files(source) != expected:
+        raise ValueError("Snapshot file set or content changed")
+    if target.resolve() == source.resolve() or target.resolve().is_relative_to(
+        source.resolve()
+    ):
+        raise ValueError("Snapshot output must be outside source")
+    target.mkdir(parents=True, exist_ok=False)
+    for directory in ("app", "config"):
+        (target / directory).mkdir()
+    for name, checksum in expected.items():
+        content = (source / name).read_bytes()
+        if hashlib.sha256(content).hexdigest() != checksum:
+            raise ValueError("Snapshot changed while copying")
+        output = target / name
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_bytes(content)
+    if snapshot_files(source) != expected or snapshot_files(target) != expected:
+        raise ValueError("Snapshot changed during capture")
+    return expected
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--backend-repo", required=True, type=Path)
     parser.add_argument("--commit", required=True)
     parser.add_argument("--build-root", required=True, type=Path)
     parser.add_argument("--tool-site", required=True, type=Path)
+    parser.add_argument("--snapshot-root", type=Path)
+    parser.add_argument("--snapshot-manifest", type=Path)
+    parser.add_argument("--snapshot-sha256")
     args = parser.parse_args()
     if not re.fullmatch(r"[0-9a-f]{40}", args.commit):
         parser.error("--commit must be a complete commit ID")
     repo = args.backend_repo.resolve(strict=True)
     root = args.build_root.resolve()
     tool_site = args.tool_site.resolve(strict=True)
+    snapshot_options = (
+        args.snapshot_root,
+        args.snapshot_manifest,
+        args.snapshot_sha256,
+    )
+    if any(snapshot_options) and not all(snapshot_options):
+        parser.error("Snapshot root, manifest and its SHA-256 are required together")
+    if args.snapshot_root and root.is_relative_to(args.snapshot_root.resolve()):
+        parser.error("Build output must be outside snapshot source")
     if root == repo or root.is_relative_to(repo):
         parser.error("Build output must be outside the backend repository")
     root.mkdir(parents=True, exist_ok=False)
     report = {
         "startedAt": now(),
         "status": "running",
-        "backendCommit": args.commit,
+        "backendCommit": None if args.snapshot_root else args.commit,
+        "backendBaseCommit": args.commit,
+        "sourceKind": "UNCOMMITTED_SNAPSHOT" if args.snapshot_root else "GIT_COMMIT",
+        "snapshotManifestSha256": args.snapshot_sha256,
         "python": sys.version,
         "commands": [],
         "realModelCalled": False,
@@ -133,24 +254,33 @@ def main() -> None:
         result.check_returncode()
 
     try:
-        archive = root / "backend-source.zip"
-        run(
-            [
-                "git",
-                "archive",
-                "--format=zip",
-                "-o",
-                str(archive),
-                args.commit,
-                "backend/app",
-                "backend/config",
-                "backend/pyproject.toml",
-            ],
-            repo,
-        )
-        extract(archive, root / "source")
         backend = root / "source/backend"
-        report["sourceArchiveSha256"] = digest(archive)
+        if args.snapshot_root:
+            run(["git", "cat-file", "-e", args.commit + "^{commit}"], repo)
+            copy_snapshot(
+                args.snapshot_root,
+                args.snapshot_manifest,
+                args.snapshot_sha256,
+                backend,
+            )
+        else:
+            archive = root / "backend-source.zip"
+            run(
+                [
+                    "git",
+                    "archive",
+                    "--format=zip",
+                    "-o",
+                    str(archive),
+                    args.commit,
+                    "backend/app",
+                    "backend/config",
+                    "backend/pyproject.toml",
+                ],
+                repo,
+            )
+            extract(archive, root / "source")
+            report["sourceArchiveSha256"] = digest(archive)
         report["sourceFiles"] = {
             p.relative_to(backend).as_posix(): digest(p)
             for p in backend.rglob("*")

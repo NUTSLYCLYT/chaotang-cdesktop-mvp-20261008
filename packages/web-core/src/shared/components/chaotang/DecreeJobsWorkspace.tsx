@@ -23,6 +23,7 @@ import {
 import { cn } from '@/shared/lib/utils';
 import { useNavigate } from '@tanstack/react-router';
 import { getTaskRecordDestination } from './outcomeCaseHandoff';
+import { decreeJobStatus } from './decreeJobStatus';
 
 const STATE_META: Record<DecreeJobState, { label: string; className: string }> =
   {
@@ -194,7 +195,7 @@ export function DecreeJobsWorkspace() {
                         STATE_META[job.state].className
                       )}
                     >
-                      {STATE_META[job.state].label}
+                      {decreeJobStatus(job).label}
                     </span>
                   </div>
                   <div className="mt-base flex items-center justify-between gap-base text-[10px] text-low">
@@ -248,6 +249,7 @@ function JobDetail({
   onOpenRecord: () => void;
 }) {
   const meta = STATE_META[job.state];
+  const status = decreeJobStatus(job);
   const canRequestCancel =
     ['QUEUED', 'RUNNING'].includes(job.state) &&
     !['ARCHIVING', 'PUBLISHING'].includes(job.stage) &&
@@ -277,10 +279,11 @@ function JobDetail({
           className={cn('flex items-center gap-half text-xs', meta.className)}
         >
           <StateIcon className="size-4" weight="duotone" />
-          {meta.label}
+          {status.label}
         </span>
       </div>
 
+      {status.notice && <p role="status" className="mt-base text-sm text-normal">{status.notice}</p>}
       <div className="mt-double grid gap-base text-sm sm:grid-cols-2">
         <Field label="公开阶段" value={job.stage} />
         <Field label="执行尝试" value={String(job.attemptCount)} />

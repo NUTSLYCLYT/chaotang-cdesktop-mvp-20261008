@@ -1,5 +1,15 @@
-(function () {
+(async function () {
   "use strict";
+  if (!window.CHAOTANG_DEMO_STORAGE) {
+    const notice = document.createElement("p");
+    notice.setAttribute("role", "alert");
+    notice.textContent = "页面资源未完整加载，请刷新朝堂页面重试。已保存的任务和成果不会被删除。";
+    document.body.replaceChildren(notice);
+    return;
+  }
+  const preferencesAvailable = await window.CHAOTANG_DEMO_STORAGE.ready;
+  const demoStorage = window.CHAOTANG_DEMO_STORAGE;
+  window.addEventListener("chaotang:preference-save-failed", () => showToast("本次偏好未能保存，请稍后重试；真实任务和成果不受影响。"));
 
   const pages = window.CHAOTANG_PAGES || [];
   const pageMap = new Map(pages.map(page => [page.id, page]));
@@ -196,12 +206,12 @@
   };
 
   function readLocal(key, fallback) {
-    try { return JSON.parse(localStorage.getItem(key) || JSON.stringify(fallback)); }
+    try { return JSON.parse(demoStorage.getItem(key) || JSON.stringify(fallback)); }
     catch (_error) { return fallback; }
   }
 
-  function writeLocal(key, value) {
-    try { localStorage.setItem(key, JSON.stringify(value)); return true; }
+  async function writeLocal(key, value) {
+    try { return (await demoStorage.setItem(key, JSON.stringify(value))) !== false; }
     catch (_error) { return false; }
   }
 
@@ -291,9 +301,9 @@
     requestAnimationFrame(() => $("onboardingTitle")?.focus({ preventScroll: true }));
   }
 
-  function completeOnboarding(skipped = false) {
+  async function completeOnboarding(skipped = false) {
     const preference = skipped ? { skipped: true, sourceState: "DEMO", savedAt: new Date().toISOString() } : { ...onboardingChoices, style: "直接推荐一个选择", cost: "尚待结合具体任务校准", skipped: false, sourceState: "DEMO", savedAt: new Date().toISOString() };
-    const saved = writeLocal(ONBOARDING_KEY, preference);
+    const saved = await writeLocal(ONBOARDING_KEY, preference);
     transientOnboardingPreference = preference;
     $("onboarding").close();
     const destination = pageMap.get("A01");
@@ -302,6 +312,19 @@
     if (!saved) showToast("浏览器未能保存偏好；本次会话会临时沿用，关闭页面后可能丢失。");
     else showToast(skipped ? "已跳过本地偏好设置；你仍可直接告诉丞相想得到什么。" : "丞相已记录本地演示偏好；尚未连接账户或真实数据。");
     $("primaryAction")?.focus({ preventScroll: true });
+  }
+
+  function previewResultCase() {
+    const dialog = $("onboarding");
+    if (dialog?.open) dialog.close();
+    const destination = pageMap.get("D04");
+    if (!destination) {
+      showToast("成果案例暂时不可用；可以直接告诉丞相你想得到什么。");
+      return;
+    }
+    renderPage(destination, true, { taskMode: "clear", openDisplay: true });
+    showToast("已打开成果案例；这是可核验的演示结构，不会创建任务或触发外部执行。");
+    $("pageTitle")?.focus({ preventScroll: true });
   }
 
   function readSavedTask() {
@@ -317,7 +340,7 @@
   }
 
   function clearSavedTask() {
-    try { localStorage.removeItem(CONTINUITY_KEY); } catch (_error) { /* local continuity is optional */ }
+    try { demoStorage.removeItem(CONTINUITY_KEY); } catch (_error) { /* local continuity is optional */ }
     updateResumeButton();
   }
 
@@ -935,6 +958,7 @@
     const inputKinds = new Set(["watch", "case", "trend", "task", "ability"]);
     const flow = inputKinds.has(kind) ? "input" : "output";
     activeRailPreview = { item, flow, pageId: current.id };
+    delete $("primaryAction").dataset.open;
     document.querySelectorAll("#smartBenefitList button, #smartWatchList button, #domainUnitList button, #domainTaskList button, #smartAbilityList button").forEach(button => button.classList.toggle("is-preview-active", button === trigger));
     app.dataset.railPreview = flow;
     app.dataset.scroll = "half";
@@ -1395,9 +1419,11 @@
     text("sealMonogram", page.id === "A02" ? "旨" : page.id === "A03" ? "军" : page.id === "C01" ? "证" : page.id === "C02" ? "星" : "玺");
     text("sealActionLabel", page.sealAction);
     text("primaryAction", page.primary);
+    if (page.id === "A01") $("primaryAction").dataset.open = "results";
+    else delete $("primaryAction").dataset.open;
     text("primaryConsequence", `点击后：${page.consequence}`);
     text("composerHint", page.hint);
-    text("signalText", `${page.title}：${page.situation}。本原型未连接真实后端或外部执行。`);
+    text("signalText", `${page.title}：页面建议为示例；真实办理请从“结果案例”开始，进度与成果以服务回执为准。`);
     text("evidenceLabel", page.why);
     renderList("leftList", page.leftItems);
     renderList("rightList", page.rightItems);
@@ -1913,7 +1939,7 @@
           showToast("请填写 1 至 4000 字的目标，再转入真实上书房。");
           return;
         }
-        window.parent.postMessage({ type: "chaotang:prepare-decree", prompt: objective }, window.location.origin);
+        (window.CHAOTANG_PARENT || window.parent).postMessage({ type: "chaotang:prepare-decree", prompt: objective }, window.location.origin);
         drawer.close();
         showToast("已请求打开真实上书房；仍需登录、确认理解与拟旨后才能正式下旨。");
       });
@@ -2317,15 +2343,14 @@
     showToast("演示成果已经生成并下载；它不包含真实账户、来源或执行数据。");
   }
 
-  function persistFeedback(record) {
+  async function persistFeedback(record) {
     try {
       const key = "chaotang-demo-feedback-v1";
-      const existing = JSON.parse(localStorage.getItem(key) || "[]");
+      const existing = JSON.parse(demoStorage.getItem(key) || "[]");
       const sameResultIndex = existing.findIndex(item => item.taskId === record.taskId && item.resultVersion === record.resultVersion);
       if (sameResultIndex >= 0) existing[sameResultIndex] = record;
       else existing.push(record);
-      localStorage.setItem(key, JSON.stringify(existing.slice(-50)));
-      return true;
+      return (await demoStorage.setItem(key, JSON.stringify(existing.slice(-50)))) !== false;
     } catch (_error) {
       return false;
     }
@@ -2483,9 +2508,9 @@
       vote.append(button);
     });
 
-    submit.addEventListener("click", () => {
+    submit.addEventListener("click", async () => {
       const selectedReasons = [...reasons.querySelectorAll('button[aria-pressed="true"]')].map(button => button.textContent);
-      const saved = persistFeedback({
+      const saved = await persistFeedback({
         taskId: taskPassport.id,
         resultVersion: "DEMO-RESULT-V1",
         pageId: current.id,
@@ -3214,6 +3239,7 @@
       renderOnboarding();
     });
     $("onboardingSkip")?.addEventListener("click", () => completeOnboarding(true));
+    $("onboardingCases")?.addEventListener("click", previewResultCase);
     const menuButton = document.querySelector("[data-menu='ministries']");
     const specialsButton = document.querySelector("[data-menu='specials']");
     menuButton.addEventListener("click", event => {
@@ -3299,6 +3325,7 @@
   document.querySelectorAll("[data-strategy]").forEach(button => button.addEventListener("click", () => chooseStrategy(button)));
 
   $("primaryAction").addEventListener("click", () => {
+    if ($("primaryAction").dataset.open === "results") { openDrawer("results"); return; }
     if (handleRailPreviewPrimary()) return;
     if (handleSpecialWorkspaceAction()) return;
     if (current.id === "A01" && app.dataset.mode === "smart") {
@@ -3448,4 +3475,5 @@
     const next = pageMap.get(id) || pageMap.get("A01");
     if (next && next.id !== current.id) renderPage(next, false, { taskMode: taskPassport ? "continue" : "clear", routeChange: true });
   });
+  if (!preferencesAvailable) showToast("偏好暂时不可用，请刷新朝堂页面重试；已保存的任务和成果不会被删除。");
 })();

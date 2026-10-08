@@ -18,8 +18,23 @@ import {
   ChaotangPanel,
 } from '@/shared/components/chaotang/ChaotangPrimitives';
 import { cn } from '@/shared/lib/utils';
+import { ShiguanReviewForm } from './ShiguanReviewForm';
+import { ShiguanArchiveContent } from './ShiguanArchiveContent';
 
-export function ShiguanWorkspace({ mode }: { mode: 'archives' | 'recall' }) {
+const reviewLabels = {
+  ACHIEVED: '目标已达成',
+  PARTIAL: '部分达成',
+  NOT_ACHIEVED: '未达成',
+  OBSERVING: '继续观察',
+};
+
+export function ShiguanWorkspace({
+  mode,
+  onReuse,
+}: {
+  mode: 'archives' | 'recall';
+  onReuse?: (objective: string) => void;
+}) {
   const { user, health } = useChaotangProvider();
   const [archiveType, setArchiveType] = useState<ShiguanArchiveType>();
   const archives = useShiguanArchives(archiveType);
@@ -52,10 +67,16 @@ export function ShiguanWorkspace({ mode }: { mode: 'archives' | 'recall' }) {
   if (mode === 'recall') {
     const submitRecall = (event: FormEvent) => {
       event.preventDefault();
-      recall.mutate({ matterType, department, limit: 10 });
+      if (recall.isPending || (!matterType.trim() && !department.trim()))
+        return;
+      recall.mutate({
+        matterType: matterType.trim(),
+        department: department.trim(),
+        limit: 10,
+      });
     };
     return (
-      <div className="grid gap-double xl:grid-cols-[0.8fr_1.35fr]">
+      <div className="shiguan-archive-layout">
         <ChaotangPanel className="p-double">
           <p className="text-[9px] tracking-[0.24em] text-brand/55">
             HISTORICAL RECALL
@@ -68,18 +89,21 @@ export function ShiguanWorkspace({ mode }: { mode: 'archives' | 'recall' }) {
           </p>
           <form onSubmit={submitRecall} className="mt-double space-y-base">
             <input
+              aria-label="事项类型"
               value={matterType}
               onChange={(event) => setMatterType(event.target.value)}
               placeholder="事项类型，例如：月度核算"
               className="w-full border border-brand/20 bg-primary/55 px-base py-base text-sm text-normal outline-none placeholder:text-low focus:border-brand/55"
             />
             <input
+              aria-label="部门"
               value={department}
               onChange={(event) => setDepartment(event.target.value)}
               placeholder="部门，例如：户部"
               className="w-full border border-brand/20 bg-primary/55 px-base py-base text-sm text-normal outline-none placeholder:text-low focus:border-brand/55"
             />
             <ChaotangButton
+              type="submit"
               variant="primary"
               disabled={
                 recall.isPending || (!matterType.trim() && !department.trim())
@@ -127,6 +151,19 @@ export function ShiguanWorkspace({ mode }: { mode: 'archives' | 'recall' }) {
                       所得经验：{item.lessonsLearned}
                     </p>
                   )}
+                  {item.reviewStatus && (
+                    <div className="mt-base border-t border-brand/15 pt-base text-xs text-low">
+                      <p>
+                        用户效果复盘：{reviewLabels[item.reviewStatus.status]}
+                      </p>
+                      {item.reviewStatus.note && (
+                        <p className="mt-half whitespace-pre-wrap">
+                          {item.reviewStatus.note}
+                        </p>
+                      )}
+                      <p className="mt-half">用户反馈不等于独立验收结论。</p>
+                    </div>
+                  )}
                 </article>
               ))}
             </div>
@@ -138,33 +175,38 @@ export function ShiguanWorkspace({ mode }: { mode: 'archives' | 'recall' }) {
 
   return (
     <div className="space-y-double">
-      <div className="grid grid-cols-2 border border-brand/20 bg-secondary/85 lg:grid-cols-5">
-        {[
-          ['档案总数', statistics.data?.total ?? '—'],
-          ['待复盘', statistics.data?.pendingReview ?? '—'],
-          ['已达成', statistics.data?.achieved ?? '—'],
-          ['部分达成', statistics.data?.partial ?? '—'],
-          [
-            '达成率',
-            statistics.data?.successRate == null
-              ? '—'
-              : `${Math.round(statistics.data.successRate * 100)}%`,
-          ],
-        ].map(([label, value]) => (
-          <div
-            key={label}
-            className="border-b border-r border-brand/15 p-base last:border-r-0 lg:border-b-0"
-          >
-            <p className="text-xs text-low">{label}</p>
-            <p className="chaotang-title mt-half text-2xl text-brand">
-              {value}
-            </p>
-          </div>
-        ))}
-      </div>
-
-      <div className="grid gap-double xl:grid-cols-[0.85fr_1.3fr]">
-        <ChaotangPanel className="p-double">
+      <details className="shiguan-statistics">
+        <summary>
+          档案概览 · {statistics.data?.total ?? '—'} 份档案 ·{' '}
+          {statistics.data?.pendingReview ?? '—'} 份待复盘
+        </summary>
+        <div className="grid grid-cols-2 border border-brand/20 bg-secondary/85 lg:grid-cols-5">
+          {[
+            ['档案总数', statistics.data?.total ?? '—'],
+            ['待复盘', statistics.data?.pendingReview ?? '—'],
+            ['已达成', statistics.data?.achieved ?? '—'],
+            ['部分达成', statistics.data?.partial ?? '—'],
+            [
+              '达成率',
+              statistics.data?.successRate == null
+                ? '—'
+                : `${Math.round(statistics.data.successRate * 100)}%`,
+            ],
+          ].map(([label, value]) => (
+            <div
+              key={label}
+              className="border-b border-r border-brand/15 p-base last:border-r-0 lg:border-b-0"
+            >
+              <p className="text-xs text-low">{label}</p>
+              <p className="chaotang-title mt-half text-2xl text-brand">
+                {value}
+              </p>
+            </div>
+          ))}
+        </div>
+      </details>
+      <div className="shiguan-archive-layout">
+        <ChaotangPanel className="shiguan-catalog p-double">
           <div className="flex items-center justify-between gap-base">
             <div className="flex items-center gap-base">
               <BookOpenTextIcon className="size-5 text-brand" />
@@ -203,11 +245,12 @@ export function ShiguanWorkspace({ mode }: { mode: 'archives' | 'recall' }) {
               当前账户没有此类档案
             </p>
           ) : (
-            <div className="relative mt-double max-h-[560px] space-y-half overflow-y-auto border-l border-brand/20 pl-base pr-half">
+            <div className="shiguan-archive-list relative mt-double space-y-half overflow-y-auto border-l border-brand/20 pl-base pr-half">
               {archives.data.map((archive) => (
                 <button
                   key={archive.id}
                   type="button"
+                  aria-pressed={selectedId === archive.id}
                   onClick={() => setSelectedId(archive.id)}
                   className={cn(
                     'relative w-full border p-base text-left transition-colors before:absolute before:-left-[21px] before:top-5 before:size-2 before:rounded-full before:border before:border-brand/50 before:bg-secondary',
@@ -233,8 +276,11 @@ export function ShiguanWorkspace({ mode }: { mode: 'archives' | 'recall' }) {
           )}
         </ChaotangPanel>
 
-        <section className="border border-[#bda65d]/55 bg-[#e9e2cc] p-1 text-[#272116] shadow-[0_20px_65px_rgba(0,0,0,0.38)]">
-          <div className="h-full border border-[#9b8140]/35 bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.72),transparent_42%),linear-gradient(135deg,#eee9d9,#dcd3bb)] p-double sm:p-8">
+        <section
+          aria-label="档案原卷"
+          className="shiguan-document border border-[#bda65d]/55 bg-[#e9e2cc] p-1 text-[#272116] shadow-[0_20px_65px_rgba(0,0,0,0.38)]"
+        >
+          <div className="h-full border border-[#9b8140]/35 bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.72),transparent_42%),linear-gradient(135deg,#eee9d9,#dcd3bb)] p-double">
             {!selectedId ? (
               <div className="flex min-h-72 flex-col items-center justify-center text-center">
                 <ScrollIcon
@@ -254,7 +300,9 @@ export function ShiguanWorkspace({ mode }: { mode: 'archives' | 'recall' }) {
                 <div className="flex flex-wrap items-start justify-between gap-base border-b border-[#9b8140]/30 pb-double">
                   <div>
                     <p className="text-[9px] tracking-[0.2em] text-[#8f6f2a]">
-                      {detail.data.archiveType}
+                      {detail.data.archiveType === 'REPLY'
+                        ? '回奏 · 归档原卷'
+                        : '奏折 · 归档原卷'}
                     </p>
                     <h2 className="chaotang-title mt-half text-2xl text-[#272116]">
                       {detail.data.title}
@@ -265,9 +313,12 @@ export function ShiguanWorkspace({ mode }: { mode: 'archives' | 'recall' }) {
                     {new Date(detail.data.createdAt).toLocaleString('zh-CN')}
                   </span>
                 </div>
-                <p className="mt-double whitespace-pre-wrap text-sm leading-7 text-[#312a1e]">
-                  {detail.data.content}
-                </p>
+                <div className="mt-double text-sm text-[#312a1e]">
+                  <ShiguanArchiveContent
+                    content={detail.data.content}
+                    department={detail.data.department}
+                  />
+                </div>
                 {detail.data.replyConclusion && (
                   <div className="mt-double border-l border-[#9a372b] bg-white/20 p-base">
                     <p className="text-[10px] text-[#9a372b]">回奏结论</p>
@@ -292,7 +343,9 @@ export function ShiguanWorkspace({ mode }: { mode: 'archives' | 'recall' }) {
                   <p className="text-[#786f5d]">
                     复盘：
                     <span className="text-[#312a1e]">
-                      {detail.data.reviewStatus?.status ?? '待复盘'}
+                      {detail.data.reviewStatus
+                        ? reviewLabels[detail.data.reviewStatus.status]
+                        : '待复盘'}
                     </span>
                   </p>
                   <p className="text-[#786f5d]">
@@ -302,6 +355,45 @@ export function ShiguanWorkspace({ mode }: { mode: 'archives' | 'recall' }) {
                     </span>
                   </p>
                 </div>
+                <ShiguanReviewForm key={detail.data.id} archive={detail.data} />
+                {onReuse && (
+                  <div className="mt-double space-y-base border-t border-[#9b8140]/30 pt-double">
+                    <h3 className="chaotang-title text-lg text-[#272116]">
+                      再办一次，重新确认
+                    </h3>
+                    <p className="text-xs text-[#786f5d]">
+                      仅带入原始需求，可在上书房修改。旧结论、证据时效、成功状态、授权和预算不会复制。
+                    </p>
+                    <details className="text-xs text-[#786f5d]">
+                      <summary className="cursor-pointer">
+                        查看将带入的原始需求
+                      </summary>
+                      <p className="mt-base whitespace-pre-wrap">
+                        {detail.data.sourceText ?? '这份档案没有保存原始需求。'}
+                      </p>
+                    </details>
+                    <ChaotangButton
+                      disabled={
+                        !detail.data.sourceText?.trim() ||
+                        detail.data.sourceText.trim().length > 4000
+                      }
+                      onClick={() => {
+                        const objective = detail.data.sourceText?.trim();
+                        if (objective && objective.length <= 4000)
+                          onReuse(objective);
+                      }}
+                    >
+                      作为新需求带入上书房
+                    </ChaotangButton>
+                    {(!detail.data.sourceText?.trim() ||
+                      detail.data.sourceText.trim().length > 4000) && (
+                      <p className="text-xs text-[#9a372b]">
+                        原始需求缺失或超过 4,000
+                        字，请先整理后到上书房填写；不会截断或用旧结论代替。
+                      </p>
+                    )}
+                  </div>
+                )}
               </article>
             )}
           </div>

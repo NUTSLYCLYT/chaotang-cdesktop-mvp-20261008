@@ -1,5 +1,15 @@
-(function () {
+(async function () {
   "use strict";
+  if (!window.CHAOTANG_DEMO_STORAGE) {
+    const notice = document.createElement("p");
+    notice.setAttribute("role", "alert");
+    notice.textContent = "页面资源未完整加载，请刷新朝堂页面重试。已保存的任务和成果不会被删除。";
+    document.body.replaceChildren(notice);
+    return;
+  }
+  const preferencesAvailable = await window.CHAOTANG_DEMO_STORAGE.ready;
+  const demoStorage = window.CHAOTANG_DEMO_STORAGE;
+  window.addEventListener("chaotang:preference-save-failed", () => showToast("本次偏好未能保存，请稍后重试；真实任务和成果不受影响。"));
 
   const pages = window.CHAOTANG_PAGES || [];
   const pageMap = new Map(pages.map(page => [page.id, page]));
@@ -142,12 +152,12 @@
   };
 
   function readLocal(key, fallback) {
-    try { return JSON.parse(localStorage.getItem(key) || JSON.stringify(fallback)); }
+    try { return JSON.parse(demoStorage.getItem(key) || JSON.stringify(fallback)); }
     catch (_error) { return fallback; }
   }
 
-  function writeLocal(key, value) {
-    try { localStorage.setItem(key, JSON.stringify(value)); return true; }
+  async function writeLocal(key, value) {
+    try { return (await demoStorage.setItem(key, JSON.stringify(value))) !== false; }
     catch (_error) { return false; }
   }
 
@@ -164,7 +174,7 @@
   }
 
   function clearSavedTask() {
-    try { localStorage.removeItem(CONTINUITY_KEY); } catch (_error) { /* local continuity is optional */ }
+    try { demoStorage.removeItem(CONTINUITY_KEY); } catch (_error) { /* local continuity is optional */ }
     updateResumeButton();
   }
 
@@ -1071,15 +1081,14 @@
     showToast("演示成果已经生成并下载；它不包含真实账户、来源或执行数据。");
   }
 
-  function persistFeedback(record) {
+  async function persistFeedback(record) {
     try {
       const key = "chaotang-demo-feedback-v1";
-      const existing = JSON.parse(localStorage.getItem(key) || "[]");
+      const existing = JSON.parse(demoStorage.getItem(key) || "[]");
       const sameResultIndex = existing.findIndex(item => item.taskId === record.taskId && item.resultVersion === record.resultVersion);
       if (sameResultIndex >= 0) existing[sameResultIndex] = record;
       else existing.push(record);
-      localStorage.setItem(key, JSON.stringify(existing.slice(-50)));
-      return true;
+      return (await demoStorage.setItem(key, JSON.stringify(existing.slice(-50)))) !== false;
     } catch (_error) {
       return false;
     }
@@ -1188,9 +1197,9 @@
       vote.append(button);
     });
 
-    submit.addEventListener("click", () => {
+    submit.addEventListener("click", async () => {
       const selectedReasons = [...reasons.querySelectorAll('button[aria-pressed="true"]')].map(button => button.textContent);
-      const saved = persistFeedback({
+      const saved = await persistFeedback({
         taskId: taskPassport.id,
         resultVersion: "DEMO-RESULT-V1",
         pageId: current.id,
@@ -1895,4 +1904,5 @@
     const next = pageMap.get(id) || pageMap.get("A01");
     if (next && next.id !== current.id) renderPage(next, false, { taskMode: "clear", routeChange: true });
   });
+  if (!preferencesAvailable) showToast("偏好暂时不可用，请刷新朝堂页面重试；已保存的任务和成果不会被删除。");
 })();

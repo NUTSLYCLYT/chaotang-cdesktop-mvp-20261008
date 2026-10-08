@@ -71,38 +71,59 @@ export function JinyiweiWorkspace() {
 
   if (summary.isPending || investigations.isPending) {
     return (
-      <div className="h-96 animate-pulse border border-brand/15 bg-panel/60" />
+      <p role="status" className="py-12 text-center text-sm text-low">
+        正在读取调查与证据…
+      </p>
     );
   }
 
   if (summary.isError || investigations.isError) {
     return (
       <ChaotangPanel className="p-double text-center text-error">
-        {summary.error?.message ?? investigations.error?.message}
+        <p role="alert">调查记录暂时未能读取，已保存的记录不会因此丢失。</p>
+        <button
+          type="button"
+          className="mt-base border px-base py-half"
+          disabled={summary.isFetching || investigations.isFetching}
+          onClick={() => {
+            void summary.refetch();
+            void investigations.refetch();
+          }}
+        >
+          {summary.isFetching || investigations.isFetching
+            ? '正在重试…'
+            : '重新读取调查'}
+        </button>
       </ChaotangPanel>
     );
   }
 
   return (
-    <div className="space-y-double">
-      <div className="grid gap-base sm:grid-cols-2 xl:grid-cols-4">
-        {[
-          { label: '调查总数', value: summary.data.totalInvestigations },
-          { label: '已查明', value: summary.data.resolvedCount },
-          { label: '独立证据', value: summary.data.distinctEvidenceCount },
-          {
-            label: '待确认采纳',
-            value: summary.data.pendingAdoptionCount,
-          },
-        ].map((item) => (
-          <ChaotangPanel key={item.label} className="p-base">
-            <p className="text-xs text-low">{item.label}</p>
-            <p className="chaotang-title mt-half text-2xl text-brand">
-              {item.value}
-            </p>
-          </ChaotangPanel>
-        ))}
-      </div>
+    <div className="jinyiwei-scroll-content space-y-double">
+      <details className="jinyiwei-statistics">
+        <summary>
+          已保存 {summary.data.totalInvestigations} 项调查 ·{' '}
+          {summary.data.distinctEvidenceCount} 条独立证据
+        </summary>
+        <div className="jinyiwei-summary">
+          {[
+            { label: '调查总数', value: summary.data.totalInvestigations },
+            { label: '已查明', value: summary.data.resolvedCount },
+            { label: '独立证据', value: summary.data.distinctEvidenceCount },
+            {
+              label: '待确认采纳',
+              value: summary.data.pendingAdoptionCount,
+            },
+          ].map((item) => (
+            <ChaotangPanel key={item.label} className="p-base">
+              <p className="text-xs text-low">{item.label}</p>
+              <p className="chaotang-title mt-half text-2xl text-brand">
+                {item.value}
+              </p>
+            </ChaotangPanel>
+          ))}
+        </div>
+      </details>
 
       <ChaotangPanel className="p-base">
         <div className="flex items-start gap-base">
@@ -113,14 +134,13 @@ export function JinyiweiWorkspace() {
           <div>
             <p className="text-sm text-high">只读调查档案</p>
             <p className="mt-half text-xs leading-relaxed text-low">
-              此页只读取已完成的调查、来源尝试与证据包；不会发起调查、调用
-              MCP、访问外部网络或确认证据采纳。
+              查看调查结论与引用来源，分清已经查明、仍有冲突和缺少证据的部分。新调查需要先到上书房提出需求。
             </p>
           </div>
         </div>
       </ChaotangPanel>
 
-      <div className="grid gap-double xl:grid-cols-[0.82fr_1.35fr]">
+      <div className="jinyiwei-record-layout">
         <ChaotangPanel className="p-double">
           <div className="flex flex-wrap items-center justify-between gap-base">
             <h2 className="chaotang-title text-lg text-high">调查档案</h2>
@@ -134,6 +154,7 @@ export function JinyiweiWorkspace() {
                 key={filter.label}
                 type="button"
                 onClick={() => setStatus(filter.value)}
+                aria-pressed={status === filter.value}
                 className={cn(
                   'border px-base py-half text-[10px] transition-colors',
                   status === filter.value
@@ -155,8 +176,9 @@ export function JinyiweiWorkspace() {
                   key={item.investigationId}
                   type="button"
                   onClick={() => setSelectedId(item.investigationId)}
+                  aria-pressed={selectedId === item.investigationId}
                   className={cn(
-                    'w-full border p-base text-left transition-colors',
+                    'jinyiwei-investigation-item w-full border p-base text-left transition-colors',
                     selectedId === item.investigationId
                       ? 'border-brand/45 bg-brand/10'
                       : 'border-brand/10 bg-primary/35 hover:border-brand/25'
@@ -184,12 +206,26 @@ export function JinyiweiWorkspace() {
         <ChaotangPanel className="p-double">
           {!selectedId ? (
             <EmptyState>
-              选择一项调查，查看事实槽位、证据、冲突与来源尝试
+              选择一项调查，查看已查明的事实、证据和待核实事项
             </EmptyState>
           ) : detail.isPending ? (
-            <div className="h-96 animate-pulse bg-brand/5" />
+            <p role="status" className="py-12 text-center text-sm text-low">
+              正在读取证据详情…
+            </p>
           ) : detail.isError ? (
-            <p className="text-sm text-error">{detail.error.message}</p>
+            <div className="text-sm text-error">
+              <p role="alert">证据详情未能读取。</p>
+              <button
+                type="button"
+                disabled={detail.isFetching}
+                className="mt-base border px-base py-half"
+                onClick={() => {
+                  void detail.refetch();
+                }}
+              >
+                {detail.isFetching ? '正在重试…' : '重新读取证据'}
+              </button>
+            </div>
           ) : (
             <InvestigationDetailView detail={detail.data} />
           )}
@@ -286,7 +322,7 @@ function EvidenceCard({ evidence }: { evidence: JinyiweiEvidence }) {
       ? evidence.value
       : JSON.stringify(evidence.value);
   return (
-    <div className="border border-brand/15 bg-primary/45 p-base">
+    <div className="jinyiwei-evidence-card border border-brand/15 bg-primary/45 p-base">
       <div className="flex items-start gap-base">
         <Icon
           className={cn(
@@ -339,7 +375,7 @@ function StatusTag({ status }: { status: JinyiweiInvestigationStatus }) {
 
 function Metric({ label, value }: { label: string; value: number }) {
   return (
-    <div className="border border-brand/15 bg-primary/35 p-base">
+    <div className="jinyiwei-metric border border-brand/15 bg-primary/35 p-base">
       <p className="text-[10px] text-low">{label}</p>
       <p className="chaotang-title mt-half text-xl text-brand">{value}</p>
     </div>
@@ -373,7 +409,7 @@ function FactList({
 
 function EmptyState({ children }: { children: string }) {
   return (
-    <p className="mt-double border border-dashed border-brand/20 py-16 text-center text-sm text-low">
+    <p className="mt-double border border-dashed border-brand/20 px-base py-8 text-center text-sm text-low">
       {children}
     </p>
   );

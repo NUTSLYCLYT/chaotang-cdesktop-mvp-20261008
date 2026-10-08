@@ -8,9 +8,13 @@ import { tokenManager } from '@/shared/lib/auth/tokenManager';
 
 interface UserSystemProviderProps {
   children: ReactNode;
+  hostConfigurationEnabled?: boolean;
 }
 
-export function UserSystemProvider({ children }: UserSystemProviderProps) {
+export function UserSystemProvider({
+  children,
+  hostConfigurationEnabled = true,
+}: UserSystemProviderProps) {
   const loadConfig = useCallback(() => configApi.getConfig(null), []);
   const saveConfig = useCallback(
     (config: Parameters<typeof configApi.saveConfig>[0]) =>
@@ -20,6 +24,9 @@ export function UserSystemProvider({ children }: UserSystemProviderProps) {
 
   const { value, userSystemInfo } = useUserSystemController({
     queryKey: ['user-system', 'local'],
+    // The explicit browser trial has Fusion APIs, but no Rust desktop host.
+    // Keep configuration unavailable there rather than inventing /api/info.
+    enabled: hostConfigurationEnabled,
     load: loadConfig,
     save: saveConfig,
   });

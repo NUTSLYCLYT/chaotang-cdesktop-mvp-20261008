@@ -2302,6 +2302,28 @@ impl ChaotangProviderState {
             .map_err(|_| "候选进程演练响应格式无效".into())
     }
 
+    async fn review_decree_delivery(&self, job_id: &str) -> Result<serde_json::Value, String> {
+        let job_id = safe_opaque_id(job_id, "任务编号")?;
+        let session = self.require_session().await?;
+        let response = self
+            .client
+            .post(format!(
+                "{}/api/v1/hanlin/decree-jobs/{job_id}/task-review",
+                self.base_url
+            ))
+            .bearer_auth(&session)
+            .send()
+            .await
+            .map_err(|_| "交付结构核验暂时无法连接".to_string())?;
+        self.decode_authenticated(
+            response,
+            &session,
+            "交付结构核验",
+            "交付结构核验响应格式无效",
+        )
+        .await
+    }
+
     async fn hanlin_experiment(&self, experiment_id: &str) -> Result<serde_json::Value, String> {
         // Match backend ExperimentDefinition identity; a single bounded segment.
         if !(8..=128).contains(&experiment_id.len())
@@ -3079,6 +3101,14 @@ pub async fn chaotang_append_runtime_rehearsal_event(
 }
 
 #[tauri::command]
+pub async fn chaotang_review_decree_delivery(
+    state: tauri::State<'_, ChaotangProviderState>,
+    job_id: String,
+) -> Result<serde_json::Value, String> {
+    state.review_decree_delivery(&job_id).await
+}
+
+#[tauri::command]
 pub async fn chaotang_hanlin_experiment(
     state: tauri::State<'_, ChaotangProviderState>,
     experiment_id: String,
@@ -3571,6 +3601,53 @@ mod tests {
                 .unwrap(),
             base_url,
             session_id: Arc::new(tokio::sync::RwLock::new(session.map(str::to_owned))),
+        }
+    }
+
+    #[tokio::test]
+    async fn delivery_review_posts_to_fixed_owner_endpoint_and_preserves_raw_receipt() {
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let state = advisory_state(
+            format!("http://{}", listener.local_addr().unwrap()),
+            Some("fixture-session"),
+        );
+        let raw = serde_json::json!({"job_id":"job-1","scope":"STRUCTURAL_DELIVERY","quality_assessment":"NOT_ASSESSED"});
+        let body = raw.to_string();
+        let server = tokio::spawn(async move {
+            let (mut stream, request) = read_test_request_capture(&listener).await;
+            let request = String::from_utf8(request).unwrap();
+            assert_eq!(
+                request.lines().next().unwrap(),
+                "POST /api/v1/hanlin/decree-jobs/job-1/task-review HTTP/1.1"
+            );
+            assert!(
+                request
+                    .to_ascii_lowercase()
+                    .contains("authorization: bearer fixture-session\r\n")
+            );
+            let response = format!(
+                "HTTP/1.1 201 Created\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
+                body.len(),
+                body
+            );
+            stream.write_all(response.as_bytes()).await.unwrap();
+        });
+        assert_eq!(state.review_decree_delivery("job-1").await.unwrap(), raw);
+        server.await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn delivery_review_rejects_path_injection_and_missing_session_without_network() {
+        let state = advisory_state("http://127.0.0.1:1".into(), None);
+        assert_eq!(
+            state.review_decree_delivery("job-1").await.unwrap_err(),
+            "请先登录朝堂账户"
+        );
+        for id in ["../job", "job?owner=other", "job/another", "", "job%2fnext"] {
+            assert_eq!(
+                state.review_decree_delivery(id).await.unwrap_err(),
+                "任务编号格式无效"
+            );
         }
     }
 

@@ -1,18 +1,8 @@
 import { ShieldCheckIcon } from '@phosphor-icons/react';
-import type {
-  DecreeJob,
-  DecreeJobState,
-} from '@/shared/providers/ChaotangProvider';
+import type { DecreeJob } from '@/shared/providers/ChaotangProvider';
 import { ChaotangButton, ChaotangPanel } from './ChaotangPrimitives';
 import { ValidatedDecreeResult } from './CourtWorkspace';
-
-const stateLabels: Record<DecreeJobState, string> = {
-  QUEUED: '排队中',
-  RUNNING: '执行中',
-  SUCCEEDED: '办理完成',
-  FAILED: '办理失败',
-  CANCELLED: '已取消',
-};
+import { decreeJobStatus } from './decreeJobStatus';
 
 export function StudyTaskProgress({
   jobId,
@@ -36,6 +26,7 @@ export function StudyTaskProgress({
   const mismatch = job && job.jobId !== jobId;
   const confirmed = mismatch ? undefined : job;
   const error = mismatch ? '任务回执不匹配，请重新读取。' : readError;
+  const status = confirmed ? decreeJobStatus(confirmed) : undefined;
   return (
     <ChaotangPanel className="p-double" aria-label="旨意任务进度">
       <div className="flex flex-wrap items-center gap-base">
@@ -59,7 +50,7 @@ export function StudyTaskProgress({
         <Metric label="任务编号" value={jobId} mono />
         <Metric
           label={error && confirmed ? '上次已确认状态' : '办理状态'}
-          value={confirmed ? stateLabels[confirmed.state] : '尚未读取'}
+          value={status?.label ?? '尚未读取'}
         />
         <Metric label="办理阶段" value={confirmed?.stage ?? '尚未读取'} />
         <Metric
@@ -69,6 +60,7 @@ export function StudyTaskProgress({
           }
         />
       </dl>
+      {status?.notice && <p role="status" className="mt-base text-xs text-normal">{status.notice}</p>}
       {confirmed?.error && (
         <p role="alert" className="mt-base text-xs text-error">
           {confirmed.error.code} · {confirmed.error.stage} ·{' '}

@@ -22,7 +22,7 @@ const compiled = await build({
         b.onResolve(
           {
             filter:
-              /^(?:react(?:\/jsx-runtime)?|@.*|\.\/ChaotangPrimitives|\.\/StudyTaskProgress)$/,
+              /^(?:react(?:\/jsx-runtime)?|@.*|\.\/ChaotangPrimitives|\.\/StudyTaskProgress|\.\/StudyResourceBudget)$/,
           },
           (a) => ({ path: a.path, namespace: 'controlled' })
         );
@@ -40,9 +40,11 @@ const compiled = await build({
                       ? 'export const decreeIdempotencyKey=async()=>"test-owner-draft-key";'
                       : path.includes('ChaotangPrimitives')
                         ? 'export const ChaotangButton="button";export const ChaotangPanel="section";'
-                        : path.includes('StudyTaskProgress')
-                          ? 'export const StudyTaskProgress="task-progress";'
-                          : 'export const CheckCircleIcon="icon";export const ChatCircleTextIcon="icon";export const PaperPlaneTiltIcon="icon";export const ScrollIcon="icon";',
+                        : path.includes('StudyResourceBudget')
+                          ? 'export const StudyResourceBudget="study-resource-budget";'
+                          : path.includes('StudyTaskProgress')
+                            ? 'export const StudyTaskProgress="task-progress";'
+                            : 'export const CheckCircleIcon="icon";export const ChatCircleTextIcon="icon";export const PaperPlaneTiltIcon="icon";export const ScrollIcon="icon";',
         }));
       },
     },
@@ -60,6 +62,64 @@ const originalLocalStorage = Object.getOwnPropertyDescriptor(
   globalThis,
   'localStorage'
 );
+
+test('configuration failure preserves the goal and offers real recovery routes without execution', () => {
+  const h = setup();
+  h.goal('保留我的目标和资料');
+  h.consult.error = Object.assign(new Error('模型配置不可用'), {
+    code: 'config_unavailable',
+  });
+  const tree = h.render();
+  assert.match(textOf(tree), /咨询或拟旨所需的模型配置尚未就绪/);
+  assert.doesNotMatch(textOf(tree), /CHANCELLOR DESK · LIVE/);
+  assert.equal(h.find('textarea').props.value, '保留我的目标和资料');
+  assert.equal(h.find('a', '查看模型设置').props.href, '/court#models');
+  assert.equal(h.find('a', '先试用户部现金分析').props.href, '/court#hubu');
+  h.button('保存需求').props.onClick();
+  assert.ok(
+    [...h.savedValues.values()].some((value) =>
+      value.includes('保留我的目标和资料')
+    )
+  );
+  assert.equal(h.calls.length, 0);
+});
+
+test('unknown failure is not misclassified as missing model configuration', () => {
+  const h = setup();
+  h.consult.error = new Error('暂时失败');
+  assert.doesNotMatch(textOf(h.render()), /咨询或拟旨所需的模型配置尚未就绪/);
+});
+
+test('recovery navigation saves input first and stops navigation when storage fails', () => {
+  const h = setup();
+  h.goal('离开前保留资料');
+  h.consult.error = Object.assign(new Error('模型配置不可用'), {
+    code: 'config_unavailable',
+  });
+  let prevented = false;
+  h.find('a', '查看模型设置').props.onClick({
+    preventDefault() {
+      prevented = true;
+    },
+  });
+  assert.equal(prevented, false);
+  assert.ok(
+    [...h.savedValues.values()].some((value) =>
+      value.includes('离开前保留资料')
+    )
+  );
+  h.goal('刚刚补充的新资料');
+  h.failSave = true;
+  h.find('a', '查看模型设置').props.onClick({
+    preventDefault() {
+      prevented = true;
+    },
+  });
+  assert.equal(prevented, true);
+  assert.equal(h.find('textarea').props.value, '刚刚补充的新资料');
+  assert.match(textOf(h.render()), /暂未离开上书房/);
+  assert.equal(h.calls.length, 0);
+});
 afterEach(() => {
   delete globalThis.__studyHarness;
   if (originalStorage)
@@ -231,6 +291,57 @@ test('the live study passes the confirmed restatement with the original objectiv
     ],
     version: 1,
   });
+});
+
+test('the decree agreement exposes exact materials, scope, exclusions and completion criteria before issue', () => {
+  const h = setup();
+  h.prepare();
+  Object.assign(h.draft.data.draft, {
+    scope: ['只比较指定仓库'],
+    inputMaterials: ['用户上传的需求说明'],
+    exclusions: ['不安装、不付费、不发送对外资料'],
+    completionCriteria: ['每个判断都有来源链接'],
+  });
+  const tree = h.render();
+  const text =
+    textOf(tree) +
+    nodes(tree)
+      .filter(
+        (node) =>
+          typeof node.type === 'function' && node.type.name === 'DraftList'
+      )
+      .map((node) => textOf(node.type(node.props)))
+      .join('');
+  for (const exact of [
+    '办理范围',
+    '只比较指定仓库',
+    '使用资料',
+    '用户上传的需求说明',
+    '本次不办理',
+    '不安装、不付费、不发送对外资料',
+    '完成标准',
+    '每个判断都有来源链接',
+  ]) {
+    assert.ok(text.includes(exact), 'Missing confirmed draft field: ' + exact);
+  }
+  assert.equal(h.calls.filter((c) => c[0] === 'issue').length, 0);
+});
+
+test('missing agreement fields are explicit and never imply files were read or external actions authorized', () => {
+  const h = setup();
+  h.prepare();
+  const tree = h.render();
+  const text = nodes(tree)
+    .filter(
+      (node) =>
+        typeof node.type === 'function' && node.type.name === 'DraftList'
+    )
+    .map((node) => textOf(node.type(node.props)))
+    .join('');
+  assert.ok(text.includes('尚未列明，不代表已读取任何文件'));
+  assert.ok(text.includes('尚未列明，不代表允许所有外部动作'));
+  assert.ok(text.includes('尚未列明，请返回补充验收要求'));
+  assert.ok(h.find('study-resource-budget'));
 });
 test('overlong combined content is refused without silent clipping or draft calls', () => {
   const h = setup();
@@ -468,6 +579,66 @@ test('unsupported and overlong imports leave the goal and saved copy intact', as
   assert.equal(h.calls.length, 0);
 });
 
+test('the material preview is a local card that neither claims upload nor model reading', async () => {
+  const h = setup();
+  selectMaterial(h, textFile('资料原文', '长文件名资料.md'));
+  await settleMaterial();
+  const text = textOf(h.render());
+  assert.match(text, /长文件名资料\.md/);
+  assert.match(text, /本机已读取 · 待加入需求/);
+  assert.match(text, /尚未发送/);
+  assert.doesNotMatch(text, /上传成功/);
+  assert.doesNotMatch(text, /模型已读/);
+});
+
+test('the material body is collapsed by default behind a native summary', async () => {
+  const h = setup();
+  selectMaterial(h, textFile('资料原文'));
+  await settleMaterial();
+  const details = h.find('details');
+  assert.ok(details, 'native details exists');
+  assert.ok(!details.props.open, 'details is collapsed by default');
+  assert.equal(textOf(h.find('summary')), '查看资料内容');
+  assert.match(textOf(details), /资料原文/);
+});
+
+test('加入当前需求 stays outside the collapsed region while cancel remains available', async () => {
+  const h = setup();
+  selectMaterial(h, textFile('资料原文'));
+  await settleMaterial();
+  const details = h.find('details');
+  assert.ok(details, 'native details exists');
+  const applyInsideDetails = nodes(details).some(
+    (n) => n.type === 'button' && textOf(n).includes('加入当前需求')
+  );
+  assert.equal(applyInsideDetails, false);
+  assert.ok(h.button('加入当前需求'));
+  assert.ok(h.button('取消资料导入'));
+});
+
+test('switching to a different material resets the preview to collapsed via a content key', async () => {
+  const h = setup();
+  selectMaterial(h, textFile('第一份', 'first.txt'));
+  await settleMaterial();
+  const firstKey = h.find('details').key;
+  selectMaterial(h, textFile('第二份', 'second.txt'));
+  await settleMaterial();
+  const secondDetails = h.find('details');
+  assert.notEqual(secondDetails.key, firstKey);
+  assert.match(String(secondDetails.key), /second\.txt/);
+  assert.ok(!secondDetails.props.open);
+  assert.match(textOf(secondDetails), /第二份/);
+});
+
+test('the collapsed card keeps the complete local text without truncation or HTML execution', async () => {
+  const h = setup();
+  const content = `${'长'.repeat(50)}\n<b>不应执行</b>尾`;
+  selectMaterial(h, textFile(content));
+  await settleMaterial();
+  assert.equal(textOf(h.find('pre')), content);
+  assert.equal(h.find('b'), undefined);
+});
+
 test('account changes hide pending material and do not transmit it', async () => {
   const h = setup();
   let finish;
@@ -486,4 +657,91 @@ test('account changes hide pending material and do not transmit it', async () =>
   assert.equal(h.find('pre'), undefined);
   assert.equal(h.find('textarea').props.value, '');
   assert.equal(h.calls.length, 0);
+});
+
+test('a ready draft explains the next step and keeps technical fields collapsed', () => {
+  const h = setup();
+  h.prepare();
+  h.draft.data.fingerprint = 'fp-full-0123456789abcdef0123456789abcdef';
+  h.render();
+  const heading = textOf(h.find('h3'));
+  assert.match(heading, /拟旨已就绪，等待您确认下旨/);
+  assert.doesNotMatch(heading, /DRAFT_READY/);
+  const details = h.find('details');
+  assert.ok(details, 'native details exists');
+  assert.ok(!details.props.open, 'details is collapsed by default');
+  assert.equal(textOf(h.find('summary')), '拟旨详情');
+  const detailText = textOf(details);
+  assert.match(detailText, /状态/);
+  assert.match(detailText, /版本/);
+  assert.match(detailText, /指纹/);
+  assert.match(detailText, /DRAFT_READY/);
+  assert.match(
+    detailText,
+    /fp-full-0123456789abcdef0123456789abcdef/,
+    'full fingerprint is preserved'
+  );
+  const button = h.button('正式下旨');
+  assert.ok(button, 'ready button');
+  assert.equal(button.props.disabled, false);
+  assert.doesNotMatch(textOf(button), /DRAFT_READY/);
+  assert.match(
+    textOf(h.render()),
+    /正式下旨后才创建办理任务；拟旨不代表部门已经执行/
+  );
+});
+
+test('a non-ready draft says it needs more work and disables issuing', () => {
+  const h = setup();
+  h.prepare();
+  h.draft.data.status = 'DRAFT_INCOMPLETE';
+  h.render();
+  assert.match(textOf(h.find('h3')), /拟旨尚需完善，请按下方意见补充/);
+  const button = h.button('请先完善拟旨');
+  assert.ok(button, 'not-ready button');
+  assert.equal(button.props.disabled, true);
+  assert.equal(h.button('正式下旨'), undefined);
+  assert.doesNotMatch(textOf(h.find('h3')), /DRAFT_INCOMPLETE/);
+});
+
+test('an unknown draft status cannot claim readiness or enable issuing', () => {
+  const h = setup();
+  h.prepare();
+  h.draft.data.status = 'SOMETHING_UNKNOWN';
+  h.render();
+  const heading = textOf(h.find('h3'));
+  assert.match(heading, /拟旨尚需完善/);
+  assert.doesNotMatch(heading, /就绪/);
+  assert.doesNotMatch(heading, /可执行/);
+  assert.equal(h.button('正式下旨'), undefined);
+  const button = h.button('请先完善拟旨');
+  assert.ok(button, 'unknown-state button');
+  assert.equal(button.props.disabled, true);
+  assert.match(textOf(h.find('details')), /SOMETHING_UNKNOWN/);
+});
+
+test('while submitting the card warns against duplicate submission and disables the button', () => {
+  const h = setup();
+  h.prepare();
+  h.issue.isPending = true;
+  h.render();
+  assert.match(textOf(h.find('h3')), /正在受理，请勿重复提交/);
+  const button = h.button('正在受理…');
+  assert.ok(button, 'submitting button');
+  assert.equal(button.props.disabled, true);
+  assert.equal(h.button('正式下旨'), undefined);
+});
+
+test('after a task is created the card points to progress and disables duplicate issuing', async () => {
+  const h = setup();
+  h.prepare();
+  h.button('正式下旨').props.onClick();
+  await settleMaterial();
+  h.render();
+  assert.equal(h.calls.filter((c) => c[0] === 'issue').length, 1);
+  assert.match(textOf(h.find('h3')), /已创建办理任务，请查看下方进展/);
+  const button = h.button('已创建办理任务');
+  assert.ok(button, 'created-task button');
+  assert.equal(button.props.disabled, true);
+  assert.equal(h.button('正式下旨'), undefined);
 });

@@ -56,6 +56,13 @@ export interface DecreeWorkspace {
 }
 
 export interface FusionCapabilities {
+  taskModel?: {
+    state: 'DISABLED' | 'BLOCKED' | 'CONFIGURED_UNVERIFIED';
+    code: string;
+    hardTokenLimit: number;
+    probeStatus: 'NOT_TESTED';
+    scope: 'configuration_only';
+  };
   execution: {
     mode: 'legacy' | 'external';
     nodeAvailable: boolean;
@@ -128,6 +135,7 @@ export interface ChaotangClient {
     artifactId: string
   ): Promise<WorkspaceArtifactSave>;
   fusionCapabilities?(): Promise<FusionCapabilities>;
+  reviewDecreeDelivery?(jobId: string): Promise<unknown>;
   decreeWorkspace?(jobId: string): Promise<DecreeWorkspace>;
   downloadWorkspaceArtifact?(path: string): Promise<Blob>;
 

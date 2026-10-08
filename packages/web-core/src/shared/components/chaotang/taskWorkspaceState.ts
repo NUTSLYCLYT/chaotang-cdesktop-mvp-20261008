@@ -23,6 +23,31 @@ export function canArchiveHistory(state: string): boolean {
   return ['SUCCEEDED', 'FAILED', 'CANCELLED'].includes(state);
 }
 
+export function canRetryTask(
+  job: Pick<
+    DecreeJob,
+    | 'state'
+    | 'error'
+    | 'providerRequestCount'
+    | 'cancelRequested'
+    | 'result'
+    | 'replyId'
+  >
+): boolean {
+  if (
+    job.state !== 'FAILED' ||
+    job.cancelRequested ||
+    job.result ||
+    job.replyId
+  )
+    return false;
+  return (
+    job.error?.code === 'validation_failed' ||
+    (job.error?.code === 'token_budget_transport_unavailable' &&
+      job.providerRequestCount === 0)
+  );
+}
+
 export function validateHistoryPage(
   page: DecreeJobPage,
   input: DecreeJobHistoryQuery

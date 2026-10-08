@@ -1,0 +1,1090 @@
+/*
+ * The single operation surface for the embedded court shell (A02 上书房 /
+ * A03 军机处). The Host places it inside the rectangle the sandboxed child
+ * reports, so the original topbar, signal bar, domain rail, side panels, scene,
+ * page heading and composer keep their geometry and colours while the real
+ * component owns the only real actions. Scoped to this surface only.
+ */
+.court-inline-surface {
+  position: fixed;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  color: #efe5ce;
+  background: linear-gradient(
+    180deg,
+    rgba(7, 16, 12, 0.98),
+    rgba(5, 9, 7, 0.98)
+  );
+  border: 1px solid rgba(215, 179, 106, 0.35);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.55);
+  scrollbar-width: thin;
+}
+
+/* Honest fallback while the child has not reported usable geometry yet, or
+   while a native child overlay (drawer/atlas/onboarding) is in front. */
+.court-inline-surface-connecting,
+.court-inline-surface-suspended {
+  left: 50%;
+  top: 50%;
+  width: min(560px, 86vw);
+  max-height: 72vh;
+  transform: translate(-50%, -50%);
+}
+
+/* Native child dialogs (the page atlas, drawer and onboarding) must own the
+   whole interaction while open. Keep the real workspace mounted so its draft
+   survives, but do not place a second panel above the child dialog. */
+.court-inline-surface-suspended {
+  display: none;
+}
+
+.court-inline-surface-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 22px 14px;
+  border-bottom: 1px solid rgba(215, 179, 106, 0.2);
+}
+
+.court-inline-surface-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 18px 22px 22px;
+}
+
+/* Never show real controls before the measured rectangle is accepted. */
+.court-inline-surface-connecting .court-inline-surface-body {
+  visibility: hidden;
+}
+
+/* The account drawer may cover the surface; keep it mounted but out of the way
+   so its task data survives and closing the drawer returns to the same page. */
+.court-inline-surface[data-court-inline-visible='false'] {
+  display: none;
+}
+
+.court-inline-surface-notice {
+  margin: 0;
+  padding: 14px 22px 18px;
+  color: #cdb46e;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* 史馆 follows its original archive medium: dark-gold catalog, paper record.
+   Layout responds to the central column, not the entire desktop viewport. */
+.court-inline-surface[data-court-inline-surface='shiguan'] {
+  background: rgba(7, 13, 12, 0.9);
+  box-shadow: none;
+  container-type: inline-size;
+}
+[data-court-inline-surface='shiguan'] .court-inline-surface-head {
+  padding: 12px 18px;
+}
+[data-court-inline-surface='shiguan'] .court-inline-surface-head h2 {
+  font-size: 20px;
+  margin-top: 4px;
+}
+[data-court-inline-surface='shiguan'] .court-inline-surface-head > div > p {
+  display: none;
+}
+[data-court-inline-surface='shiguan'] .court-inline-surface-body {
+  padding: 16px 18px;
+}
+.shiguan-archive-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+.shiguan-archive-list {
+  max-height: 160px;
+}
+.shiguan-document {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.shiguan-document h2 {
+  font-size: 22px;
+  line-height: 1.4;
+}
+.shiguan-readable-result {
+  display: grid;
+  gap: 20px;
+}
+.shiguan-readable-result h3 {
+  margin: 0 0 10px;
+  color: #725b32;
+  font-size: 14px;
+  font-weight: 600;
+}
+.shiguan-readable-result p {
+  margin: 0;
+}
+.shiguan-caption {
+  color: #786f5d;
+  font-size: 12px;
+  line-height: 1.6;
+  margin-top: 8px !important;
+}
+.shiguan-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+}
+.shiguan-facts > div {
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(155, 129, 64, 0.2);
+}
+.shiguan-facts dt {
+  font-size: 12px;
+  color: #786f5d;
+}
+.shiguan-facts dd {
+  margin: 6px 0 0;
+  font-size: 16px;
+  font-variant-numeric: tabular-nums;
+}
+.shiguan-readable-result ul {
+  margin: 0;
+  padding-left: 20px;
+  line-height: 1.8;
+}
+.shiguan-readable-result li + li {
+  margin-top: 8px;
+}
+.shiguan-technical {
+  border-top: 1px solid rgba(155, 129, 64, 0.25);
+  padding-top: 12px;
+}
+.shiguan-technical summary {
+  cursor: pointer;
+  color: #786f5d;
+  font-size: 12px;
+}
+.shiguan-technical pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+  max-height: 280px;
+  overflow: auto;
+}
+@container (min-width: 900px) {
+  .shiguan-archive-layout {
+    grid-template-columns: minmax(220px, 0.6fr) minmax(0, 1.4fr);
+  }
+  .shiguan-archive-list {
+    max-height: 460px;
+  }
+}
+@container (max-width: 400px) {
+  .shiguan-facts {
+    grid-template-columns: 1fr;
+  }
+}
+
+.shiguan-statistics {
+  border-block: 1px solid rgba(215, 179, 106, 0.2);
+  padding: 10px 0;
+  color: #cdb46e;
+  font-size: 12px;
+}
+.shiguan-statistics summary {
+  cursor: pointer;
+}
+.shiguan-statistics[open] summary {
+  margin-bottom: 12px;
+}
+.shiguan-catalog {
+  padding: 12px;
+}
+.shiguan-catalog .shiguan-archive-list {
+  margin-top: 10px;
+}
+
+/* Investigation content belongs inside the original ivory scroll, not a drawer. */
+.court-inline-surface:is(
+  [data-court-inline-surface='jinyiwei'],
+  [data-court-inline-surface='cases']
+) {
+  background: #eee4c7;
+  color: #312a1e;
+  border: 0;
+  box-shadow: none;
+  container-type: inline-size;
+}
+:is([data-court-inline-surface='jinyiwei'], [data-court-inline-surface='cases'])
+  .court-inline-surface-head {
+  padding: 14px 20px 10px;
+  border-color: #b69a5b66;
+}
+:is([data-court-inline-surface='jinyiwei'], [data-court-inline-surface='cases'])
+  .court-inline-surface-head
+  > div
+  > p {
+  display: none;
+}
+:is([data-court-inline-surface='jinyiwei'], [data-court-inline-surface='cases'])
+  .court-inline-surface-head
+  h2 {
+  font-size: 22px;
+  margin-top: 0;
+}
+:is([data-court-inline-surface='jinyiwei'], [data-court-inline-surface='cases'])
+  .court-inline-surface-body {
+  padding: 14px 20px 20px;
+}
+:is([data-court-inline-surface='jinyiwei'], [data-court-inline-surface='cases'])
+  .chaotang-panel {
+  background: #ffffff26;
+  border-color: #b69a5b55;
+  box-shadow: none;
+}
+:is([data-court-inline-surface='jinyiwei'], [data-court-inline-surface='cases'])
+  .text-high,
+:is([data-court-inline-surface='jinyiwei'], [data-court-inline-surface='cases'])
+  .text-normal {
+  color: #312a1e;
+}
+:is([data-court-inline-surface='jinyiwei'], [data-court-inline-surface='cases'])
+  .text-low,
+:is([data-court-inline-surface='jinyiwei'], [data-court-inline-surface='cases'])
+  .court-inline-surface-body
+  > p {
+  color: #665a44;
+}
+:is([data-court-inline-surface='jinyiwei'], [data-court-inline-surface='cases'])
+  .text-brand {
+  color: #775823;
+}
+:is([data-court-inline-surface='jinyiwei'], [data-court-inline-surface='cases'])
+  button {
+  color: #664819;
+  border-color: #b69a5b88;
+}
+:is([data-court-inline-surface='jinyiwei'], [data-court-inline-surface='cases'])
+  button:hover {
+  background-color: #be965522;
+}
+:is([data-court-inline-surface='jinyiwei'], [data-court-inline-surface='cases'])
+  button:focus-visible {
+  outline: 2px solid #926824;
+  outline-offset: 2px;
+}
+:is([data-court-inline-surface='jinyiwei'], [data-court-inline-surface='cases'])
+  .text-error {
+  color: #9c3527;
+}
+:is([data-court-inline-surface='jinyiwei'], [data-court-inline-surface='cases'])
+  .text-success {
+  color: #32604a;
+}
+.jinyiwei-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.jinyiwei-statistics summary {
+  cursor: pointer;
+  font-size: 12px;
+  color: #665a44;
+}
+.jinyiwei-statistics[open] summary {
+  margin-bottom: 10px;
+}
+:is([data-court-inline-surface='jinyiwei'], [data-court-inline-surface='cases'])
+  .jinyiwei-investigation-item,
+:is([data-court-inline-surface='jinyiwei'], [data-court-inline-surface='cases'])
+  .jinyiwei-evidence-card,
+:is([data-court-inline-surface='jinyiwei'], [data-court-inline-surface='cases'])
+  .jinyiwei-metric {
+  background-color: #f6efd9;
+  border-color: #b69a5b66;
+}
+:is([data-court-inline-surface='jinyiwei'], [data-court-inline-surface='cases'])
+  button[aria-pressed='true'] {
+  background-color: #e5d29c;
+  border-color: #926824;
+}
+.jinyiwei-record-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+.jinyiwei-record-layout > div {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.jinyiwei-scroll-content p {
+  line-height: 1.7;
+}
+@container (min-width: 750px) {
+  .jinyiwei-summary {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .jinyiwei-record-layout {
+    grid-template-columns: minmax(200px, 0.8fr) minmax(0, 1.2fr);
+  }
+}
+
+/* A03 content responds to its paper column, independently of window width. */
+[data-court-inline-surface='cases'] .court-task-root,
+[data-court-inline-surface='cases'] .court-task-layout,
+[data-court-inline-surface='cases'] .court-task-history {
+  background: transparent;
+  color: #312a1e;
+  overflow: visible;
+  min-width: 0;
+}
+[data-court-inline-surface='cases'] .court-task-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+[data-court-inline-surface='cases'] .court-task-main {
+  padding: 0;
+  overflow: visible;
+  min-width: 0;
+}
+[data-court-inline-surface='cases'] .court-task-history {
+  order: -1;
+  border: 1px solid #b69a5b66;
+  padding: 12px;
+}
+[data-court-inline-surface='cases'] .court-history-summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: #664819;
+}
+[data-court-inline-surface='cases'] details[open] > .court-history-summary {
+  margin-bottom: 12px;
+}
+[data-court-inline-surface='cases'] input,
+[data-court-inline-surface='cases'] select,
+[data-court-inline-surface='cases'] textarea {
+  background: #f6efd9;
+  color: #312a1e;
+  border-color: #b69a5b88;
+}
+[data-court-inline-surface='cases'] ::placeholder {
+  color: #786c54;
+}
+[data-court-inline-surface='cases'] .bg-primary,
+[data-court-inline-surface='cases'] .bg-secondary,
+[data-court-inline-surface='cases'] .bg-panel {
+  background: #f6efd9;
+}
+[data-court-inline-surface='cases'] button {
+  background-color: #f6efd9;
+}
+[data-court-inline-surface='cases'] pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+[data-court-inline-surface='cases'] button[aria-pressed='true'],
+[data-court-inline-surface='cases'] button[aria-current='true'] {
+  background-color: #e5d29c;
+  border-color: #926824;
+}
+
+/* 户部 B02 复用原御屏中部：象牙纸底与深色可读文字，与 C01 御屏一致。表格、
+   输入、按钮、错误与结果随御屏宽度与窄屏收放，不新增专有布局系统。 */
+.court-inline-surface:is(
+  [data-court-inline-surface='hubu'],
+  [data-court-inline-surface='results']
+) {
+  background: #eee4c7;
+  color: #312a1e;
+  border: 0;
+  box-shadow: none;
+  container-type: inline-size;
+}
+:is([data-court-inline-surface='hubu'], [data-court-inline-surface='results'])
+  .court-inline-surface-head {
+  padding: 14px 20px 10px;
+  border-color: #b69a5b66;
+}
+:is([data-court-inline-surface='hubu'], [data-court-inline-surface='results'])
+  .court-inline-surface-head
+  > div
+  > p {
+  display: none;
+}
+:is([data-court-inline-surface='hubu'], [data-court-inline-surface='results'])
+  .court-inline-surface-head
+  h2 {
+  font-size: 22px;
+  margin-top: 0;
+}
+:is([data-court-inline-surface='hubu'], [data-court-inline-surface='results'])
+  .court-inline-surface-body {
+  padding: 14px 20px 20px;
+}
+:is([data-court-inline-surface='hubu'], [data-court-inline-surface='results'])
+  .chaotang-panel {
+  background: #ffffff26;
+  border-color: #b69a5b55;
+  box-shadow: none;
+}
+:is([data-court-inline-surface='hubu'], [data-court-inline-surface='results'])
+  .text-high,
+:is([data-court-inline-surface='hubu'], [data-court-inline-surface='results'])
+  .text-normal {
+  color: #312a1e;
+}
+:is([data-court-inline-surface='hubu'], [data-court-inline-surface='results'])
+  .text-low,
+:is([data-court-inline-surface='hubu'], [data-court-inline-surface='results'])
+  .court-inline-surface-body
+  > p {
+  color: #665a44;
+}
+:is([data-court-inline-surface='hubu'], [data-court-inline-surface='results'])
+  .text-brand {
+  color: #775823;
+}
+:is([data-court-inline-surface='hubu'], [data-court-inline-surface='results'])
+  .text-error {
+  color: #9c3527;
+}
+:is([data-court-inline-surface='hubu'], [data-court-inline-surface='results'])
+  .text-success {
+  color: #32604a;
+}
+:is([data-court-inline-surface='hubu'], [data-court-inline-surface='results'])
+  button {
+  color: #664819;
+  border-color: #b69a5b88;
+  background-color: #f6efd9;
+}
+:is([data-court-inline-surface='hubu'], [data-court-inline-surface='results'])
+  button:hover {
+  background-color: #e9d9ad;
+}
+:is([data-court-inline-surface='hubu'], [data-court-inline-surface='results'])
+  button:focus-visible {
+  outline: 2px solid #926824;
+  outline-offset: 2px;
+}
+:is([data-court-inline-surface='hubu'], [data-court-inline-surface='results'])
+  button[aria-pressed='true'],
+:is([data-court-inline-surface='hubu'], [data-court-inline-surface='results'])
+  button[aria-current='true'] {
+  background-color: #e5d29c;
+  border-color: #926824;
+}
+:is([data-court-inline-surface='hubu'], [data-court-inline-surface='results'])
+  input,
+:is([data-court-inline-surface='hubu'], [data-court-inline-surface='results'])
+  select,
+:is([data-court-inline-surface='hubu'], [data-court-inline-surface='results'])
+  textarea {
+  background: #f6efd9;
+  color: #312a1e;
+  border-color: #b69a5b88;
+}
+:is([data-court-inline-surface='hubu'], [data-court-inline-surface='results'])
+  ::placeholder {
+  color: #786c54;
+}
+:is([data-court-inline-surface='hubu'], [data-court-inline-surface='results'])
+  .bg-primary,
+:is([data-court-inline-surface='hubu'], [data-court-inline-surface='results'])
+  .bg-secondary,
+:is([data-court-inline-surface='hubu'], [data-court-inline-surface='results'])
+  .bg-panel {
+  background: #f6efd9;
+}
+:is([data-court-inline-surface='hubu'], [data-court-inline-surface='results'])
+  table {
+  color: #312a1e;
+}
+:is([data-court-inline-surface='hubu'], [data-court-inline-surface='results'])
+  th {
+  color: #775823;
+}
+:is([data-court-inline-surface='hubu'], [data-court-inline-surface='results'])
+  pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+@container (max-width: 480px) {
+  :is([data-court-inline-surface='hubu'], [data-court-inline-surface='results'])
+    .court-inline-surface-body {
+    padding: 12px 14px 16px;
+  }
+}
+
+/* 工部 B06 复用原御屏中部：象牙纸底与深色可读文字，与 C01/B02 御屏一致。任务
+   历史、技术资源按原军机处纸面模式折叠，不把宽屏工作台挤入纸面；表格、长文件名
+   与结果随御屏宽度与窄屏收放，不新增专有布局系统。 */
+.court-inline-surface[data-court-inline-surface='gongbu'] {
+  background: #eee4c7;
+  color: #312a1e;
+  border: 0;
+  box-shadow: none;
+  container-type: inline-size;
+}
+[data-court-inline-surface='gongbu'] .court-inline-surface-head {
+  padding: 14px 20px 10px;
+  border-color: #b69a5b66;
+}
+[data-court-inline-surface='gongbu'] .court-inline-surface-head > div > p {
+  display: none;
+}
+[data-court-inline-surface='gongbu'] .court-inline-surface-head h2 {
+  font-size: 22px;
+  margin-top: 0;
+}
+[data-court-inline-surface='gongbu'] .court-inline-surface-body {
+  padding: 14px 20px 20px;
+}
+[data-court-inline-surface='gongbu'] .chaotang-panel {
+  background: #ffffff26;
+  border-color: #b69a5b55;
+  box-shadow: none;
+}
+[data-court-inline-surface='gongbu'] .text-high,
+[data-court-inline-surface='gongbu'] .text-normal {
+  color: #312a1e;
+}
+[data-court-inline-surface='gongbu'] .text-low,
+[data-court-inline-surface='gongbu'] .court-inline-surface-body > p {
+  color: #665a44;
+}
+[data-court-inline-surface='gongbu'] .text-brand {
+  color: #775823;
+}
+[data-court-inline-surface='gongbu'] .text-error {
+  color: #9c3527;
+}
+[data-court-inline-surface='gongbu'] .text-success {
+  color: #32604a;
+}
+[data-court-inline-surface='gongbu'] button {
+  color: #664819;
+  border-color: #b69a5b88;
+  background-color: #f6efd9;
+}
+[data-court-inline-surface='gongbu'] button:hover {
+  background-color: #e9d9ad;
+}
+[data-court-inline-surface='gongbu'] button:focus-visible {
+  outline: 2px solid #926824;
+  outline-offset: 2px;
+}
+[data-court-inline-surface='gongbu'] button[aria-pressed='true'],
+[data-court-inline-surface='gongbu'] button[aria-current='true'] {
+  background-color: #e5d29c;
+  border-color: #926824;
+}
+[data-court-inline-surface='gongbu'] input,
+[data-court-inline-surface='gongbu'] select,
+[data-court-inline-surface='gongbu'] textarea {
+  background: #f6efd9;
+  color: #312a1e;
+  border-color: #b69a5b88;
+}
+[data-court-inline-surface='gongbu'] ::placeholder {
+  color: #786c54;
+}
+[data-court-inline-surface='gongbu'] .bg-primary,
+[data-court-inline-surface='gongbu'] .bg-secondary,
+[data-court-inline-surface='gongbu'] .bg-panel {
+  background: #f6efd9;
+}
+[data-court-inline-surface='gongbu'] table {
+  color: #312a1e;
+}
+[data-court-inline-surface='gongbu'] th {
+  color: #775823;
+}
+/* 工部任务台从宽屏工作台折叠进纸面：根、布局与历史栏透明可读，历史与成果
+   在窄御屏在前，技术资源保持 details 折叠。 */
+[data-court-inline-surface='gongbu'] .court-task-root,
+[data-court-inline-surface='gongbu'] .court-task-layout,
+[data-court-inline-surface='gongbu'] .court-task-history {
+  background: transparent;
+  color: #312a1e;
+  overflow: visible;
+  min-width: 0;
+}
+[data-court-inline-surface='gongbu'] .court-task-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+[data-court-inline-surface='gongbu'] .court-task-main {
+  padding: 0;
+  overflow: visible;
+  min-width: 0;
+}
+[data-court-inline-surface='gongbu'] .court-task-history {
+  order: -1;
+  border: 1px solid #b69a5b66;
+  padding: 12px;
+}
+[data-court-inline-surface='gongbu'] .court-history-summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: #664819;
+}
+[data-court-inline-surface='gongbu'] details[open] > .court-history-summary {
+  margin-bottom: 12px;
+}
+/* 长文件名、任务编号与成果摘要必须在窄御屏内换行，不溢出、不裁切。 */
+[data-court-inline-surface='gongbu'] pre,
+[data-court-inline-surface='gongbu'] code,
+[data-court-inline-surface='gongbu'] dd,
+[data-court-inline-surface='gongbu'] .break-all {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+@container (max-width: 480px) {
+  [data-court-inline-surface='gongbu'] .court-inline-surface-body {
+    padding: 12px 14px 16px;
+  }
+}
+
+/* C02/C03 share the original paper and preserve their professional sections. */
+.court-inline-surface:is(
+  [data-court-inline-surface='forecast'],
+  [data-court-inline-surface='learning']
+) {
+  background: #eee4c7;
+  color: #312a1e;
+  border: 0;
+  box-shadow: none;
+  container-type: inline-size;
+}
+:is(
+    [data-court-inline-surface='forecast'],
+    [data-court-inline-surface='learning']
+  )
+  .court-inline-surface-head {
+  padding: 14px 20px 10px;
+  border-color: #b69a5b66;
+}
+:is(
+    [data-court-inline-surface='forecast'],
+    [data-court-inline-surface='learning']
+  )
+  .court-inline-surface-head
+  > div
+  > p {
+  display: none;
+}
+:is(
+    [data-court-inline-surface='forecast'],
+    [data-court-inline-surface='learning']
+  )
+  .court-inline-surface-head
+  h2 {
+  font-size: 22px;
+  margin-top: 0;
+}
+:is(
+    [data-court-inline-surface='forecast'],
+    [data-court-inline-surface='learning']
+  )
+  .court-inline-surface-body {
+  padding: 14px 20px 20px;
+}
+:is(
+    [data-court-inline-surface='forecast'],
+    [data-court-inline-surface='learning']
+  )
+  .chaotang-panel {
+  background: #ffffff26;
+  border-color: #b69a5b55;
+  box-shadow: none;
+}
+:is(
+    [data-court-inline-surface='forecast'],
+    [data-court-inline-surface='learning']
+  )
+  .text-high,
+:is(
+    [data-court-inline-surface='forecast'],
+    [data-court-inline-surface='learning']
+  )
+  .text-normal {
+  color: #312a1e;
+}
+:is(
+    [data-court-inline-surface='forecast'],
+    [data-court-inline-surface='learning']
+  )
+  .text-low,
+:is(
+    [data-court-inline-surface='forecast'],
+    [data-court-inline-surface='learning']
+  )
+  .court-inline-surface-body
+  > p {
+  color: #665a44;
+}
+:is(
+    [data-court-inline-surface='forecast'],
+    [data-court-inline-surface='learning']
+  )
+  .text-brand {
+  color: #775823;
+}
+:is(
+    [data-court-inline-surface='forecast'],
+    [data-court-inline-surface='learning']
+  )
+  .text-error {
+  color: #9c3527;
+}
+:is(
+    [data-court-inline-surface='forecast'],
+    [data-court-inline-surface='learning']
+  )
+  .text-success {
+  color: #32604a;
+}
+:is(
+    [data-court-inline-surface='forecast'],
+    [data-court-inline-surface='learning']
+  )
+  button {
+  color: #664819;
+  border-color: #b69a5b88;
+  background-color: #f6efd9;
+}
+:is(
+    [data-court-inline-surface='forecast'],
+    [data-court-inline-surface='learning']
+  )
+  button:hover {
+  background-color: #e9d9ad;
+}
+:is(
+    [data-court-inline-surface='forecast'],
+    [data-court-inline-surface='learning']
+  )
+  button:focus-visible {
+  outline: 2px solid #926824;
+  outline-offset: 2px;
+}
+:is(
+    [data-court-inline-surface='forecast'],
+    [data-court-inline-surface='learning']
+  )
+  button[aria-pressed='true'],
+:is(
+    [data-court-inline-surface='forecast'],
+    [data-court-inline-surface='learning']
+  )
+  button[aria-current='true'] {
+  background-color: #e5d29c;
+  border-color: #926824;
+}
+:is(
+    [data-court-inline-surface='forecast'],
+    [data-court-inline-surface='learning']
+  )
+  input,
+:is(
+    [data-court-inline-surface='forecast'],
+    [data-court-inline-surface='learning']
+  )
+  select,
+:is(
+    [data-court-inline-surface='forecast'],
+    [data-court-inline-surface='learning']
+  )
+  textarea {
+  background: #f6efd9;
+  color: #312a1e;
+  border-color: #b69a5b88;
+}
+:is(
+    [data-court-inline-surface='forecast'],
+    [data-court-inline-surface='learning']
+  )
+  ::placeholder {
+  color: #786c54;
+}
+:is(
+    [data-court-inline-surface='forecast'],
+    [data-court-inline-surface='learning']
+  )
+  .bg-primary,
+:is(
+    [data-court-inline-surface='forecast'],
+    [data-court-inline-surface='learning']
+  )
+  .bg-secondary,
+:is(
+    [data-court-inline-surface='forecast'],
+    [data-court-inline-surface='learning']
+  )
+  .bg-panel {
+  background: #f6efd9;
+}
+:is(
+    [data-court-inline-surface='forecast'],
+    [data-court-inline-surface='learning']
+  )
+  table {
+  color: #312a1e;
+}
+:is(
+    [data-court-inline-surface='forecast'],
+    [data-court-inline-surface='learning']
+  )
+  th {
+  color: #775823;
+}
+
+.department-scroll-workspace {
+  min-width: 0;
+}
+.department-scroll-workspace nav {
+  margin-bottom: 16px;
+}
+.department-scroll-workspace nav button {
+  font-size: 12px;
+  padding: 7px 10px;
+}
+.department-scroll-section {
+  min-width: 0;
+}
+/* Keep embedded department cards legible on the original paper surface. */
+.department-scroll-section
+  :is(
+    [class*='bg-primary/'],
+    [class*='bg-secondary/'],
+    [class*='bg-panel/'],
+    [class~='bg-[#090d10]/90']
+  ) {
+  background: #f6efd9;
+  box-shadow: none;
+}
+.department-scroll-section [class~='bg-[#090d10]/90'] > .pointer-events-none {
+  opacity: 0.12;
+}
+.department-scroll-section [class*='text-brand/'] {
+  color: #775823;
+}
+.department-scroll-section .grid {
+  grid-template-columns: minmax(0, 1fr);
+}
+.department-scroll-section table {
+  width: 100%;
+}
+.department-scroll-section pre,
+.department-scroll-section code,
+.department-scroll-section dd {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.court-scroll-verdict {
+  border-left: 3px solid #9c3527;
+  padding: 10px 14px;
+  background: #fff5;
+}
+.court-scroll-verdict-body {
+  margin: 8px 0 12px;
+  font-size: 14px;
+  line-height: 1.8;
+}
+.court-scroll-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.court-scroll-actions button,
+.court-scroll-bounds button {
+  padding: 7px 12px;
+  border: 1px solid;
+}
+.court-scroll-actions button:first-child {
+  background: #e5d29c;
+}
+.court-scroll-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 16px 0;
+}
+.court-scroll-stats dt {
+  font-size: 12px;
+  color: #665a44;
+}
+.court-scroll-stats dd {
+  font:
+    24px Georgia,
+    serif;
+  margin: 4px 0 0;
+}
+.court-scroll-links {
+  border-top: 1px solid #b69a5b55;
+}
+.court-scroll-link {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 8px;
+  text-align: left;
+  border-bottom: 1px solid;
+}
+.court-scroll-link-index {
+  font-size: 11px;
+}
+.court-scroll-link-icon,
+.court-scroll-link-arrow {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+.court-scroll-link-copy {
+  flex: 1;
+  min-width: 0;
+}
+.court-scroll-link-copy b,
+.court-scroll-link-copy small {
+  display: block;
+}
+.court-scroll-link-copy small {
+  font-size: 11px;
+  line-height: 1.6;
+  margin-top: 4px;
+}
+.court-scroll-link-value {
+  text-align: right;
+  flex-shrink: 0;
+}
+.court-scroll-link-value small {
+  display: block;
+  font-size: 10px;
+}
+.court-scroll-bounds {
+  margin-top: 18px;
+  font-size: 12px;
+  line-height: 1.8;
+}
+.court-scroll-bounds ul {
+  margin: 8px 0 12px;
+}
+.court-scroll-bounds button {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* A02/A06 share the original paper medium already used by the other offices.
+   Scope stays inside the measured scroll: no global theme or layout changes. */
+.court-inline-surface:is(
+  [data-court-inline-surface='study'],
+  [data-court-inline-surface='shiguan']
+) {
+  background: #eee4c7;
+  color: #312a1e;
+  border: 0;
+  box-shadow: none;
+  container-type: inline-size;
+}
+:is([data-court-inline-surface='study'], [data-court-inline-surface='shiguan'])
+  .court-inline-surface-head {
+  padding: 14px 20px 10px;
+  border-color: #b69a5b66;
+}
+:is([data-court-inline-surface='study'], [data-court-inline-surface='shiguan'])
+  .court-inline-surface-head
+  > div
+  > p {
+  display: none;
+}
+:is([data-court-inline-surface='study'], [data-court-inline-surface='shiguan'])
+  .court-inline-surface-head
+  h2 {
+  font-size: 22px;
+  margin-top: 0;
+}
+:is([data-court-inline-surface='study'], [data-court-inline-surface='shiguan'])
+  .court-inline-surface-body {
+  padding: 14px 20px 20px;
+}
+:is([data-court-inline-surface='study'], [data-court-inline-surface='shiguan'])
+  .chaotang-panel {
+  background: #ffffff26;
+  border-color: #b69a5b55;
+  box-shadow: none;
+}
+:is([data-court-inline-surface='study'], [data-court-inline-surface='shiguan'])
+  :is(.text-high, .text-normal) {
+  color: #312a1e;
+}
+:is([data-court-inline-surface='study'], [data-court-inline-surface='shiguan'])
+  :is(.text-low, .court-inline-surface-body > p) {
+  color: #665a44;
+}
+:is([data-court-inline-surface='study'], [data-court-inline-surface='shiguan'])
+  :is([class*='text-brand'], .shiguan-statistics) {
+  color: #775823;
+}
+:is([data-court-inline-surface='study'], [data-court-inline-surface='shiguan'])
+  .text-error {
+  color: #9c3527;
+}
+:is([data-court-inline-surface='study'], [data-court-inline-surface='shiguan'])
+  .text-success {
+  color: #32604a;
+}
+:is([data-court-inline-surface='study'], [data-court-inline-surface='shiguan'])
+  :is([class*='bg-primary'], [class*='bg-secondary'], [class*='bg-panel']) {
+  background: #f6efd9;
+}
+:is([data-court-inline-surface='study'], [data-court-inline-surface='shiguan'])
+  :is(button, input, select, textarea) {
+  color: #312a1e;
+  background-color: #f6efd9;
+  border-color: #b69a5b88;
+}
+:is([data-court-inline-surface='study'], [data-court-inline-surface='shiguan'])
+  button:hover {
+  background-color: #e9d9ad;
+}
+:is([data-court-inline-surface='study'], [data-court-inline-surface='shiguan'])
+  button:focus-visible {
+  outline: 2px solid #926824;
+  outline-offset: 2px;
+}
+:is([data-court-inline-surface='study'], [data-court-inline-surface='shiguan'])
+  button:is([aria-pressed='true'], [aria-current='true']) {
+  background-color: #e5d29c;
+  border-color: #926824;
+}
+:is([data-court-inline-surface='study'], [data-court-inline-surface='shiguan'])
+  ::placeholder {
+  color: #786c54;
+}
+:is([data-court-inline-surface='study'], [data-court-inline-surface='shiguan'])
+  pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+@container (max-width: 480px) {
+  :is(
+      [data-court-inline-surface='study'],
+      [data-court-inline-surface='shiguan']
+    )
+    .court-inline-surface-body {
+    padding: 12px 14px 16px;
+  }
+}
+
+/* Result cards follow the original paper column, not the viewport width. */
+[data-court-inline-surface='results'] .md\:grid-cols-2 {
+  grid-template-columns: minmax(0, 1fr);
+}

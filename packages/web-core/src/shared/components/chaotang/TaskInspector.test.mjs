@@ -131,3 +131,88 @@ test('does not show cached records from another task', () => {
   assert.match(html, /工具记录尚未接入/);
   assert.doesNotMatch(html, /旧任务人员|旧任务工具/);
 });
+
+test('starts with understandable progress and keeps diagnostic counts collapsed', () => {
+  const html = render(job);
+  assert.match(html, /办理进展/);
+  assert.match(html, /正在办理/);
+  assert.match(html, /下一步/);
+  assert.match(html, /<details><summary[^>]*>查看执行详情与用量说明/);
+  assert.ok(html.indexOf('下一步') < html.indexOf('执行尝试'));
+  assert.doesNotMatch(html, /<details open/);
+});
+
+test('execution success never claims acceptance or archive and explains missing result', () => {
+  for (const result of [null, { final_verdict: '初稿' }]) {
+    const html = render({ ...job, state: 'SUCCEEDED', result });
+    assert.match(html, /执行已结束/);
+    assert.match(html, /不等于成果已验收或归档/);
+    assert.match(html, result ? /查看成果/ : /成果尚未返回/);
+    assert.doesNotMatch(html, /验收通过|归档成功/);
+  }
+});
+
+test('running task without a cancel flag explains finishing may still complete', () => {
+  const html = render(job);
+  assert.match(html, /正在办理/);
+  assert.match(html, /收尾阶段/);
+  assert.doesNotMatch(html, /已请求取消/);
+});
+
+test('requested cancel states the recorded fact and never promises a stop', () => {
+  const html = render({ ...job, cancelRequested: true });
+  assert.match(html, /已请求取消/);
+  assert.match(html, /正在核对最终状态/);
+  assert.doesNotMatch(html, /等待任务停止|一定停止|已停止|停止完成/);
+  assert.doesNotMatch(html, /已取消/);
+});
+
+test('terminal state wins over a stale cancel flag', () => {
+  const succeeded = render({
+    ...job,
+    state: 'SUCCEEDED',
+    cancelRequested: true,
+    result: { final_verdict: '初稿' },
+  });
+  assert.match(succeeded, /执行已结束/);
+  assert.doesNotMatch(succeeded, /已请求取消|正在核对最终状态/);
+  const failed = render({ ...job, state: 'FAILED', cancelRequested: true });
+  assert.match(failed, /办理受阻/);
+  assert.doesNotMatch(failed, /已请求取消|正在核对最终状态/);
+  const cancelled = render({
+    ...job,
+    state: 'CANCELLED',
+    cancelRequested: true,
+  });
+  assert.match(cancelled, /已取消/);
+  assert.doesNotMatch(cancelled, /正在核对最终状态|等待任务停止/);
+});
+
+test('shows latest recorded action without presenting it as current department assignment', () => {
+  const html = render(job, {
+    jobId: job.jobId,
+    agentsAvailable: true,
+    agents: [{ id: 'a', name: '锦衣卫' }],
+    tools: [
+      {
+        id: 'new',
+        agentId: 'a',
+        name: '<核验来源>',
+        state: 'succeeded',
+        sequence: 9,
+      },
+      {
+        id: 'old',
+        agentId: 'a',
+        name: '读取仓库',
+        state: 'running',
+        sequence: 1,
+      },
+    ],
+  });
+  assert.match(html, /工具记录摘要（按序号）/);
+  assert.doesNotMatch(html, /最近一条记录/);
+  const summary = html.split('<details>')[0];
+  assert.match(summary, /锦衣卫 · &lt;核验来源&gt; · 已完成/);
+  assert.doesNotMatch(summary, /读取仓库|当前负责人/);
+});

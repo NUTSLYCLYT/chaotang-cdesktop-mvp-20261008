@@ -35,7 +35,7 @@ const compiled = await build({
                       ? `export const useChancellorConsult=()=>globalThis.__courtHarness.consult;export const useChancellorDraft=()=>globalThis.__courtHarness.draft;export const useIssueChancellorDecree=()=>globalThis.__courtHarness.issue;export const useDecreeJob=()=>({});export const useDecreeDesktopResources=()=>({});export const useLinkDecreeWorkspace=()=>({});export const useDecreeWorkspace=()=>({});export const useCancelDecreeJob=()=>({reset(){}});export const useRetryDecreeJob=()=>({reset(){}});`
                       : path.includes('chaotangFusion')
                         ? `export const decreeIdempotencyKey=async()=> 'synthetic-key';export const parseDecreeResult=()=>{};export const projectDraftAcceptance=value=>value;`
-                        : `export const FilesIcon=()=>null;export const UsersThreeIcon=()=>null;export const BookOpenIcon=()=>null;`,
+                        : `export const cn=(...values)=>values.filter(Boolean).join(' ');export const CircleNotchIcon=()=>null;export const InfoIcon=()=>null;export const WarningIcon=()=>null;export const FilesIcon=()=>null;export const UsersThreeIcon=()=>null;export const BookOpenIcon=()=>null;`,
         }));
       },
     },

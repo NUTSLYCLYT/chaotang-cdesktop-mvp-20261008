@@ -243,7 +243,11 @@ export function ReviewDispositionWorkspace() {
               />
               <div className="mt-base flex items-center justify-between gap-base">
                 <span className="text-[9px] text-low">{note.length}/4000</span>
-                <ChaotangButton variant="primary" disabled={review.isPending}>
+                <ChaotangButton
+                  type="submit"
+                  variant="primary"
+                  disabled={review.isPending}
+                >
                   {review.isPending ? '正在更新…' : '更新复盘'}
                 </ChaotangButton>
               </div>

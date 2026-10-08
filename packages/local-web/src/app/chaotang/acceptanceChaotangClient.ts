@@ -9,6 +9,13 @@ import type {
   ChaotangUser,
   ChaotangHealth,
   ShiguanArchive,
+  HubuWorkProductSummary,
+  QintianForecast,
+  QintianConsultMessage,
+  QintianConsultResponse,
+  QintianPendingTrigger,
+  QintianForecastInput,
+  QintianReviewInput,
 } from '@/shared/providers/ChaotangProvider';
 import type { TaskFilesClient } from '@/shared/components/chaotang/taskFilesContract';
 import type { TaskSessionClient } from '@/shared/components/chaotang/taskSessionContract';
@@ -35,8 +42,15 @@ async function responseError(response: Response): Promise<Error> {
     job_history_archive_rejected:
       '只有结束的任务可以归档或恢复历史记录，请刷新状态后重试',
   };
-  let message =
-    response.status === 401 ? '朝堂会话已失效，请重新登录' : '朝堂请求失败';
+  const statusMessages: Record<number, string> = {
+    401: '朝堂会话已失效，请重新登录',
+    404: '记录不存在或当前账户无权查看，请返回列表刷新',
+    409: '当前状态不允许此操作，请刷新并查看最新结果',
+    422: '输入不完整或格式无效，请检查填写内容',
+    503: '服务暂时不可用，请稍后重试；已保存的数据不会因此清除',
+  };
+  let message = statusMessages[response.status] ?? '朝堂请求失败';
+  let safeCode: string | undefined;
   try {
     const body: unknown = await response.json();
     if (body && typeof body === 'object') {
@@ -53,13 +67,18 @@ async function responseError(response: Response): Promise<Error> {
       ].find(
         (value) => typeof value === 'string' && Object.hasOwn(messages, value)
       );
-      if (response.status !== 401 && typeof code === 'string')
+      if (response.status !== 401 && typeof code === 'string') {
         message = messages[code];
+        safeCode = code;
+      }
     }
   } catch {
     /* Non-JSON error bodies are deliberately not displayed. */
   }
-  return new Error(`${message}（HTTP ${response.status}）`);
+  return Object.assign(
+    new Error(`${message}（HTTP ${response.status}）`),
+    safeCode ? { code: safeCode } : {}
+  );
 }
 
 function mapResponse(value: unknown): unknown {
@@ -88,6 +107,41 @@ function normalizeShiguanArchives(value: unknown): ShiguanArchive[] {
   });
 }
 
+function resourceId(value: string, artifact = false): string {
+  const id = value.trim();
+  if (!(artifact ? /^[a-fA-F0-9]{32}$/ : /^[A-Za-z0-9_-]{1,128}$/).test(id))
+    throw new Error('资源编号无效');
+  return encodeURIComponent(id);
+}
+
+// Qintian list endpoints answer with `{ items: [...] }`. Unwrap the envelope
+// but refuse anything else so a malformed payload never masquerades as [].
+function unwrapListItems<T>(value: unknown): T[] {
+  if (!value || typeof value !== 'object' || Array.isArray(value))
+    throw new Error('钦天监列表响应无效');
+  const items = (value as { items?: unknown }).items;
+  if (!Array.isArray(items)) throw new Error('钦天监列表响应无效');
+  return items as T[];
+}
+
+// Consult keeps the caller's original array; only reject histories the backend
+// schema would refuse so an obviously invalid question never hits the network.
+function assertQintianConsultMessages(messages: QintianConsultMessage[]): void {
+  if (!Array.isArray(messages) || messages.length < 1 || messages.length > 20)
+    throw new Error('咨询消息数量须为 1–20');
+  for (const message of messages) {
+    if (
+      !message ||
+      typeof message !== 'object' ||
+      (message.role !== 'user' && message.role !== 'assistant') ||
+      typeof message.content !== 'string' ||
+      message.content.length < 1 ||
+      message.content.length > 4000
+    )
+      throw new Error('咨询消息无效');
+  }
+}
+
 /** Development-only HTTP transport to the explicitly configured loopback proxy. */
 export function createAcceptanceChaotangClient(
   native: ChaotangClient &
@@ -108,7 +162,7 @@ export function createAcceptanceChaotangClient(
     path: string,
     body?: unknown,
     extraHeaders: Record<string, string> = {},
-    method?: 'GET' | 'POST' | 'PUT',
+    method?: 'GET' | 'POST' | 'PUT' | 'PATCH',
     preserveRaw = false
   ): Promise<T> {
     const token = storage.getItem(sessionKey);
@@ -148,6 +202,31 @@ export function createAcceptanceChaotangClient(
     storage.setItem(sessionKey, session.sessionId);
     return session.user;
   }
+
+  async function downloadArtifact(path: string): Promise<Blob> {
+    if (
+      !/^\/api\/v1\/(?:report-artifacts|fusion-artifacts)\/[a-zA-Z0-9_-]+\/download$/.test(
+        path
+      )
+    )
+      throw new Error('成果下载路径无效');
+    const token = storage.getItem(sessionKey);
+    if (!token) throw new Error('请先登录');
+    const response = await transport('/fusion-api' + path, {
+      headers: { Authorization: 'Bearer ' + token },
+      redirect: 'error',
+      credentials: 'omit',
+      signal: AbortSignal.timeout(90_000),
+    });
+    if (!response.ok) {
+      if (response.status === 401 && storage.getItem(sessionKey) === token)
+        storage.removeItem(sessionKey);
+      throw await responseError(response);
+    }
+    const blob = await response.blob();
+    if (!blob.size) throw new Error('成果文件为空，已拒绝下载');
+    return blob;
+  }
   return {
     ...native,
     // Browser handoff cannot attest to a file saved by the native runtime.
@@ -165,6 +244,134 @@ export function createAcceptanceChaotangClient(
     taskExecutionApprovals: undefined,
     respondTaskExecutionApproval: undefined,
     fusionCapabilities: () => request('/api/v1/fusion-capabilities'),
+    reviewDecreeDelivery: (id) =>
+      request(
+        '/api/v1/hanlin/decree-jobs/' + resourceId(id) + '/task-review',
+        undefined,
+        {},
+        'POST',
+        true
+      ),
+    junjichuCases: () => request('/api/v1/junjichu/cases'),
+    junjichuCase: (id) => request('/api/v1/junjichu/cases/' + resourceId(id)),
+    qintianForecasts: async () =>
+      unwrapListItems<QintianForecast>(
+        await request('/api/v1/qintianjian/forecasts')
+      ),
+    qintianConsult: (messages: QintianConsultMessage[]) => {
+      assertQintianConsultMessages(messages);
+      return request<QintianConsultResponse>('/api/v1/qintianjian/consult', {
+        messages,
+      });
+    },
+    qintianForecast: (forecastId) =>
+      request('/api/v1/qintianjian/forecasts/' + resourceId(forecastId)),
+    qintianPendingTriggers: async () =>
+      unwrapListItems<QintianPendingTrigger>(
+        await request('/api/v1/qintianjian/triggers/pending')
+      ),
+    createQintianForecast: (input: QintianForecastInput) =>
+      request('/api/v1/qintianjian/forecasts', {
+        idempotency_key: input.idempotencyKey,
+        subject: input.subject,
+        question: input.question,
+        evidence_refs: input.evidenceRefs.map((ref) => ({
+          id: ref.id,
+          summary: ref.summary,
+          source: ref.source,
+          ...(ref.asOf === undefined ? {} : { as_of: ref.asOf }),
+        })),
+        review_at: input.reviewAt,
+      }),
+    reviewQintianForecast: (forecastId, input: QintianReviewInput) =>
+      request(
+        '/api/v1/qintianjian/forecasts/' + resourceId(forecastId) + '/reviews',
+        {
+          decision: input.decision,
+          trigger_id: input.triggerId,
+          observation: input.observation,
+          judgment_invalidated: input.judgmentInvalidated,
+        }
+      ),
+    dadianOverview: (department) =>
+      request(
+        '/api/v1/shiguan/dadian-overview' +
+          (department
+            ? '?' + new URLSearchParams({ department }).toString()
+            : '')
+      ),
+    jinyiweiSummary: () => request('/api/v1/jinyiwei/summary'),
+    jinyiweiInvestigations: (status) => {
+      const params = new URLSearchParams({ limit: '50', offset: '0' });
+      if (status !== undefined) {
+        if (!['RESOLVED', 'PARTIAL', 'BLOCKED', 'UNAVAILABLE'].includes(status))
+          throw new Error('锦衣卫调查状态无效');
+        params.set('status', status);
+      }
+      return request('/api/v1/jinyiwei/investigations?' + params.toString());
+    },
+    jinyiweiInvestigation: (id) =>
+      request('/api/v1/jinyiwei/investigations/' + resourceId(id)),
+    skillCatalog: () => request('/api/v1/skills'),
+    mcpCatalog: () => request('/api/v1/mcp'),
+    connectorCatalog: () => request('/api/v1/connectors'),
+    cashSafetyEvaluate: (input) =>
+      request('/api/v1/hubu/cash-safety/create', input),
+    hubuWorkProducts: async () =>
+      (
+        await request<{ items: HubuWorkProductSummary[] }>(
+          '/api/v1/report-artifacts?limit=50'
+        )
+      ).items,
+    hubuWorkProduct: (id) =>
+      request(
+        '/api/v1/report-artifacts/' + resourceId(id, true) + '/work-product'
+      ),
+    hubuConfirmArtifact: (id, decision, structuredReason) =>
+      request(
+        '/api/v1/report-artifacts/' + resourceId(id, true) + '/confirmation',
+        { decision, structured_reason: structuredReason }
+      ),
+    hubuDownloadArtifact: async (id) => {
+      const safeId = resourceId(id, true);
+      const blob = await downloadArtifact(
+        '/api/v1/report-artifacts/' + safeId + '/download'
+      );
+      return {
+        fileName: safeId + '.xlsx',
+        mimeType: blob.type,
+        bytes: Array.from(new Uint8Array(await blob.arrayBuffer())),
+      };
+    },
+    shiguanArchive: async (id) =>
+      normalizeShiguanArchives([
+        await request('/api/v1/shiguan/archives/' + resourceId(id)),
+      ])[0],
+    shiguanStatistics: () => request('/api/v1/shiguan/statistics'),
+    shiguanRecall: (input) =>
+      request('/api/v1/shiguan/recall', {
+        matter_type: input.matterType,
+        department: input.department,
+        limit: input.limit,
+      }),
+    shiguanReview: (id, input) =>
+      request(
+        '/api/v1/shiguan/archives/' + resourceId(id) + '/review',
+        {
+          status: input.status,
+          reviewed_at: input.reviewedAt,
+          note: input.note,
+        },
+        {},
+        'PATCH'
+      ),
+    shiguanDecision: (id, decision) =>
+      request(
+        '/api/v1/shiguan/archives/' + resourceId(id) + '/decision',
+        { decision },
+        {},
+        'PUT'
+      ),
     shiguanArchives: (archiveType, limit = 50) => {
       if (
         archiveType !== undefined &&
@@ -251,24 +458,7 @@ export function createAcceptanceChaotangClient(
     },
     decreeWorkspace: (id) =>
       request('/api/v1/decree-jobs/' + encodeURIComponent(id) + '/workspace'),
-    downloadWorkspaceArtifact: async (path) => {
-      if (
-        !/^\/api\/v1\/(?:report-artifacts|fusion-artifacts)\/[a-zA-Z0-9_-]+\/download$/.test(
-          path
-        )
-      )
-        throw new Error('成果下载路径无效');
-      const token = storage.getItem(sessionKey);
-      if (!token) throw new Error('请先登录');
-      const response = await transport('/fusion-api' + path, {
-        headers: { Authorization: 'Bearer ' + token },
-        redirect: 'error',
-        credentials: 'omit',
-        signal: AbortSignal.timeout(90_000),
-      });
-      if (!response.ok) throw await responseError(response);
-      return response.blob();
-    },
+    downloadWorkspaceArtifact: downloadArtifact,
     health: async () => ({
       ...(await request<ChaotangHealth>('/health')),
       baseUrl: '本地验收代理',

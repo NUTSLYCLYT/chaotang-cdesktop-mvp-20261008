@@ -194,8 +194,6 @@ export function createAuthQueue() {
 export function usesTechnicalShell(pathname: string) {
   return (
     pathname === '/court-workspace' ||
-    pathname === '/forecast' ||
-    pathname === '/learning' ||
     /^\/(workspaces|routines)(\/|$)/.test(pathname) ||
     /^\/hosts\/[^/]+\/workspaces(\/|$)/.test(pathname)
   );
